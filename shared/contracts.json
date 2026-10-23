@@ -1,0 +1,80 @@
+{
+  "description": "Shared JSON Contract between Person 1 (AI), Person 2 (Optimizer), and Person 3 (Frontend + PayPal)",
+  "requestSchema_Person1_Output": {
+    "requestId": "req_2026_01",
+    "rawQuery": "I need a complete setup for coding and gaming under ₹60,000...",
+    "budgetINR": 60000,
+    "maxDeliveryDays": 7,
+    "requiredCategories": [
+      { "category": "monitor", "quantity": 1 },
+      { "category": "keyboard", "quantity": 1 },
+      { "category": "mouse", "quantity": 1 },
+      { "category": "headphones", "quantity": 1 }
+    ],
+    "hardConstraints": {
+      "monitor": { "minRefreshRateHz": 144 }
+    },
+    "weights": {
+      "quality": 0.45,
+      "reliability": 0.35,
+      "delivery": 0.20
+    },
+    "clarificationsNeeded": [
+      "Do you prefer a wired or wireless mouse?",
+      "Is 1080p resolution acceptable, or do you require 1440p QHD?"
+    ]
+  },
+  "planSchema_Person2_Output": {
+    "planId": "plan_8841",
+    "version": 1,
+    "status": "DRAFT",
+    "currency": "INR",
+    "budgetINR": 60000,
+    "strategies": {
+      "BEST_VALUE": {
+        "strategyKey": "BEST_VALUE",
+        "strategyName": "Plan B — Best Value (Recommended)",
+        "objectiveSummary": "Optimal balance of specification quality, verified warranty, and INR cost.",
+        "totalINR": 33492,
+        "leftoverBudgetINR": 26508,
+        "paypalSettlementUSD": "398.55",
+        "compositeScore": 0.89,
+        "constraintSummary": {
+          "budgetCheck": "PASSED (₹33,492 <= ₹60,000)",
+          "categoryCoverageCheck": "PASSED (4/4 categories)",
+          "mandatorySpecCheck": "PASSED (Monitor 144Hz >= 144Hz)",
+          "deliveryCheck": "PASSED (Max 4d <= 7d)"
+        },
+        "warnings": [],
+        "items": [
+          {
+            "productId": "MON-001",
+            "name": "LG UltraGear 24GN65R 24\" IPS 144Hz",
+            "category": "monitor",
+            "quantity": 1,
+            "unitPriceINR": 12499,
+            "shippingINR": 0,
+            "lineTotalINR": 12499,
+            "specs": "144 Hz · IPS · 1080p",
+            "selectionReason": "Upgrades to IPS panel with verified 3-year warranty.",
+            "verification": {
+              "status": "VERIFIED",
+              "checksPassed": ["144Hz >= 144Hz", "3-yr Warranty", "Delivery 3d <= 7d"],
+              "warnings": [],
+              "sourceUrl": "https://example.com/products/mon-001",
+              "lastCheckedISO": "2026-10-23T07:00:00Z"
+            }
+          }
+        ]
+      }
+    },
+    "rejectedProducts": [
+      {
+        "productId": "MON-004",
+        "name": "Samsung Essential S3 24\" 75Hz Office Monitor",
+        "unitPriceINR": 7499,
+        "rejectedReason": "Failed Hard Constraint: Refresh rate 75 Hz is below mandatory 144 Hz minimum."
+      }
+    ]
+  }
+}
