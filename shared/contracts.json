@@ -1,0 +1,120 @@
+{
+  "contractVersion": 1,
+  "description": "Shared contract between the request-intelligence agent, the catalog/verification/optimizer service and the frontend. Full field semantics: docs/procurement-engine.md. A complete real response: examples/response-60k-setup.json.",
+  "endpoints": {
+    "createPlan": {
+      "method": "POST",
+      "path": "/api/procurement/plan",
+      "requestBody": "ProcurementRequest",
+      "responses": {
+        "200": "ProcurementPlan (status DRAFT or INFEASIBLE)",
+        "400": "ErrorResponse with error INVALID_REQUEST",
+        "503": "ErrorResponse with error CATALOG_UNAVAILABLE",
+        "500": "ErrorResponse with error INTERNAL_ERROR"
+      },
+      "sideEffects": "None. Prepares a plan only; never creates, authorizes or captures a PayPal payment."
+    },
+    "listCatalog": { "method": "GET", "path": "/api/procurement/catalog", "query": { "category": "optional category filter" } },
+    "describeContract": { "method": "GET", "path": "/api/procurement/contract" }
+  },
+  "ProcurementRequest": {
+    "requestId": "string, required, non-empty, <= 128 chars",
+    "rawQuery": "string, optional — the user's original words, for traceability",
+    "budgetINR": "number, required, > 0, at most 2 decimals — maximum total basket cost incl. shipping",
+    "maxDeliveryDays": "integer, required, 0..365",
+    "requiredCategories": "array, required, non-empty — [{ category: string, quantity: integer 1..100 }], no duplicate categories",
+    "hardConstraints": "object, optional — { <category in requiredCategories>: { <supported constraint key>: value } }. Unsupported keys are rejected (400). See GET /api/procurement/contract",
+    "weights": "object, optional — { quality, reliability, delivery }, each 0..1, must sum to 1 (±0.001). Not normalized. If omitted, defaults 0.45/0.35/0.20 are used and a warning is returned",
+    "example": {
+      "requestId": "req_2026_01",
+      "rawQuery": "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.",
+      "budgetINR": 60000,
+      "maxDeliveryDays": 7,
+      "requiredCategories": [
+        { "category": "monitor", "quantity": 1 },
+        { "category": "keyboard", "quantity": 1 },
+        { "category": "mouse", "quantity": 1 },
+        { "category": "headphones", "quantity": 1 }
+      ],
+      "hardConstraints": { "monitor": { "minRefreshRateHz": 144 } },
+      "weights": { "quality": 0.45, "reliability": 0.35, "delivery": 0.2 }
+    }
+  },
+  "supportedHardConstraints": {
+    "anyCategory": ["minWarrantyMonths", "maxUnitPriceINR", "allowedBrands", "excludedBrands"],
+    "monitor": ["minRefreshRateHz", "minSizeInches", "maxSizeInches", "panelIn", "resolutionIn"],
+    "keyboard": ["connectivityIn", "layoutIn", "switchTypeIn"],
+    "mouse": ["connectivityIn", "maxWeightGrams", "minDpi"],
+    "headphones": ["connectivityIn", "typeIn", "requireAnc"]
+  },
+  "ProcurementPlan": {
+    "planId": "string — deterministic hash of the validated request + catalog version",
+    "version": "integer — response schema version (1)",
+    "requestId": "string — echoed",
+    "rawQuery": "string | null — echoed",
+    "status": "DRAFT | INFEASIBLE",
+    "currency": "INR",
+    "budgetINR": "number",
+    "strategies": "object keyed by StrategyKey — only strategies with a distinct feasible basket appear; empty object when INFEASIBLE",
+    "omittedStrategies": "[{ strategyKey, reason }] — strategies left out because they would duplicate another plan or none exists",
+    "infeasibility": "null | { reasons[], cheapestPossibleTotalINR, cheapestByCategoryINR, categoryDiagnostics[], suggestions[] }",
+    "rejectedProducts": "[{ productId, name, category, unitPriceINR, rejectedReason, rejectionType, failedChecks[], unknownChecks[], dataOrigin }]",
+    "warnings": "string[] — plan-level warnings",
+    "catalog": "{ catalogId, catalogVersion, dataOrigin, disclaimer }",
+    "scoring": "{ weights, weightsSource: REQUEST | DEFAULT, formulas }",
+    "search": "{ exhaustive: boolean, basketsEvaluated, notes[] }"
+  },
+  "Strategy": {
+    "strategyKey": "StrategyKey",
+    "strategyName": "string",
+    "objectiveSummary": "string — what the strategy actually optimizes",
+    "subtotalINR": "number — sum of unitPriceINR * quantity",
+    "shippingTotalINR": "number — sum of per-line shipping",
+    "totalINR": "number — subtotalINR + shippingTotalINR",
+    "leftoverBudgetINR": "number — budgetINR - totalINR, never negative",
+    "paypalSettlementUSD": "null — set only by the PayPal/FX flow; the optimizer never estimates it",
+    "compositeScore": "number 0..1, rounded to 4 decimals",
+    "scoreBreakdown": "{ quality, reliability, delivery } — basket averages, 0..1",
+    "verificationLevel": "EvidenceStatus — weakest evidence status among the items",
+    "constraintSummary": "{ budgetCheck, categoryCoverageCheck, mandatorySpecCheck, deliveryCheck, stockCheck, priceDataCheck } each PASSED | FAILED",
+    "warnings": "string[]",
+    "tradeOff": "ALTERNATIVE only — { categoriesChanged[], costDifferenceINR, compositeScoreDifference, summary }",
+    "items": "Item[] — one per product line; a category may have several lines (mixed SKUs)"
+  },
+  "Item": {
+    "productId": "string",
+    "name": "string",
+    "brand": "string | null",
+    "category": "string",
+    "quantity": "integer",
+    "unitPriceINR": "number",
+    "shippingINR": "number — charged once per line, not per unit",
+    "lineTotalINR": "number — unitPriceINR * quantity + shippingINR",
+    "deliveryDays": "integer",
+    "warrantyMonths": "integer | null",
+    "specs": "object",
+    "scores": "{ quality: number|null, reliability: number|null, delivery, composite }",
+    "selectionReason": "string",
+    "verification": "{ status: EvidenceStatus, dataOrigin, sourceLookup, checksPassed: string[], warnings: string[], sourceUrl: string|null, lastCheckedISO: string|null }"
+  },
+  "ErrorResponse": {
+    "error": "INVALID_REQUEST | CATALOG_UNAVAILABLE | INTERNAL_ERROR",
+    "message": "string",
+    "details": "[{ field, message }] — INVALID_REQUEST only"
+  },
+  "enums": {
+    "PlanStatus": ["DRAFT", "INFEASIBLE"],
+    "StrategyKey": ["CHEAPEST", "BEST_VALUE", "ALTERNATIVE"],
+    "CheckStatus": ["PASS", "FAIL", "UNKNOWN"],
+    "ConstraintSummaryStatus": ["PASSED", "FAILED"],
+    "EvidenceStatus": ["VERIFIED", "SOURCE_STALE", "UNVERIFIED", "UNVERIFIED_DEMO_DATA"],
+    "DataOrigin": ["SOURCE_VERIFIED", "CATALOG_UNCHECKED", "SYNTHETIC_DEMO"],
+    "SourceLookup": ["NOT_CHECKED", "FOUND", "NOT_FOUND", "UNAVAILABLE"],
+    "RejectionType": ["FAILED_HARD_CONSTRAINT", "UNVERIFIABLE_MANDATORY_DATA"]
+  },
+  "changesFromOriginalDraft": [
+    "verification.status 'VERIFIED' is now reserved for fresh, source-backed data; demo items are 'UNVERIFIED_DEMO_DATA'. Frontend must not show a verified badge for other statuses.",
+    "BEST_VALUE objectiveSummary no longer claims to maximize quality-to-price ratio; price is a budget limit and tie-breaker unless the team agrees to add a value weight.",
+    "Added fields (additive, nothing renamed): requestId, rawQuery, catalog, scoring, search, omittedStrategies, infeasibility, subtotalINR, shippingTotalINR, scoreBreakdown, verificationLevel, constraintSummary.stockCheck, constraintSummary.priceDataCheck, tradeOff, item.brand/deliveryDays/warrantyMonths/scores, rejectedProducts[].rejectionType/failedChecks/unknownChecks/dataOrigin."
+  ]
+}

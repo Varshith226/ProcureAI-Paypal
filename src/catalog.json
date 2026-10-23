@@ -1,0 +1,945 @@
+{
+  "catalogId": "procureai-demo-catalog",
+  "catalogVersion": "2026-10-23.1",
+  "dataOrigin": "SYNTHETIC_DEMO",
+  "disclaimer": "Every record in this catalog is synthetic demo data. Brands and products are fictional. Prices, stock, delivery times, warranties and quality/reliability scores are illustrative only and were not retrieved from any retailer. No record has a source URL or a live check timestamp.",
+  "shippingPolicy": "shippingINR is a flat charge per order line (per product), not per unit.",
+  "scorePolicy": "qualityScore and reliabilityScore are 0-1 demo editorial scores; null means unknown.",
+  "products": [
+    {
+      "productId": "MON-001",
+      "name": "Lumora View 24F 165Hz IPS",
+      "category": "monitor",
+      "brand": "Lumora",
+      "seller": null,
+      "unitPriceINR": 11499,
+      "shippingINR": 0,
+      "stockQuantity": 25,
+      "deliveryDays": 3,
+      "warrantyMonths": 36,
+      "specs": {
+        "refreshRateHz": 165,
+        "panel": "IPS",
+        "resolution": "1080p",
+        "sizeInches": 24
+      },
+      "qualityScore": 0.78,
+      "reliabilityScore": 0.82,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "MON-002",
+      "name": "Veltrix Pulse 27Q 170Hz IPS",
+      "category": "monitor",
+      "brand": "Veltrix",
+      "seller": null,
+      "unitPriceINR": 21999,
+      "shippingINR": 0,
+      "stockQuantity": 12,
+      "deliveryDays": 4,
+      "warrantyMonths": 36,
+      "specs": {
+        "refreshRateHz": 170,
+        "panel": "IPS",
+        "resolution": "1440p",
+        "sizeInches": 27
+      },
+      "qualityScore": 0.9,
+      "reliabilityScore": 0.85,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "MON-003",
+      "name": "Orbis Swift 24G 144Hz VA",
+      "category": "monitor",
+      "brand": "Orbis",
+      "seller": null,
+      "unitPriceINR": 9299,
+      "shippingINR": 199,
+      "stockQuantity": 40,
+      "deliveryDays": 5,
+      "warrantyMonths": 24,
+      "specs": {
+        "refreshRateHz": 144,
+        "panel": "VA",
+        "resolution": "1080p",
+        "sizeInches": 24
+      },
+      "qualityScore": 0.66,
+      "reliabilityScore": 0.7,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "MON-004",
+      "name": "Nexgaze Basic 22 75Hz",
+      "category": "monitor",
+      "brand": "Nexgaze",
+      "seller": null,
+      "unitPriceINR": 7499,
+      "shippingINR": 0,
+      "stockQuantity": 30,
+      "deliveryDays": 3,
+      "warrantyMonths": 12,
+      "specs": {
+        "refreshRateHz": 75,
+        "panel": "IPS",
+        "resolution": "1080p",
+        "sizeInches": 22
+      },
+      "qualityScore": 0.55,
+      "reliabilityScore": 0.7,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fails the 144 Hz requirement in the sample request."
+      }
+    },
+    {
+      "productId": "MON-005",
+      "name": "Kairo Arc 27 (refresh rate not listed)",
+      "category": "monitor",
+      "brand": "Kairo",
+      "seller": null,
+      "unitPriceINR": 13999,
+      "shippingINR": 0,
+      "stockQuantity": 15,
+      "deliveryDays": 4,
+      "warrantyMonths": 24,
+      "specs": {
+        "refreshRateHz": null,
+        "panel": "IPS",
+        "resolution": "1440p",
+        "sizeInches": 27
+      },
+      "qualityScore": 0.75,
+      "reliabilityScore": 0.72,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Refresh rate intentionally missing to demonstrate UNKNOWN handling."
+      }
+    },
+    {
+      "productId": "MON-006",
+      "name": "Veltrix Pulse 32U 144Hz 4K",
+      "category": "monitor",
+      "brand": "Veltrix",
+      "seller": null,
+      "unitPriceINR": 39999,
+      "shippingINR": 0,
+      "stockQuantity": 6,
+      "deliveryDays": 6,
+      "warrantyMonths": 36,
+      "specs": {
+        "refreshRateHz": 144,
+        "panel": "IPS",
+        "resolution": "2160p",
+        "sizeInches": 32
+      },
+      "qualityScore": 0.95,
+      "reliabilityScore": 0.8,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "MON-007",
+      "name": "Lumora View 27F 180Hz IPS",
+      "category": "monitor",
+      "brand": "Lumora",
+      "seller": null,
+      "unitPriceINR": 18499,
+      "shippingINR": 0,
+      "stockQuantity": 20,
+      "deliveryDays": 10,
+      "warrantyMonths": 36,
+      "specs": {
+        "refreshRateHz": 180,
+        "panel": "IPS",
+        "resolution": "1440p",
+        "sizeInches": 27
+      },
+      "qualityScore": 0.88,
+      "reliabilityScore": 0.83,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Delivery intentionally beyond 7 days."
+      }
+    },
+    {
+      "productId": "MON-008",
+      "name": "Orbis Swift 27G 165Hz VA",
+      "category": "monitor",
+      "brand": "Orbis",
+      "seller": null,
+      "unitPriceINR": 16999,
+      "shippingINR": 0,
+      "stockQuantity": 0,
+      "deliveryDays": 4,
+      "warrantyMonths": 24,
+      "specs": {
+        "refreshRateHz": 165,
+        "panel": "VA",
+        "resolution": "1440p",
+        "sizeInches": 27
+      },
+      "qualityScore": 0.8,
+      "reliabilityScore": 0.74,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Intentionally out of stock."
+      }
+    },
+    {
+      "productId": "MON-009",
+      "name": "Nexgaze Play 24 144Hz TN",
+      "category": "monitor",
+      "brand": "Nexgaze",
+      "seller": null,
+      "unitPriceINR": 8799,
+      "shippingINR": 249,
+      "stockQuantity": 18,
+      "deliveryDays": 6,
+      "warrantyMonths": 12,
+      "specs": {
+        "refreshRateHz": 144,
+        "panel": "TN",
+        "resolution": "1080p",
+        "sizeInches": 24
+      },
+      "qualityScore": 0.58,
+      "reliabilityScore": 0.62,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "MON-010",
+      "name": "Kairo Arc 24 165Hz IPS (delivery unknown)",
+      "category": "monitor",
+      "brand": "Kairo",
+      "seller": null,
+      "unitPriceINR": 12299,
+      "shippingINR": 0,
+      "stockQuantity": 10,
+      "deliveryDays": null,
+      "warrantyMonths": 24,
+      "specs": {
+        "refreshRateHz": 165,
+        "panel": "IPS",
+        "resolution": "1080p",
+        "sizeInches": 24
+      },
+      "qualityScore": 0.76,
+      "reliabilityScore": 0.78,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Delivery estimate intentionally missing."
+      }
+    },
+    {
+      "productId": "KB-001",
+      "name": "Keyforge K87 TKL Mechanical",
+      "category": "keyboard",
+      "brand": "Keyforge",
+      "seller": null,
+      "unitPriceINR": 4299,
+      "shippingINR": 0,
+      "stockQuantity": 30,
+      "deliveryDays": 3,
+      "warrantyMonths": 24,
+      "specs": {
+        "layout": "TKL",
+        "switchType": "linear",
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.8,
+      "reliabilityScore": 0.84,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "KB-002",
+      "name": "Tactis Quill 75 Wireless",
+      "category": "keyboard",
+      "brand": "Tactis",
+      "seller": null,
+      "unitPriceINR": 7999,
+      "shippingINR": 0,
+      "stockQuantity": 14,
+      "deliveryDays": 4,
+      "warrantyMonths": 24,
+      "specs": {
+        "layout": "75%",
+        "switchType": "tactile",
+        "connectivity": "wireless"
+      },
+      "qualityScore": 0.88,
+      "reliabilityScore": 0.8,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "KB-003",
+      "name": "Glyph Basic Membrane",
+      "category": "keyboard",
+      "brand": "Glyph",
+      "seller": null,
+      "unitPriceINR": 899,
+      "shippingINR": 99,
+      "stockQuantity": 60,
+      "deliveryDays": 2,
+      "warrantyMonths": 12,
+      "specs": {
+        "layout": "full",
+        "switchType": "membrane",
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.45,
+      "reliabilityScore": 0.65,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "KB-004",
+      "name": "Ardent Pro Full-Size Mechanical",
+      "category": "keyboard",
+      "brand": "Ardent",
+      "seller": null,
+      "unitPriceINR": 11499,
+      "shippingINR": 0,
+      "stockQuantity": 8,
+      "deliveryDays": 5,
+      "warrantyMonths": 36,
+      "specs": {
+        "layout": "full",
+        "switchType": "tactile",
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.92,
+      "reliabilityScore": 0.88,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "KB-005",
+      "name": "Keyforge K61 60% Mechanical",
+      "category": "keyboard",
+      "brand": "Keyforge",
+      "seller": null,
+      "unitPriceINR": 2999,
+      "shippingINR": 0,
+      "stockQuantity": 25,
+      "deliveryDays": 3,
+      "warrantyMonths": 12,
+      "specs": {
+        "layout": "60%",
+        "switchType": "linear",
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.68,
+      "reliabilityScore": 0.72,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "KB-006",
+      "name": "Tactis Quill 98 Wireless",
+      "category": "keyboard",
+      "brand": "Tactis",
+      "seller": null,
+      "unitPriceINR": 9499,
+      "shippingINR": 0,
+      "stockQuantity": 10,
+      "deliveryDays": 9,
+      "warrantyMonths": 24,
+      "specs": {
+        "layout": "96%",
+        "switchType": "tactile",
+        "connectivity": "wireless"
+      },
+      "qualityScore": 0.9,
+      "reliabilityScore": 0.82,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Delivery intentionally beyond 7 days."
+      }
+    },
+    {
+      "productId": "KB-007",
+      "name": "Glyph Mech TKL (shipping unknown)",
+      "category": "keyboard",
+      "brand": "Glyph",
+      "seller": null,
+      "unitPriceINR": 3499,
+      "shippingINR": null,
+      "stockQuantity": 20,
+      "deliveryDays": 4,
+      "warrantyMonths": 12,
+      "specs": {
+        "layout": "TKL",
+        "switchType": "linear",
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.7,
+      "reliabilityScore": 0.7,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Shipping cost intentionally missing."
+      }
+    },
+    {
+      "productId": "KB-008",
+      "name": "Ardent Lite TKL",
+      "category": "keyboard",
+      "brand": "Ardent",
+      "seller": null,
+      "unitPriceINR": 5499,
+      "shippingINR": 0,
+      "stockQuantity": 3,
+      "deliveryDays": 6,
+      "warrantyMonths": 24,
+      "specs": {
+        "layout": "TKL",
+        "switchType": "tactile",
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.74,
+      "reliabilityScore": 0.78,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "KB-009",
+      "name": "Keyforge K104 Full-Size (stock unknown)",
+      "category": "keyboard",
+      "brand": "Keyforge",
+      "seller": null,
+      "unitPriceINR": 6299,
+      "shippingINR": 0,
+      "stockQuantity": null,
+      "deliveryDays": 3,
+      "warrantyMonths": 24,
+      "specs": {
+        "layout": "full",
+        "switchType": "linear",
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.79,
+      "reliabilityScore": 0.8,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Stock intentionally missing."
+      }
+    },
+    {
+      "productId": "MS-001",
+      "name": "Pointr Dart 58g Wired",
+      "category": "mouse",
+      "brand": "Pointr",
+      "seller": null,
+      "unitPriceINR": 3499,
+      "shippingINR": 0,
+      "stockQuantity": 35,
+      "deliveryDays": 3,
+      "warrantyMonths": 24,
+      "specs": {
+        "weightGrams": 58,
+        "dpi": 26000,
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.82,
+      "reliabilityScore": 0.8,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "MS-002",
+      "name": "Swiftclick Aero Wireless",
+      "category": "mouse",
+      "brand": "Swiftclick",
+      "seller": null,
+      "unitPriceINR": 6499,
+      "shippingINR": 0,
+      "stockQuantity": 16,
+      "deliveryDays": 4,
+      "warrantyMonths": 24,
+      "specs": {
+        "weightGrams": 63,
+        "dpi": 30000,
+        "connectivity": "wireless"
+      },
+      "qualityScore": 0.9,
+      "reliabilityScore": 0.83,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "MS-003",
+      "name": "Nimbus Basic Optical",
+      "category": "mouse",
+      "brand": "Nimbus",
+      "seller": null,
+      "unitPriceINR": 599,
+      "shippingINR": 49,
+      "stockQuantity": 80,
+      "deliveryDays": 2,
+      "warrantyMonths": 12,
+      "specs": {
+        "weightGrams": 90,
+        "dpi": 1600,
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.4,
+      "reliabilityScore": 0.6,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "MS-004",
+      "name": "Pointr Ergo Vertical",
+      "category": "mouse",
+      "brand": "Pointr",
+      "seller": null,
+      "unitPriceINR": 2799,
+      "shippingINR": 0,
+      "stockQuantity": 22,
+      "deliveryDays": 5,
+      "warrantyMonths": 24,
+      "specs": {
+        "weightGrams": 110,
+        "dpi": 4000,
+        "connectivity": "wireless"
+      },
+      "qualityScore": 0.7,
+      "reliabilityScore": 0.76,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "MS-005",
+      "name": "Swiftclick Core",
+      "category": "mouse",
+      "brand": "Swiftclick",
+      "seller": null,
+      "unitPriceINR": 1799,
+      "shippingINR": 0,
+      "stockQuantity": 40,
+      "deliveryDays": 3,
+      "warrantyMonths": 24,
+      "specs": {
+        "weightGrams": 80,
+        "dpi": 12000,
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.66,
+      "reliabilityScore": 0.74,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "MS-006",
+      "name": "Nimbus Pro Wireless",
+      "category": "mouse",
+      "brand": "Nimbus",
+      "seller": null,
+      "unitPriceINR": 4499,
+      "shippingINR": 0,
+      "stockQuantity": 25,
+      "deliveryDays": 8,
+      "warrantyMonths": 24,
+      "specs": {
+        "weightGrams": 70,
+        "dpi": 20000,
+        "connectivity": "wireless"
+      },
+      "qualityScore": 0.8,
+      "reliabilityScore": 0.75,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Delivery intentionally beyond 7 days."
+      }
+    },
+    {
+      "productId": "MS-007",
+      "name": "Pointr Dart Wireless",
+      "category": "mouse",
+      "brand": "Pointr",
+      "seller": null,
+      "unitPriceINR": 5299,
+      "shippingINR": 0,
+      "stockQuantity": 0,
+      "deliveryDays": 3,
+      "warrantyMonths": 24,
+      "specs": {
+        "weightGrams": 61,
+        "dpi": 26000,
+        "connectivity": "wireless"
+      },
+      "qualityScore": 0.86,
+      "reliabilityScore": 0.8,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Intentionally out of stock."
+      }
+    },
+    {
+      "productId": "MS-008",
+      "name": "Swiftclick Lite (no quality score)",
+      "category": "mouse",
+      "brand": "Swiftclick",
+      "seller": null,
+      "unitPriceINR": 1299,
+      "shippingINR": 0,
+      "stockQuantity": 50,
+      "deliveryDays": 4,
+      "warrantyMonths": 12,
+      "specs": {
+        "weightGrams": 85,
+        "dpi": 8000,
+        "connectivity": "wired"
+      },
+      "qualityScore": null,
+      "reliabilityScore": 0.7,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Quality score intentionally missing (soft data)."
+      }
+    },
+    {
+      "productId": "MS-009",
+      "name": "Nimbus Glide",
+      "category": "mouse",
+      "brand": "Nimbus",
+      "seller": null,
+      "unitPriceINR": 2199,
+      "shippingINR": 0,
+      "stockQuantity": 30,
+      "deliveryDays": 6,
+      "warrantyMonths": 12,
+      "specs": {
+        "weightGrams": 75,
+        "dpi": 10000,
+        "connectivity": "wired"
+      },
+      "qualityScore": 0.63,
+      "reliabilityScore": 0.66,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "HP-001",
+      "name": "Sonance H5 Closed-Back",
+      "category": "headphones",
+      "brand": "Sonance",
+      "seller": null,
+      "unitPriceINR": 5999,
+      "shippingINR": 0,
+      "stockQuantity": 20,
+      "deliveryDays": 3,
+      "warrantyMonths": 12,
+      "specs": {
+        "type": "closed-back",
+        "connectivity": "wired",
+        "anc": false
+      },
+      "qualityScore": 0.8,
+      "reliabilityScore": 0.82,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "HP-002",
+      "name": "Auralis Studio ANC Wireless",
+      "category": "headphones",
+      "brand": "Auralis",
+      "seller": null,
+      "unitPriceINR": 14999,
+      "shippingINR": 0,
+      "stockQuantity": 10,
+      "deliveryDays": 4,
+      "warrantyMonths": 24,
+      "specs": {
+        "type": "closed-back",
+        "connectivity": "wireless",
+        "anc": true
+      },
+      "qualityScore": 0.92,
+      "reliabilityScore": 0.86,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "HP-003",
+      "name": "Hushwave Lite",
+      "category": "headphones",
+      "brand": "Hushwave",
+      "seller": null,
+      "unitPriceINR": 1499,
+      "shippingINR": 99,
+      "stockQuantity": 45,
+      "deliveryDays": 2,
+      "warrantyMonths": 12,
+      "specs": {
+        "type": "closed-back",
+        "connectivity": "wired",
+        "anc": false
+      },
+      "qualityScore": 0.52,
+      "reliabilityScore": 0.62,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "HP-004",
+      "name": "Tempo Game 7.1 Headset",
+      "category": "headphones",
+      "brand": "Tempo",
+      "seller": null,
+      "unitPriceINR": 3999,
+      "shippingINR": 0,
+      "stockQuantity": 25,
+      "deliveryDays": 5,
+      "warrantyMonths": 12,
+      "specs": {
+        "type": "closed-back",
+        "connectivity": "wired",
+        "anc": false
+      },
+      "qualityScore": 0.7,
+      "reliabilityScore": 0.68,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "HP-005",
+      "name": "Sonance H7 Open-Back",
+      "category": "headphones",
+      "brand": "Sonance",
+      "seller": null,
+      "unitPriceINR": 9999,
+      "shippingINR": 0,
+      "stockQuantity": 9,
+      "deliveryDays": 6,
+      "warrantyMonths": 24,
+      "specs": {
+        "type": "open-back",
+        "connectivity": "wired",
+        "anc": false
+      },
+      "qualityScore": 0.88,
+      "reliabilityScore": 0.84,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "HP-006",
+      "name": "Auralis Go",
+      "category": "headphones",
+      "brand": "Auralis",
+      "seller": null,
+      "unitPriceINR": 2499,
+      "shippingINR": 0,
+      "stockQuantity": 35,
+      "deliveryDays": 3,
+      "warrantyMonths": 12,
+      "specs": {
+        "type": "closed-back",
+        "connectivity": "wireless",
+        "anc": false
+      },
+      "qualityScore": 0.62,
+      "reliabilityScore": 0.72,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "HP-007",
+      "name": "Hushwave Pro ANC",
+      "category": "headphones",
+      "brand": "Hushwave",
+      "seller": null,
+      "unitPriceINR": 11999,
+      "shippingINR": 0,
+      "stockQuantity": 12,
+      "deliveryDays": 12,
+      "warrantyMonths": 24,
+      "specs": {
+        "type": "closed-back",
+        "connectivity": "wireless",
+        "anc": true
+      },
+      "qualityScore": 0.9,
+      "reliabilityScore": 0.8,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Delivery intentionally beyond 7 days."
+      }
+    },
+    {
+      "productId": "HP-008",
+      "name": "Tempo Studio (warranty unknown)",
+      "category": "headphones",
+      "brand": "Tempo",
+      "seller": null,
+      "unitPriceINR": 7499,
+      "shippingINR": 0,
+      "stockQuantity": 15,
+      "deliveryDays": 4,
+      "warrantyMonths": null,
+      "specs": {
+        "type": "closed-back",
+        "connectivity": "wired",
+        "anc": false
+      },
+      "qualityScore": 0.78,
+      "reliabilityScore": 0.74,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Warranty intentionally missing (soft data)."
+      }
+    },
+    {
+      "productId": "HP-009",
+      "name": "Auralis Studio Max",
+      "category": "headphones",
+      "brand": "Auralis",
+      "seller": null,
+      "unitPriceINR": 27999,
+      "shippingINR": 0,
+      "stockQuantity": 5,
+      "deliveryDays": 4,
+      "warrantyMonths": 24,
+      "specs": {
+        "type": "closed-back",
+        "connectivity": "wireless",
+        "anc": true
+      },
+      "qualityScore": 0.97,
+      "reliabilityScore": 0.88,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    }
+  ]
+}

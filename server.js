@@ -4,8 +4,17 @@ require("dotenv").config();
 const express = require("express");
 const crypto = require("node:crypto");
 
+const {
+  createProcurementRouter,
+  procurementJsonErrorHandler,
+} = require("./src/routes/procurement");
+
 const app = express();
 app.use(express.json());
+
+// Catalog, verification and basket optimization (plans only — no payment here)
+app.use("/api/procurement", createProcurementRouter());
+app.use("/api/procurement", procurementJsonErrorHandler);
 
 const {
   PAYPAL_CLIENT_ID,
@@ -200,6 +209,11 @@ app.post("/api/paypal/capture-order", async (req, res) => {
 
 const PORT = 3000;
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+// Only listen when run directly (`node server.js`); tests import `app` instead.
+if (require.main === module) {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
