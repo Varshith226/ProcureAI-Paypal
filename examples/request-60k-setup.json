@@ -1,0 +1,16 @@
+{
+  "requestId": "req_2026_01",
+  "rawQuery": "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.",
+  "budgetINR": 60000,
+  "maxDeliveryDays": 7,
+  "requiredCategories": [
+    { "category": "monitor", "quantity": 1 },
+    { "category": "keyboard", "quantity": 1 },
+    { "category": "mouse", "quantity": 1 },
+    { "category": "headphones", "quantity": 1 }
+  ],
+  "hardConstraints": {
+    "monitor": { "minRefreshRateHz": 144 }
+  },
+  "weights": { "quality": 0.45, "reliability": 0.35, "delivery": 0.20 }
+}

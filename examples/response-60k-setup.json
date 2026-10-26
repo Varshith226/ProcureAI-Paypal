@@ -1,0 +1,786 @@
+{
+  "planId": "plan_f90663493074",
+  "version": 1,
+  "requestId": "req_2026_01",
+  "rawQuery": "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.",
+  "currency": "INR",
+  "budgetINR": 60000,
+  "catalog": {
+    "catalogId": "procureai-demo-catalog",
+    "catalogVersion": "2026-10-23.1",
+    "dataOrigin": "SYNTHETIC_DEMO",
+    "disclaimer": "Every record in this catalog is synthetic demo data. Brands and products are fictional. Prices, stock, delivery times, warranties and quality/reliability scores are illustrative only and were not retrieved from any retailer. No record has a source URL or a live check timestamp."
+  },
+  "scoring": {
+    "weights": {
+      "quality": 0.45,
+      "reliability": 0.35,
+      "delivery": 0.2
+    },
+    "weightsSource": "REQUEST",
+    "unitComposite": "weights.quality * qualityScore + weights.reliability * reliabilityScore + weights.delivery * deliveryScore",
+    "deliveryScore": "(maxDeliveryDays + 1 - deliveryDays) / (maxDeliveryDays + 1); only for products within the delivery limit",
+    "unknownSoftScores": "unknown qualityScore or reliabilityScore contributes 0",
+    "basketComposite": "mean over required categories of the quantity-weighted mean unit composite",
+    "priceRole": "hard budget limit and first tie-breaker; not part of the composite score"
+  },
+  "status": "DRAFT",
+  "strategies": {
+    "CHEAPEST": {
+      "strategyKey": "CHEAPEST",
+      "strategyName": "Plan A — Cheapest",
+      "objectiveSummary": "Lowest total cost among complete baskets that meet every hard constraint and the budget; higher composite score breaks ties.",
+      "subtotalINR": 11796,
+      "shippingTotalINR": 496,
+      "totalINR": 12292,
+      "leftoverBudgetINR": 47708,
+      "withinBudget": true,
+      "paypalSettlementUSD": null,
+      "compositeScore": 0.5623,
+      "scoreBreakdown": {
+        "quality": 0.4875,
+        "reliability": 0.6225,
+        "delivery": 0.625
+      },
+      "verificationLevel": "UNVERIFIED_DEMO_DATA",
+      "constraintSummary": {
+        "budgetCheck": "PASSED",
+        "categoryCoverageCheck": "PASSED",
+        "mandatorySpecCheck": "PASSED",
+        "deliveryCheck": "PASSED",
+        "stockCheck": "PASSED",
+        "priceDataCheck": "PASSED"
+      },
+      "warnings": [
+        "Every item in this plan is synthetic demo data — confirm real prices, stock and delivery before paying."
+      ],
+      "items": [
+        {
+          "productId": "MON-009",
+          "name": "Nexgaze Play 24 144Hz TN",
+          "brand": "Nexgaze",
+          "category": "monitor",
+          "quantity": 1,
+          "unitPriceINR": 8799,
+          "shippingINR": 249,
+          "lineTotalINR": 9048,
+          "deliveryDays": 6,
+          "warrantyMonths": 12,
+          "specs": {
+            "refreshRateHz": 144,
+            "panel": "TN",
+            "resolution": "1080p",
+            "sizeInches": 24
+          },
+          "specsSummary": "144 Hz · TN · 1080p · 24\"",
+          "scores": {
+            "quality": 0.58,
+            "reliability": 0.62,
+            "delivery": 0.25,
+            "composite": 0.528
+          },
+          "selectionReason": "Monitor refresh rate is 144 Hz (at least 144 Hz required). Delivers in 6 day(s); quality 0.58, reliability 0.62. Part of the lowest-cost complete basket that meets every hard constraint.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹8,799).",
+              "Shipping ₹249 per order line.",
+              "18 unit(s) in stock.",
+              "Estimated delivery 6 day(s) (limit 7).",
+              "Monitor refresh rate is 144 Hz (at least 144 Hz required)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "KB-003",
+          "name": "Glyph Basic Membrane",
+          "brand": "Glyph",
+          "category": "keyboard",
+          "quantity": 1,
+          "unitPriceINR": 899,
+          "shippingINR": 99,
+          "lineTotalINR": 998,
+          "deliveryDays": 2,
+          "warrantyMonths": 12,
+          "specs": {
+            "layout": "full",
+            "switchType": "membrane",
+            "connectivity": "wired"
+          },
+          "specsSummary": "full · membrane · wired",
+          "scores": {
+            "quality": 0.45,
+            "reliability": 0.65,
+            "delivery": 0.75,
+            "composite": 0.58
+          },
+          "selectionReason": "Delivers in 2 day(s); quality 0.45, reliability 0.65. Part of the lowest-cost complete basket that meets every hard constraint.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹899).",
+              "Shipping ₹99 per order line.",
+              "60 unit(s) in stock.",
+              "Estimated delivery 2 day(s) (limit 7)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "MS-003",
+          "name": "Nimbus Basic Optical",
+          "brand": "Nimbus",
+          "category": "mouse",
+          "quantity": 1,
+          "unitPriceINR": 599,
+          "shippingINR": 49,
+          "lineTotalINR": 648,
+          "deliveryDays": 2,
+          "warrantyMonths": 12,
+          "specs": {
+            "weightGrams": 90,
+            "dpi": 1600,
+            "connectivity": "wired"
+          },
+          "specsSummary": "90 g · 1,600 DPI · wired",
+          "scores": {
+            "quality": 0.4,
+            "reliability": 0.6,
+            "delivery": 0.75,
+            "composite": 0.54
+          },
+          "selectionReason": "Delivers in 2 day(s); quality 0.40, reliability 0.60. Part of the lowest-cost complete basket that meets every hard constraint.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹599).",
+              "Shipping ₹49 per order line.",
+              "80 unit(s) in stock.",
+              "Estimated delivery 2 day(s) (limit 7)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "HP-003",
+          "name": "Hushwave Lite",
+          "brand": "Hushwave",
+          "category": "headphones",
+          "quantity": 1,
+          "unitPriceINR": 1499,
+          "shippingINR": 99,
+          "lineTotalINR": 1598,
+          "deliveryDays": 2,
+          "warrantyMonths": 12,
+          "specs": {
+            "type": "closed-back",
+            "connectivity": "wired",
+            "anc": false
+          },
+          "specsSummary": "closed-back · wired · No ANC",
+          "scores": {
+            "quality": 0.52,
+            "reliability": 0.62,
+            "delivery": 0.75,
+            "composite": 0.601
+          },
+          "selectionReason": "Delivers in 2 day(s); quality 0.52, reliability 0.62. Part of the lowest-cost complete basket that meets every hard constraint.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹1,499).",
+              "Shipping ₹99 per order line.",
+              "45 unit(s) in stock.",
+              "Estimated delivery 2 day(s) (limit 7)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        }
+      ]
+    },
+    "BEST_VALUE": {
+      "strategyKey": "BEST_VALUE",
+      "strategyName": "Plan B — Best Value",
+      "objectiveSummary": "Highest weighted quality, reliability and delivery score among complete baskets within budget; the lower total wins ties. Price is a budget limit and tie-breaker, not part of the score.",
+      "subtotalINR": 54996,
+      "shippingTotalINR": 0,
+      "totalINR": 54996,
+      "leftoverBudgetINR": 5004,
+      "withinBudget": true,
+      "paypalSettlementUSD": null,
+      "compositeScore": 0.8025,
+      "scoreBreakdown": {
+        "quality": 0.91,
+        "reliability": 0.855,
+        "delivery": 0.4688
+      },
+      "verificationLevel": "UNVERIFIED_DEMO_DATA",
+      "constraintSummary": {
+        "budgetCheck": "PASSED",
+        "categoryCoverageCheck": "PASSED",
+        "mandatorySpecCheck": "PASSED",
+        "deliveryCheck": "PASSED",
+        "stockCheck": "PASSED",
+        "priceDataCheck": "PASSED"
+      },
+      "warnings": [
+        "Every item in this plan is synthetic demo data — confirm real prices, stock and delivery before paying."
+      ],
+      "items": [
+        {
+          "productId": "MON-002",
+          "name": "Veltrix Pulse 27Q 170Hz IPS",
+          "brand": "Veltrix",
+          "category": "monitor",
+          "quantity": 1,
+          "unitPriceINR": 21999,
+          "shippingINR": 0,
+          "lineTotalINR": 21999,
+          "deliveryDays": 4,
+          "warrantyMonths": 36,
+          "specs": {
+            "refreshRateHz": 170,
+            "panel": "IPS",
+            "resolution": "1440p",
+            "sizeInches": 27
+          },
+          "specsSummary": "170 Hz · IPS · 1440p · 27\"",
+          "scores": {
+            "quality": 0.9,
+            "reliability": 0.85,
+            "delivery": 0.5,
+            "composite": 0.8025
+          },
+          "selectionReason": "Monitor refresh rate is 170 Hz (at least 144 Hz required). Delivers in 4 day(s); quality 0.90, reliability 0.85. Part of the highest-scoring complete basket within budget.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹21,999).",
+              "Free shipping listed.",
+              "12 unit(s) in stock.",
+              "Estimated delivery 4 day(s) (limit 7).",
+              "Monitor refresh rate is 170 Hz (at least 144 Hz required)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "KB-004",
+          "name": "Ardent Pro Full-Size Mechanical",
+          "brand": "Ardent",
+          "category": "keyboard",
+          "quantity": 1,
+          "unitPriceINR": 11499,
+          "shippingINR": 0,
+          "lineTotalINR": 11499,
+          "deliveryDays": 5,
+          "warrantyMonths": 36,
+          "specs": {
+            "layout": "full",
+            "switchType": "tactile",
+            "connectivity": "wired"
+          },
+          "specsSummary": "full · tactile · wired",
+          "scores": {
+            "quality": 0.92,
+            "reliability": 0.88,
+            "delivery": 0.375,
+            "composite": 0.797
+          },
+          "selectionReason": "Delivers in 5 day(s); quality 0.92, reliability 0.88. Part of the highest-scoring complete basket within budget.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹11,499).",
+              "Free shipping listed.",
+              "8 unit(s) in stock.",
+              "Estimated delivery 5 day(s) (limit 7)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "MS-002",
+          "name": "Swiftclick Aero Wireless",
+          "brand": "Swiftclick",
+          "category": "mouse",
+          "quantity": 1,
+          "unitPriceINR": 6499,
+          "shippingINR": 0,
+          "lineTotalINR": 6499,
+          "deliveryDays": 4,
+          "warrantyMonths": 24,
+          "specs": {
+            "weightGrams": 63,
+            "dpi": 30000,
+            "connectivity": "wireless"
+          },
+          "specsSummary": "63 g · 30,000 DPI · wireless",
+          "scores": {
+            "quality": 0.9,
+            "reliability": 0.83,
+            "delivery": 0.5,
+            "composite": 0.7955
+          },
+          "selectionReason": "Delivers in 4 day(s); quality 0.90, reliability 0.83. Part of the highest-scoring complete basket within budget.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹6,499).",
+              "Free shipping listed.",
+              "16 unit(s) in stock.",
+              "Estimated delivery 4 day(s) (limit 7)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "HP-002",
+          "name": "Auralis Studio ANC Wireless",
+          "brand": "Auralis",
+          "category": "headphones",
+          "quantity": 1,
+          "unitPriceINR": 14999,
+          "shippingINR": 0,
+          "lineTotalINR": 14999,
+          "deliveryDays": 4,
+          "warrantyMonths": 24,
+          "specs": {
+            "type": "closed-back",
+            "connectivity": "wireless",
+            "anc": true
+          },
+          "specsSummary": "closed-back · wireless · ANC",
+          "scores": {
+            "quality": 0.92,
+            "reliability": 0.86,
+            "delivery": 0.5,
+            "composite": 0.815
+          },
+          "selectionReason": "Delivers in 4 day(s); quality 0.92, reliability 0.86. Part of the highest-scoring complete basket within budget. The top-scoring eligible headphones (Auralis Studio Max) was not used because no complete basket containing it scores higher within the ₹60,000 budget.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹14,999).",
+              "Free shipping listed.",
+              "10 unit(s) in stock.",
+              "Estimated delivery 4 day(s) (limit 7)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        }
+      ]
+    },
+    "ALTERNATIVE": {
+      "strategyKey": "ALTERNATIVE",
+      "strategyName": "Plan C — Alternative",
+      "objectiveSummary": "Highest-scoring complete basket that changes at least two category picks versus Best Value and is cheaper or better evidenced.",
+      "subtotalINR": 50296,
+      "shippingTotalINR": 0,
+      "totalINR": 50296,
+      "leftoverBudgetINR": 9704,
+      "withinBudget": true,
+      "paypalSettlementUSD": null,
+      "compositeScore": 0.7955,
+      "scoreBreakdown": {
+        "quality": 0.8625,
+        "reliability": 0.8425,
+        "delivery": 0.5625
+      },
+      "verificationLevel": "UNVERIFIED_DEMO_DATA",
+      "constraintSummary": {
+        "budgetCheck": "PASSED",
+        "categoryCoverageCheck": "PASSED",
+        "mandatorySpecCheck": "PASSED",
+        "deliveryCheck": "PASSED",
+        "stockCheck": "PASSED",
+        "priceDataCheck": "PASSED"
+      },
+      "warnings": [
+        "Every item in this plan is synthetic demo data — confirm real prices, stock and delivery before paying."
+      ],
+      "items": [
+        {
+          "productId": "MON-001",
+          "name": "Lumora View 24F 165Hz IPS",
+          "brand": "Lumora",
+          "category": "monitor",
+          "quantity": 1,
+          "unitPriceINR": 11499,
+          "shippingINR": 0,
+          "lineTotalINR": 11499,
+          "deliveryDays": 3,
+          "warrantyMonths": 36,
+          "specs": {
+            "refreshRateHz": 165,
+            "panel": "IPS",
+            "resolution": "1080p",
+            "sizeInches": 24
+          },
+          "specsSummary": "165 Hz · IPS · 1080p · 24\"",
+          "scores": {
+            "quality": 0.78,
+            "reliability": 0.82,
+            "delivery": 0.625,
+            "composite": 0.763
+          },
+          "selectionReason": "Monitor refresh rate is 165 Hz (at least 144 Hz required). Delivers in 3 day(s); quality 0.78, reliability 0.82. Chosen for the alternative trade-off basket.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹11,499).",
+              "Free shipping listed.",
+              "25 unit(s) in stock.",
+              "Estimated delivery 3 day(s) (limit 7).",
+              "Monitor refresh rate is 165 Hz (at least 144 Hz required)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "KB-001",
+          "name": "Keyforge K87 TKL Mechanical",
+          "brand": "Keyforge",
+          "category": "keyboard",
+          "quantity": 1,
+          "unitPriceINR": 4299,
+          "shippingINR": 0,
+          "lineTotalINR": 4299,
+          "deliveryDays": 3,
+          "warrantyMonths": 24,
+          "specs": {
+            "layout": "TKL",
+            "switchType": "linear",
+            "connectivity": "wired"
+          },
+          "specsSummary": "TKL · linear · wired",
+          "scores": {
+            "quality": 0.8,
+            "reliability": 0.84,
+            "delivery": 0.625,
+            "composite": 0.779
+          },
+          "selectionReason": "Delivers in 3 day(s); quality 0.80, reliability 0.84. Chosen for the alternative trade-off basket.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹4,299).",
+              "Free shipping listed.",
+              "30 unit(s) in stock.",
+              "Estimated delivery 3 day(s) (limit 7)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "MS-002",
+          "name": "Swiftclick Aero Wireless",
+          "brand": "Swiftclick",
+          "category": "mouse",
+          "quantity": 1,
+          "unitPriceINR": 6499,
+          "shippingINR": 0,
+          "lineTotalINR": 6499,
+          "deliveryDays": 4,
+          "warrantyMonths": 24,
+          "specs": {
+            "weightGrams": 63,
+            "dpi": 30000,
+            "connectivity": "wireless"
+          },
+          "specsSummary": "63 g · 30,000 DPI · wireless",
+          "scores": {
+            "quality": 0.9,
+            "reliability": 0.83,
+            "delivery": 0.5,
+            "composite": 0.7955
+          },
+          "selectionReason": "Delivers in 4 day(s); quality 0.90, reliability 0.83. Chosen for the alternative trade-off basket.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹6,499).",
+              "Free shipping listed.",
+              "16 unit(s) in stock.",
+              "Estimated delivery 4 day(s) (limit 7)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "HP-009",
+          "name": "Auralis Studio Max",
+          "brand": "Auralis",
+          "category": "headphones",
+          "quantity": 1,
+          "unitPriceINR": 27999,
+          "shippingINR": 0,
+          "lineTotalINR": 27999,
+          "deliveryDays": 4,
+          "warrantyMonths": 24,
+          "specs": {
+            "type": "closed-back",
+            "connectivity": "wireless",
+            "anc": true
+          },
+          "specsSummary": "closed-back · wireless · ANC",
+          "scores": {
+            "quality": 0.97,
+            "reliability": 0.88,
+            "delivery": 0.5,
+            "composite": 0.8445
+          },
+          "selectionReason": "Delivers in 4 day(s); quality 0.97, reliability 0.88. Chosen for the alternative trade-off basket.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹27,999).",
+              "Free shipping listed.",
+              "5 unit(s) in stock.",
+              "Estimated delivery 4 day(s) (limit 7)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        }
+      ],
+      "tradeOff": {
+        "categoriesChanged": [
+          "monitor",
+          "keyboard",
+          "headphones"
+        ],
+        "costDifferenceINR": -4700,
+        "compositeScoreDifference": -0.007,
+        "summary": "Changes the monitor, keyboard, headphones pick(s) versus Best Value. Costs ₹4,700 less with a composite score -0.007 relative to Best Value."
+      }
+    }
+  },
+  "omittedStrategies": [],
+  "infeasibility": null,
+  "warnings": [
+    "All products come from a synthetic demo catalog; prices, stock and delivery are not live retail data."
+  ],
+  "rejectedProducts": [
+    {
+      "productId": "MON-004",
+      "name": "Nexgaze Basic 22 75Hz",
+      "category": "monitor",
+      "unitPriceINR": 7499,
+      "rejectedReason": "Failed hard constraint: Monitor refresh rate is 75 Hz; at least 144 Hz is required.",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "constraint.minRefreshRateHz"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "MON-005",
+      "name": "Kairo Arc 27 (refresh rate not listed)",
+      "category": "monitor",
+      "unitPriceINR": 13999,
+      "rejectedReason": "Could not verify: Monitor refresh rate is not listed, so the mandatory 'minRefreshRateHz' requirement could not be verified.",
+      "rejectionType": "UNVERIFIABLE_MANDATORY_DATA",
+      "failedChecks": [],
+      "unknownChecks": [
+        "constraint.minRefreshRateHz"
+      ],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "MON-007",
+      "name": "Lumora View 27F 180Hz IPS",
+      "category": "monitor",
+      "unitPriceINR": 18499,
+      "rejectedReason": "Failed hard constraint: Estimated delivery is 10 days; the maximum allowed is 7 days.",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "delivery.withinLimit"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "MON-008",
+      "name": "Orbis Swift 27G 165Hz VA",
+      "category": "monitor",
+      "unitPriceINR": 16999,
+      "rejectedReason": "Failed hard constraint: Out of stock (0 units available).",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "stock.available"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "MON-010",
+      "name": "Kairo Arc 24 165Hz IPS (delivery unknown)",
+      "category": "monitor",
+      "unitPriceINR": 12299,
+      "rejectedReason": "Could not verify: Delivery estimate is unknown; cannot confirm delivery within 7 days.",
+      "rejectionType": "UNVERIFIABLE_MANDATORY_DATA",
+      "failedChecks": [],
+      "unknownChecks": [
+        "delivery.withinLimit"
+      ],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "KB-006",
+      "name": "Tactis Quill 98 Wireless",
+      "category": "keyboard",
+      "unitPriceINR": 9499,
+      "rejectedReason": "Failed hard constraint: Estimated delivery is 9 days; the maximum allowed is 7 days.",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "delivery.withinLimit"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "KB-007",
+      "name": "Glyph Mech TKL (shipping unknown)",
+      "category": "keyboard",
+      "unitPriceINR": 3499,
+      "rejectedReason": "Could not verify: Shipping cost is unknown and is not assumed to be zero, so the exact total cannot be computed.",
+      "rejectionType": "UNVERIFIABLE_MANDATORY_DATA",
+      "failedChecks": [],
+      "unknownChecks": [
+        "shipping.known"
+      ],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "KB-009",
+      "name": "Keyforge K104 Full-Size (stock unknown)",
+      "category": "keyboard",
+      "unitPriceINR": 6299,
+      "rejectedReason": "Could not verify: Stock availability is unknown.",
+      "rejectionType": "UNVERIFIABLE_MANDATORY_DATA",
+      "failedChecks": [],
+      "unknownChecks": [
+        "stock.available"
+      ],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "MS-006",
+      "name": "Nimbus Pro Wireless",
+      "category": "mouse",
+      "unitPriceINR": 4499,
+      "rejectedReason": "Failed hard constraint: Estimated delivery is 8 days; the maximum allowed is 7 days.",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "delivery.withinLimit"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "MS-007",
+      "name": "Pointr Dart Wireless",
+      "category": "mouse",
+      "unitPriceINR": 5299,
+      "rejectedReason": "Failed hard constraint: Out of stock (0 units available).",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "stock.available"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "HP-007",
+      "name": "Hushwave Pro ANC",
+      "category": "headphones",
+      "unitPriceINR": 11999,
+      "rejectedReason": "Failed hard constraint: Estimated delivery is 12 days; the maximum allowed is 7 days.",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "delivery.withinLimit"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    }
+  ],
+  "search": {
+    "exhaustive": true,
+    "basketsEvaluated": 72,
+    "notes": []
+  }
+}
