@@ -7,15 +7,18 @@ Request JSON → Catalog → Verification → Basket optimization → Plan respo
  (agent)       src/catalogProvider.js   src/verifier.js   src/optimizer.js   src/planService.js   (frontend)   server.js /api/paypal/*
 ```
 
+> Team integration guide: [`INTEGRATION.md`](INTEGRATION.md)
+
 ## Run it
 
 Requires Node 20+ (developed on Node 22). No new dependencies were added.
 
 ```bash
 npm install
-npm test              # 47 tests, Node's built-in test runner
+npm test              # 63 tests, Node's built-in test runner
 npm run demo          # ₹60,000 setup request through the real pipeline, printed as tables
 npm run demo -- --write   # also regenerates examples/response-60k-setup.json
+npm run demo:revalidate   # pre-checkout safety check: VALID / CHANGED / INVALID
 npm start             # http://localhost:3000
 ```
 
@@ -41,6 +44,10 @@ Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/procurement/plan `
 | POST | `/api/procurement/plan` | Canonical request → plan (`DRAFT` or `INFEASIBLE`) |
 | GET | `/api/procurement/catalog?category=monitor` | Catalog metadata and products |
 | GET | `/api/procurement/contract` | Supported hard constraints and scoring formulas |
+| GET | `/api/procurement/plans/:planId` | Server-stored copy of a generated plan |
+| GET/POST/DELETE | `/api/procurement/demo/catalog-overrides` | Demo only: simulate a retailer price or stock change |
+| GET | `/api/procurement/plans/:planId/strategies/:strategyKey` | One stored strategy, with server-trusted prices |
+| POST | `/api/procurement/plans/:planId/revalidate` | `{ "strategyKey": "BEST_VALUE" }`: re-checks the basket right before checkout |
 
 **Responses from `POST /api/procurement/plan`:**
 - **200, `status: "DRAFT"`**: at least one complete feasible basket exists. The baskets are in `strategies`.
@@ -48,7 +55,26 @@ Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/procurement/plan `
 - **400, `INVALID_REQUEST`**: `details: [{ field, message }]`. This covers malformed JSON, a missing body, bad fields, unsupported constraints and invalid weights.
 - **503, `CATALOG_UNAVAILABLE`**: the catalog could not be loaded.
 
+The plan-store routes add **404 `PLAN_NOT_FOUND`** and **404 `STRATEGY_NOT_FOUND`**.
+
 The full field list is in [`shared/contracts.json`](../shared/contracts.json). A complete real response is in [`examples/response-60k-setup.json`](../examples/response-60k-setup.json).
+
+### Stored plans and pre-checkout revalidation
+Every plan returned by `POST /plan` is also kept on the server (`src/planStore.js`). It is held in memory, frozen and capped at 500 plans, and a restart clears it. The checkout flow should read prices from there, never from the browser.
+
+`POST /plans/:planId/revalidate` re-runs every hard check for the chosen strategy against the **current** catalog. It never re-optimizes.
+
+| `status` | Meaning | What checkout should do |
+|---|---|---|
+| `VALID` | everything still passes at the approved total | proceed (`canProceedToCheckout: true`) |
+| `CHANGED` | still passes, but a price or shipping amount moved and the total still fits the budget | show `summary` and the `changes`, then ask the user to re-approve the new `currentTotalINR` |
+| `INVALID` | an item is missing, out of stock, late, failed a spec or has unknown data, or the new total exceeds the budget | block checkout and generate a new plan |
+
+**Demo price spike (real, not simulated):** `POST /api/procurement/demo/catalog-overrides` with `{ "productId": "MON-002", "unitPriceINR": 24499 }` changes one product in memory. A following `/revalidate` then reports `CHANGED` or `INVALID`, and `DELETE` on the same path resets it.
+- Overrides are validated, limited to price, shipping, stock and delivery, and **refused unless the catalog is `SYNTHETIC_DEMO`**.
+- Turn the routes off with `PROCUREMENT_DEMO_ROUTES=off`.
+
+Because `planId` hashes the exact product data, a catalog change produces a new `planId`. An approved plan is never silently overwritten. To demo the check live, run `npm start`, generate a plan, edit a price in `src/catalog.json` (the file reloads automatically), then call `/revalidate`.
 
 ### Request rules
 - `requestId`, `budgetINR` (more than 0, at most 2 decimals), `maxDeliveryDays` (integer 0–365) and `requiredCategories` (non-empty, quantity 1–100, no duplicates) are required.
@@ -151,7 +177,7 @@ Each required category counts equally. **Price is not in the score.** It enters 
 | `BEST_VALUE` | highest `basketScore` within budget | lower total → better evidence → product IDs |
 | `ALTERNATIVE` | highest score among baskets that change ≥ 2 category picks vs BEST_VALUE, differ from CHEAPEST, and are cheaper **or** better evidenced | same as BEST_VALUE |
 
-No basket is ever returned under two labels. If CHEAPEST would equal BEST_VALUE, or no qualifying ALTERNATIVE exists, that strategy is left out of `strategies` and listed in `omittedStrategies` with a reason. `planId` is a hash of the validated request and the catalog version, so identical inputs give byte-identical responses.
+No basket is ever returned under two labels. If CHEAPEST would equal BEST_VALUE, or no qualifying ALTERNATIVE exists, that strategy is left out of `strategies` and listed in `omittedStrategies` with a reason. `planId` is a hash of the validated request and the exact catalog data used, so identical inputs give byte-identical responses.
 
 ### Money
 - `lineTotalINR = unitPriceINR × quantity + shippingINR`
@@ -170,14 +196,21 @@ No basket is ever returned under two labels. If CHEAPEST would equal BEST_VALUE,
 | `src/scoring.js` | score formulas |
 | `src/optimizer.js` | option enumeration and exact search |
 | `src/planService.js` | pipeline, response building, integrity checks, infeasibility explanations |
+| `src/planStore.js` | in-memory store of generated plans (server-trusted prices) |
+| `src/revalidator.js` | pre-checkout VALID / CHANGED / INVALID check |
+| `src/checkoutGuard.js` | `getApprovedStrategy` / `revalidateForCheckout` for the PayPal routes (same store and catalog as the API) |
 | `src/money.js` | paise helpers |
 | `src/routes/procurement.js` | Express router |
 | `shared/contracts.json` | shared request/response contract |
 | `examples/` | sample request and generated response |
 | `scripts/demo-plan.js` | reproducible CLI demo |
-| `test/` | unit, oracle (brute-force) and HTTP tests |
+| `scripts/demo-revalidate.js` | revalidation demo (price rise, sell-out) |
+| `docs/INTEGRATION.md` | how the agent, frontend and PayPal flow plug in |
+| `docs/integration/procurementApi.js` | tested browser client and view-model mapper for the frontend |
+| `test/` | unit, oracle (brute-force), HTTP and client tests |
 
 ## Limitations
+- Stored plans live in memory. A server restart clears them (`PLAN_NOT_FOUND`), so swap `planStore` for a database before production.
 - The catalog is synthetic. Nothing is checked against a live retailer yet.
 - Delivery is per product. The basket arrives when its slowest item does, and that is not modelled separately.
 - Shipping is per line. Per-seller shipping consolidation is not modelled; `seller` is `null` in the demo data.

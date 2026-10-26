@@ -14,8 +14,62 @@
       },
       "sideEffects": "None. Prepares a plan only; never creates, authorizes or captures a PayPal payment."
     },
-    "listCatalog": { "method": "GET", "path": "/api/procurement/catalog", "query": { "category": "optional category filter" } },
-    "describeContract": { "method": "GET", "path": "/api/procurement/contract" }
+    "listCatalog": {
+      "method": "GET",
+      "path": "/api/procurement/catalog",
+      "query": {
+        "category": "optional category filter"
+      }
+    },
+    "describeContract": {
+      "method": "GET",
+      "path": "/api/procurement/contract"
+    },
+    "getPlan": {
+      "method": "GET",
+      "path": "/api/procurement/plans/:planId",
+      "responses": {
+        "200": "ProcurementPlan (server-stored copy)",
+        "404": "ErrorResponse PLAN_NOT_FOUND"
+      },
+      "note": "Use this (not the browser's copy) as the source of truth for prices when approving."
+    },
+    "getStrategy": {
+      "method": "GET",
+      "path": "/api/procurement/plans/:planId/strategies/:strategyKey",
+      "responses": {
+        "200": "Strategy",
+        "404": "ErrorResponse PLAN_NOT_FOUND | STRATEGY_NOT_FOUND"
+      }
+    },
+    "revalidate": {
+      "method": "POST",
+      "path": "/api/procurement/plans/:planId/revalidate",
+      "requestBody": "{ strategyKey: StrategyKey }",
+      "responses": {
+        "200": "RevalidationResult",
+        "400": "ErrorResponse INVALID_REQUEST",
+        "404": "ErrorResponse PLAN_NOT_FOUND | STRATEGY_NOT_FOUND",
+        "503": "ErrorResponse CATALOG_UNAVAILABLE"
+      },
+      "note": "Call immediately before creating the PayPal order. Only status VALID may proceed without asking the user again."
+    },
+    "demoCatalogOverrides": {
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "path": "/api/procurement/demo/catalog-overrides",
+      "requestBody (POST)": "{ productId, unitPriceINR?, shippingINR?, stockQuantity?, deliveryDays? }",
+      "responses": {
+        "200": "{ productId, overrides, note } | { overrides }",
+        "400": "ErrorResponse INVALID_REQUEST | DEMO_OVERRIDE_REJECTED",
+        "403": "DEMO_OVERRIDE_REJECTED (catalog is not SYNTHETIC_DEMO)",
+        "404": "DEMO_OVERRIDE_REJECTED (unknown productId)"
+      },
+      "note": "Demo only. Simulates a retailer price/stock change so /revalidate can catch it. Disabled when PROCUREMENT_DEMO_ROUTES=off; always refused on non-demo catalogs."
+    }
   },
   "ProcurementRequest": {
     "requestId": "string, required, non-empty, <= 128 chars",
@@ -25,30 +79,74 @@
     "requiredCategories": "array, required, non-empty — [{ category: string, quantity: integer 1..100 }], no duplicate categories",
     "hardConstraints": "object, optional — { <category in requiredCategories>: { <supported constraint key>: value } }. Unsupported keys are rejected (400). See GET /api/procurement/contract",
     "weights": "object, optional — { quality, reliability, delivery }, each 0..1, must sum to 1 (±0.001). Not normalized. If omitted, defaults 0.45/0.35/0.20 are used and a warning is returned",
+    "clarificationsNeeded": "string[], optional — questions the request agent still wants answered (field from the role-frontend draft). Accepted and ignored by the optimizer; fold answers into hardConstraints before calling /plan.",
     "example": {
       "requestId": "req_2026_01",
       "rawQuery": "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.",
       "budgetINR": 60000,
       "maxDeliveryDays": 7,
       "requiredCategories": [
-        { "category": "monitor", "quantity": 1 },
-        { "category": "keyboard", "quantity": 1 },
-        { "category": "mouse", "quantity": 1 },
-        { "category": "headphones", "quantity": 1 }
+        {
+          "category": "monitor",
+          "quantity": 1
+        },
+        {
+          "category": "keyboard",
+          "quantity": 1
+        },
+        {
+          "category": "mouse",
+          "quantity": 1
+        },
+        {
+          "category": "headphones",
+          "quantity": 1
+        }
       ],
-      "hardConstraints": { "monitor": { "minRefreshRateHz": 144 } },
-      "weights": { "quality": 0.45, "reliability": 0.35, "delivery": 0.2 }
+      "hardConstraints": {
+        "monitor": {
+          "minRefreshRateHz": 144
+        }
+      },
+      "weights": {
+        "quality": 0.45,
+        "reliability": 0.35,
+        "delivery": 0.2
+      }
     }
   },
   "supportedHardConstraints": {
-    "anyCategory": ["minWarrantyMonths", "maxUnitPriceINR", "allowedBrands", "excludedBrands"],
-    "monitor": ["minRefreshRateHz", "minSizeInches", "maxSizeInches", "panelIn", "resolutionIn"],
-    "keyboard": ["connectivityIn", "layoutIn", "switchTypeIn"],
-    "mouse": ["connectivityIn", "maxWeightGrams", "minDpi"],
-    "headphones": ["connectivityIn", "typeIn", "requireAnc"]
+    "anyCategory": [
+      "minWarrantyMonths",
+      "maxUnitPriceINR",
+      "allowedBrands",
+      "excludedBrands"
+    ],
+    "monitor": [
+      "minRefreshRateHz",
+      "minSizeInches",
+      "maxSizeInches",
+      "panelIn",
+      "resolutionIn"
+    ],
+    "keyboard": [
+      "connectivityIn",
+      "layoutIn",
+      "switchTypeIn"
+    ],
+    "mouse": [
+      "connectivityIn",
+      "maxWeightGrams",
+      "minDpi"
+    ],
+    "headphones": [
+      "connectivityIn",
+      "typeIn",
+      "requireAnc"
+    ]
   },
   "ProcurementPlan": {
-    "planId": "string — deterministic hash of the validated request + catalog version",
+    "planId": "string — deterministic hash of the validated request + the exact catalog data used; any price/stock change yields a new planId",
     "version": "integer — response schema version (1)",
     "requestId": "string — echoed",
     "rawQuery": "string | null — echoed",
@@ -72,6 +170,7 @@
     "shippingTotalINR": "number — sum of per-line shipping",
     "totalINR": "number — subtotalINR + shippingTotalINR",
     "leftoverBudgetINR": "number — budgetINR - totalINR, never negative",
+    "withinBudget": "boolean — totalINR <= budgetINR (always true for returned strategies)",
     "paypalSettlementUSD": "null — set only by the PayPal/FX flow; the optimizer never estimates it",
     "compositeScore": "number 0..1, rounded to 4 decimals",
     "scoreBreakdown": "{ quality, reliability, delivery } — basket averages, 0..1",
@@ -93,28 +192,82 @@
     "deliveryDays": "integer",
     "warrantyMonths": "integer | null",
     "specs": "object",
+    "specsSummary": "string — display text built from specs, e.g. '170 Hz · IPS · 1440p · 27\"'",
     "scores": "{ quality: number|null, reliability: number|null, delivery, composite }",
     "selectionReason": "string",
     "verification": "{ status: EvidenceStatus, dataOrigin, sourceLookup, checksPassed: string[], warnings: string[], sourceUrl: string|null, lastCheckedISO: string|null }"
   },
   "ErrorResponse": {
-    "error": "INVALID_REQUEST | CATALOG_UNAVAILABLE | INTERNAL_ERROR",
+    "error": "INVALID_REQUEST | PLAN_NOT_FOUND | STRATEGY_NOT_FOUND | DEMO_OVERRIDE_REJECTED | CATALOG_UNAVAILABLE | INTERNAL_ERROR",
     "message": "string",
     "details": "[{ field, message }] — INVALID_REQUEST only"
   },
   "enums": {
-    "PlanStatus": ["DRAFT", "INFEASIBLE"],
-    "StrategyKey": ["CHEAPEST", "BEST_VALUE", "ALTERNATIVE"],
-    "CheckStatus": ["PASS", "FAIL", "UNKNOWN"],
-    "ConstraintSummaryStatus": ["PASSED", "FAILED"],
-    "EvidenceStatus": ["VERIFIED", "SOURCE_STALE", "UNVERIFIED", "UNVERIFIED_DEMO_DATA"],
-    "DataOrigin": ["SOURCE_VERIFIED", "CATALOG_UNCHECKED", "SYNTHETIC_DEMO"],
-    "SourceLookup": ["NOT_CHECKED", "FOUND", "NOT_FOUND", "UNAVAILABLE"],
-    "RejectionType": ["FAILED_HARD_CONSTRAINT", "UNVERIFIABLE_MANDATORY_DATA"]
+    "PlanStatus": [
+      "DRAFT",
+      "INFEASIBLE"
+    ],
+    "StrategyKey": [
+      "CHEAPEST",
+      "BEST_VALUE",
+      "ALTERNATIVE"
+    ],
+    "CheckStatus": [
+      "PASS",
+      "FAIL",
+      "UNKNOWN"
+    ],
+    "ConstraintSummaryStatus": [
+      "PASSED",
+      "FAILED"
+    ],
+    "EvidenceStatus": [
+      "VERIFIED",
+      "SOURCE_STALE",
+      "UNVERIFIED",
+      "UNVERIFIED_DEMO_DATA"
+    ],
+    "DataOrigin": [
+      "SOURCE_VERIFIED",
+      "CATALOG_UNCHECKED",
+      "SYNTHETIC_DEMO"
+    ],
+    "SourceLookup": [
+      "NOT_CHECKED",
+      "FOUND",
+      "NOT_FOUND",
+      "UNAVAILABLE"
+    ],
+    "RejectionType": [
+      "FAILED_HARD_CONSTRAINT",
+      "UNVERIFIABLE_MANDATORY_DATA"
+    ],
+    "RevalidationStatus": [
+      "VALID",
+      "CHANGED",
+      "INVALID"
+    ]
   },
   "changesFromOriginalDraft": [
     "verification.status 'VERIFIED' is now reserved for fresh, source-backed data; demo items are 'UNVERIFIED_DEMO_DATA'. Frontend must not show a verified badge for other statuses.",
     "BEST_VALUE objectiveSummary no longer claims to maximize quality-to-price ratio; price is a budget limit and tie-breaker unless the team agrees to add a value weight.",
-    "Added fields (additive, nothing renamed): requestId, rawQuery, catalog, scoring, search, omittedStrategies, infeasibility, subtotalINR, shippingTotalINR, scoreBreakdown, verificationLevel, constraintSummary.stockCheck, constraintSummary.priceDataCheck, tradeOff, item.brand/deliveryDays/warrantyMonths/scores, rejectedProducts[].rejectionType/failedChecks/unknownChecks/dataOrigin."
-  ]
+    "Added fields (additive, nothing renamed): requestId, rawQuery, catalog, scoring, search, omittedStrategies, infeasibility, subtotalINR, shippingTotalINR, withinBudget, scoreBreakdown, verificationLevel, constraintSummary.stockCheck, constraintSummary.priceDataCheck, tradeOff, item.brand/deliveryDays/warrantyMonths/scores/specsSummary, rejectedProducts[].rejectionType/failedChecks/unknownChecks/dataOrigin.",
+    "Reconciled with the role-frontend draft contract: strategy keys are CHEAPEST/BEST_VALUE/ALTERNATIVE (draft: MIN_COST/BEST_VALUE/PERFORMANCE_FIRST); item.specs is an object plus specsSummary for display (draft: string); strategy.warnings is string[] (draft: {severity, message}); constraintSummary values are PASSED/FAILED (draft: PASSED (...) text); paypalSettlementUSD is null from the optimizer (the approve step sets the USD amount)."
+  ],
+  "RevalidationResult": {
+    "planId": "string",
+    "strategyKey": "StrategyKey",
+    "status": "RevalidationStatus",
+    "canProceedToCheckout": "boolean — true only when status is VALID",
+    "approvedTotalINR": "number — total in the stored plan",
+    "currentTotalINR": "number | null — null if a price is now unknown or an item is missing",
+    "differenceINR": "number | null — currentTotalINR - approvedTotalINR",
+    "budgetINR": "number",
+    "summary": "string — one-line explanation for the user",
+    "changes": "[{ productId, field: unitPriceINR | shippingINR, before, after }]",
+    "problems": "[{ productId | null, check, detail }] — anything that makes the basket INVALID",
+    "items": "[{ productId, name, quantity, status: OK | PRICE_CHANGED | FAILED | MISSING, approvedUnitPriceINR, currentUnitPriceINR, approvedShippingINR, currentShippingINR }]",
+    "catalog": "{ catalogId, catalogVersion, dataOrigin }",
+    "checkedAtISO": "string"
+  }
 }

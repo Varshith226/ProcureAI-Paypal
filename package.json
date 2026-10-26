@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test",
-    "demo": "node scripts/demo-plan.js"
+    "demo": "node scripts/demo-plan.js",
+    "demo:revalidate": "node scripts/demo-revalidate.js"
   },
   "keywords": [],
   "author": "",

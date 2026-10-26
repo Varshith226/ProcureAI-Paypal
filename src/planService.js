@@ -46,6 +46,11 @@ function stableHash(value) {
  * @throws ValidationError for invalid requests, CatalogUnavailableError if the catalog cannot load
  */
 async function buildPlan(body, catalogProvider, opts = {}) {
+  return (await buildPlanDetailed(body, catalogProvider, opts)).plan;
+}
+
+/** Same as buildPlan, but also returns the validated request: { plan, request }. */
+async function buildPlanDetailed(body, catalogProvider, opts = {}) {
   const now = opts.now || new Date();
   const validation = validateRequest(body);
   if (!validation.ok) throw new ValidationError(validation.errors);
@@ -102,7 +107,9 @@ async function buildPlan(body, catalogProvider, opts = {}) {
   const result = optimize(categoryInputs, budgetPaise);
 
   const base = {
-    planId: `plan_${stableHash({ r: req, c: catalogMeta.catalogId, v: catalogMeta.catalogVersion })}`,
+    // Hash covers the request AND the exact product data used, so a price/stock edit
+    // yields a new planId and never silently overwrites a plan a user already saw.
+    planId: `plan_${stableHash({ r: req, c: catalogMeta.catalogId, v: catalogMeta.catalogVersion, p: products })}`,
     version: PLAN_SCHEMA_VERSION,
     requestId: req.requestId,
     rawQuery: req.rawQuery,
@@ -122,7 +129,7 @@ async function buildPlan(body, catalogProvider, opts = {}) {
   }
 
   if (!result.feasible) {
-    return {
+    const plan = {
       ...base,
       status: "INFEASIBLE",
       strategies: {},
@@ -132,6 +139,7 @@ async function buildPlan(body, catalogProvider, opts = {}) {
       rejectedProducts,
       search: result.search,
     };
+    return { plan, request: req };
   }
 
   const strategies = {};
@@ -147,7 +155,7 @@ async function buildPlan(body, catalogProvider, opts = {}) {
   }
   if (!result.search.exhaustive) planWarnings.push(...result.search.notes);
 
-  return {
+  const plan = {
     ...base,
     status: "DRAFT",
     strategies,
@@ -157,6 +165,7 @@ async function buildPlan(body, catalogProvider, opts = {}) {
     rejectedProducts,
     search: result.search,
   };
+  return { plan, request: req };
 }
 
 function topScoringCandidates(categoryInputs) {
@@ -220,6 +229,7 @@ function buildStrategy(strategyKey, basket, ctx) {
         deliveryDays: product.deliveryDays,
         warrantyMonths: product.warrantyMonths,
         specs: product.specs,
+        specsSummary: summarizeSpecs(product.specs),
         scores: {
           quality: product.qualityScore,
           reliability: product.reliabilityScore,
@@ -259,6 +269,7 @@ function buildStrategy(strategyKey, basket, ctx) {
     shippingTotalINR: toRupees(shippingPaise),
     totalINR: toRupees(totalPaise),
     leftoverBudgetINR: toRupees(budgetPaise - totalPaise),
+    withinBudget: totalPaise <= budgetPaise,
     paypalSettlementUSD: null, // set only by the PayPal/FX flow — never estimated here
     compositeScore: round(basket.score),
     scoreBreakdown: {
@@ -274,6 +285,22 @@ function buildStrategy(strategyKey, basket, ctx) {
 
   if (strategyKey === "ALTERNATIVE") strategy.tradeOff = describeTradeOff(basket, result.bestValue);
   return strategy;
+}
+
+const SPEC_FORMATTERS = {
+  refreshRateHz: (v) => `${v} Hz`,
+  sizeInches: (v) => `${v}"`,
+  weightGrams: (v) => `${v} g`,
+  dpi: (v) => `${Number(v).toLocaleString("en-IN")} DPI`,
+  anc: (v) => (v ? "ANC" : "No ANC"),
+};
+
+/** Display string for specs, e.g. '170 Hz · IPS · 1440p · 27"'. Unknown (null) specs are skipped. */
+function summarizeSpecs(specs) {
+  return Object.entries(specs || {})
+    .filter(([, v]) => v !== null && v !== undefined && v !== "")
+    .map(([k, v]) => (SPEC_FORMATTERS[k] ? SPEC_FORMATTERS[k](v) : String(v)))
+    .join(" · ");
 }
 
 function fmtScore(s) {
@@ -409,4 +436,4 @@ function buildSuggestions(diags, cheapestTotal, req) {
   return s;
 }
 
-module.exports = { buildPlan, STRATEGY_META, PLAN_SCHEMA_VERSION };
+module.exports = { buildPlan, buildPlanDetailed, summarizeSpecs, STRATEGY_META, PLAN_SCHEMA_VERSION };
