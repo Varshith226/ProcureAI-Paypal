@@ -1,5 +1,5 @@
 {
-  "planId": "plan_ccc4c48f0962",
+  "planId": "plan_f90663493074",
   "version": 1,
   "requestId": "req_2026_01",
   "rawQuery": "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.",
@@ -34,6 +34,7 @@
       "shippingTotalINR": 496,
       "totalINR": 12292,
       "leftoverBudgetINR": 47708,
+      "withinBudget": true,
       "paypalSettlementUSD": null,
       "compositeScore": 0.5623,
       "scoreBreakdown": {
@@ -71,6 +72,7 @@
             "resolution": "1080p",
             "sizeInches": 24
           },
+          "specsSummary": "144 Hz · TN · 1080p · 24\"",
           "scores": {
             "quality": 0.58,
             "reliability": 0.62,
@@ -112,6 +114,7 @@
             "switchType": "membrane",
             "connectivity": "wired"
           },
+          "specsSummary": "full · membrane · wired",
           "scores": {
             "quality": 0.45,
             "reliability": 0.65,
@@ -152,6 +155,7 @@
             "dpi": 1600,
             "connectivity": "wired"
           },
+          "specsSummary": "90 g · 1,600 DPI · wired",
           "scores": {
             "quality": 0.4,
             "reliability": 0.6,
@@ -192,6 +196,7 @@
             "connectivity": "wired",
             "anc": false
           },
+          "specsSummary": "closed-back · wired · No ANC",
           "scores": {
             "quality": 0.52,
             "reliability": 0.62,
@@ -226,6 +231,7 @@
       "shippingTotalINR": 0,
       "totalINR": 54996,
       "leftoverBudgetINR": 5004,
+      "withinBudget": true,
       "paypalSettlementUSD": null,
       "compositeScore": 0.8025,
       "scoreBreakdown": {
@@ -263,6 +269,7 @@
             "resolution": "1440p",
             "sizeInches": 27
           },
+          "specsSummary": "170 Hz · IPS · 1440p · 27\"",
           "scores": {
             "quality": 0.9,
             "reliability": 0.85,
@@ -304,6 +311,7 @@
             "switchType": "tactile",
             "connectivity": "wired"
           },
+          "specsSummary": "full · tactile · wired",
           "scores": {
             "quality": 0.92,
             "reliability": 0.88,
@@ -344,6 +352,7 @@
             "dpi": 30000,
             "connectivity": "wireless"
           },
+          "specsSummary": "63 g · 30,000 DPI · wireless",
           "scores": {
             "quality": 0.9,
             "reliability": 0.83,
@@ -384,6 +393,7 @@
             "connectivity": "wireless",
             "anc": true
           },
+          "specsSummary": "closed-back · wireless · ANC",
           "scores": {
             "quality": 0.92,
             "reliability": 0.86,
@@ -418,6 +428,7 @@
       "shippingTotalINR": 0,
       "totalINR": 50296,
       "leftoverBudgetINR": 9704,
+      "withinBudget": true,
       "paypalSettlementUSD": null,
       "compositeScore": 0.7955,
       "scoreBreakdown": {
@@ -455,6 +466,7 @@
             "resolution": "1080p",
             "sizeInches": 24
           },
+          "specsSummary": "165 Hz · IPS · 1080p · 24\"",
           "scores": {
             "quality": 0.78,
             "reliability": 0.82,
@@ -496,6 +508,7 @@
             "switchType": "linear",
             "connectivity": "wired"
           },
+          "specsSummary": "TKL · linear · wired",
           "scores": {
             "quality": 0.8,
             "reliability": 0.84,
@@ -536,6 +549,7 @@
             "dpi": 30000,
             "connectivity": "wireless"
           },
+          "specsSummary": "63 g · 30,000 DPI · wireless",
           "scores": {
             "quality": 0.9,
             "reliability": 0.83,
@@ -576,6 +590,7 @@
             "connectivity": "wireless",
             "anc": true
           },
+          "specsSummary": "closed-back · wireless · ANC",
           "scores": {
             "quality": 0.97,
             "reliability": 0.88,

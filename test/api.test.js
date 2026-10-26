@@ -6,9 +6,9 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 // Make sure loading server.js never needs real credentials.
-delete process.env.PAYPAL_CLIENT_ID;
-delete process.env.PAYPAL_CLIENT_SECRET;
-delete process.env.PAYPAL_BASE_URL;
+process.env.PAYPAL_CLIENT_ID = "";
+process.env.PAYPAL_CLIENT_SECRET = "";
+process.env.PAYPAL_BASE_URL = "";
 
 const app = require("../server");
 const sample = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "examples", "request-60k-setup.json"), "utf8"));

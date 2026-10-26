@@ -83,3 +83,10 @@ test("category names are trimmed and lower-cased; nothing else is rewritten", ()
   assert.deepEqual(r.value.requiredCategories, [{ category: "monitor", quantity: 2 }]);
   assert.deepEqual(r.value.hardConstraints, { monitor: { minRefreshRateHz: 144 } });
 });
+
+test("extra agent fields such as clarificationsNeeded are accepted and do not change the plan input", () => {
+  const plain = validateRequest(request());
+  const withExtra = validateRequest(request({ clarificationsNeeded: ["Wired or wireless mouse?"] }));
+  assert.equal(withExtra.ok, true);
+  assert.deepEqual(withExtra.value, plain.value);
+});

@@ -199,7 +199,63 @@ function createJsonFileCatalogProvider(filePath = path.join(__dirname, "catalog.
   };
 }
 
+/**
+ * Demo-only overlay: lets a demo change a product's price, shipping, stock or
+ * delivery at runtime (to show the pre-checkout revalidation catching it)
+ * without editing files. Overrides are refused unless the underlying catalog
+ * is SYNTHETIC_DEMO, so real catalog data can never be altered through it.
+ */
+const OVERRIDABLE_FIELDS = ["unitPriceINR", "shippingINR", "stockQuantity", "deliveryDays"];
+
+class DemoOverrideError extends Error {
+  constructor(message, statusCode = 400) {
+    super(message);
+    this.name = "DemoOverrideError";
+    this.statusCode = statusCode;
+  }
+}
+
+function createDemoOverlayProvider(base) {
+  const overrides = new Map(); // productId -> partial record
+  const apply = (products) =>
+    products.map((p) => {
+      const o = overrides.get(p.productId);
+      return o ? { ...p, ...o } : p;
+    });
+
+  return {
+    describe: () => base.describe(),
+    async listProducts(opts) {
+      const result = await base.listProducts(opts);
+      return { ...result, products: apply(result.products) };
+    },
+    async setOverride(productId, changes) {
+      const { products } = await base.listProducts();
+      if (base.describe().dataOrigin !== "SYNTHETIC_DEMO") {
+        throw new DemoOverrideError("Demo overrides are only allowed on the SYNTHETIC_DEMO catalog.", 403);
+      }
+      const current = products.find((p) => p.productId === productId);
+      if (!current) throw new DemoOverrideError(`Unknown productId '${productId}'.`, 404);
+      const keys = Object.keys(changes || {});
+      const bad = keys.filter((k) => !OVERRIDABLE_FIELDS.includes(k));
+      if (!keys.length || bad.length) {
+        throw new DemoOverrideError(`Provide one or more of: ${OVERRIDABLE_FIELDS.join(", ")}${bad.length ? ` (unsupported: ${bad.join(", ")})` : ""}.`);
+      }
+      const merged = { ...current, ...(overrides.get(productId) || {}), ...changes };
+      const { error } = normalizeProduct(merged, "SYNTHETIC_DEMO");
+      if (error) throw new DemoOverrideError(`Invalid override — ${error}`);
+      overrides.set(productId, { ...(overrides.get(productId) || {}), ...changes });
+      return { productId, overrides: overrides.get(productId) };
+    },
+    listOverrides: () => Object.fromEntries(overrides),
+    clearOverrides: () => overrides.clear(),
+  };
+}
+
 module.exports = {
+  OVERRIDABLE_FIELDS,
+  DemoOverrideError,
+  createDemoOverlayProvider,
   DATA_ORIGINS,
   SOURCE_LOOKUP,
   CatalogUnavailableError,
