@@ -35,6 +35,8 @@ What the engine guarantees:
 
 ## 1 · Request agent (`src/aiService.js`)
 
+**Task 1 is now implemented.** Use `POST /api/ai/parse` for the structured brief or `POST /api/ai/plan` for clarification + optimizer handoff. Both take `{ messages: string[], requestId?: string }`. See [request-intelligence.md](request-intelligence.md) for configuration, result statuses, terminal demo and the tested frontend helper. The rest of this section documents the canonical JSON the module produces.
+
 Produce this JSON. It is the same as the agreed draft, and `clarificationsNeeded` is accepted and ignored.
 
 ```json
