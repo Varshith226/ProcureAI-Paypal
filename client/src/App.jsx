@@ -21,8 +21,8 @@ const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "sb";
 const INR_TO_USD_RATE = 0.0119;
 
 const BASE_CATALOG_STRATEGIES = {
-  MIN_COST: {
-    strategyKey: "MIN_COST",
+  CHEAPEST: {
+    strategyKey: "CHEAPEST",
     strategyName: "Plan A — Minimum Cost",
     badgeColor: "green",
     icon: <DollarOutlined />,
@@ -177,9 +177,9 @@ const BASE_CATALOG_STRATEGIES = {
       }
     ]
   },
-  PERFORMANCE_FIRST: {
-    strategyKey: "PERFORMANCE_FIRST",
-    strategyName: "Plan C — Performance First",
+  ALTERNATIVE: {
+    strategyKey: "ALTERNATIVE",
+    strategyName: "Plan C — Alternative",
     badgeColor: "purple",
     icon: <ThunderboltOutlined />,
     objectiveSummary: "Maximizes hardware specifications within the hard budget cap.",
@@ -367,14 +367,47 @@ export default function App() {
     return <Tag icon={<CloseCircleOutlined />} color="error">FAILED</Tag>;
   };
 
-  // Locks the selected plan on Express server.js
+  // Generates procurement plan on the server via POST /api/procurement/plan
+  const handleGeneratePlan = async () => {
+    try {
+      await fetch(`${API_BASE}/api/procurement/plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: `req_${Date.now()}`,
+          rawQuery: prompt,
+          budgetINR,
+          maxDeliveryDays,
+          requiredCategories: Object.entries(quantities).map(([category, quantity]) => ({ category, quantity })),
+          hardConstraints: { monitor: { minRefreshRateHz } }
+        })
+      });
+    } catch {
+      // Continue seamlessly to comparison step
+    }
+    setCurrentStep(1);
+  };
+
+  // Locks the selected plan on Express server.js / procurement API
   const handleApproveAndLock = async (strategyKey) => {
     setErrorMsg(null);
     setPriceSpikeAlert(null);
     const chosen = planData.strategies[strategyKey];
 
     try {
-      const res = await fetch(`${API_BASE}/api/plans/${planData.planId}/approve`, {
+      // 1. Revalidate with the procurement engine if available
+      await fetch(`${API_BASE}/api/procurement/plans/${planData.planId}/revalidate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          strategyKey,
+          version: 1,
+          strategyData: chosen
+        })
+      }).catch(() => {});
+
+      // 2. Authoritatively approve & lock in server plansStore for PayPal Sandbox checkout
+      const approveRes = await fetch(`${API_BASE}/api/plans/${planData.planId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -383,45 +416,67 @@ export default function App() {
           strategyData: chosen
         })
       });
-      const lockedFromServer = await res.json();
-      if (!res.ok) throw new Error(lockedFromServer.error || "Could not lock plan");
+
+      const lockedRecord = await approveRes.json();
+      if (!approveRes.ok) {
+        throw new Error(lockedRecord.error || "Could not lock plan on server");
+      }
 
       setLockedPlan({
-        planId: planData.planId,
-        version: lockedFromServer.version || 1,
-        status: "APPROVED",
+        planId: lockedRecord.planId || planData.planId,
+        version: lockedRecord.version || 1,
+        status: lockedRecord.status || "APPROVED",
         strategyKey,
-        lockedAt: lockedFromServer.lockedAtISO,
-        lockedTotalINR: lockedFromServer.lockedTotalINR,
-        lockedTotalUSD: lockedFromServer.lockedTotalUSD,
+        lockedAt: lockedRecord.lockedAtISO || new Date().toISOString(),
+        lockedTotalINR: lockedRecord.lockedTotalINR ?? chosen.totalINR,
+        lockedTotalUSD: lockedRecord.lockedTotalUSD ?? (chosen.totalINR * INR_TO_USD_RATE).toFixed(2),
         strategy: chosen
       });
       setCurrentStep(2);
     } catch (err) {
-      setErrorMsg(`Backend connection error (${err.message}). Ensure 'node server.js' is running on port 3000.`);
+      setErrorMsg(`Backend approval error (${err.message}). Ensure server is running on port 3000.`);
     }
   };
 
   // Simulates a live retailer price increase after approval to demonstrate the safety lock
   const handleSimulatePriceSpike = async () => {
     try {
+      const monitor = lockedPlan.strategy.items.find((i) => i.category === "monitor") || lockedPlan.strategy.items[0];
+      await fetch(`${API_BASE}/api/procurement/demo/catalog-overrides`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: monitor?.productId || "MON-002",
+          unitPriceINR: (monitor?.unitPriceINR || 10149) + 2500,
+          deltaINR: 2500
+        })
+      }).catch(() => {});
+
+      // Keep server.js in-memory lock store synchronized for PayPal safety boundary
       const res = await fetch(`${API_BASE}/api/plans/${lockedPlan.planId}/simulate-price-change`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ deltaINR: 2500 })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      const updatedPlan = data.plan;
+
+      const updatedTotalINR = (lockedPlan.lockedTotalINR || 0) + 2500;
+      const updatedTotalUSD = (updatedTotalINR * INR_TO_USD_RATE).toFixed(2);
+      const nextVersion = (lockedPlan.version || 1) + 1;
+
       setPriceSpikeAlert({
         oldINR: lockedPlan.lockedTotalINR,
-        newINR: data.plan.pendingTotalINR,
-        newUSD: data.plan.pendingTotalUSD,
-        newVersion: data.plan.version
+        newINR: updatedPlan?.pendingTotalINR || updatedTotalINR,
+        newUSD: updatedPlan?.pendingTotalUSD || updatedTotalUSD,
+        newVersion: updatedPlan?.version || nextVersion
       });
       setLockedPlan((prev) => ({
         ...prev,
+        version: updatedPlan?.version || nextVersion,
         status: "STALE_REAPPROVAL_REQUIRED"
       }));
-    } catch (err) {
+    } catch (_err) {
       setErrorMsg("Could not simulate price change on server.");
     }
   };
@@ -436,26 +491,45 @@ export default function App() {
     );
     const updatedStrategy = { ...lockedPlan.strategy, items: updatedItems };
 
-    const res = await fetch(`${API_BASE}/api/plans/${lockedPlan.planId}/approve`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        strategyKey: lockedPlan.strategyKey,
-        version: priceSpikeAlert.newVersion,
-        strategyData: updatedStrategy
-      })
-    });
-    const lockedFromServer = await res.json();
-    setLockedPlan({
-      ...lockedPlan,
-      version: priceSpikeAlert.newVersion,
-      status: "APPROVED",
-      lockedAt: lockedFromServer.lockedAtISO,
-      lockedTotalINR: lockedFromServer.lockedTotalINR,
-      lockedTotalUSD: lockedFromServer.lockedTotalUSD,
-      strategy: updatedStrategy
-    });
-    setPriceSpikeAlert(null);
+    try {
+      await fetch(`${API_BASE}/api/procurement/plans/${lockedPlan.planId}/revalidate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          strategyKey: lockedPlan.strategyKey,
+          version: priceSpikeAlert.newVersion,
+          strategyData: updatedStrategy
+        })
+      }).catch(() => {});
+
+      // Synchronize with server.js PayPal store
+      const approveRes = await fetch(`${API_BASE}/api/plans/${lockedPlan.planId}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          strategyKey: lockedPlan.strategyKey,
+          version: priceSpikeAlert.newVersion,
+          strategyData: updatedStrategy
+        })
+      });
+      const lockedFromServer = await approveRes.json();
+      if (!approveRes.ok) {
+        throw new Error(lockedFromServer.error || "Could not re-approve plan");
+      }
+
+      setLockedPlan({
+        ...lockedPlan,
+        version: lockedFromServer.version || priceSpikeAlert.newVersion,
+        status: "APPROVED",
+        lockedAt: lockedFromServer.lockedAtISO || new Date().toISOString(),
+        lockedTotalINR: lockedFromServer.lockedTotalINR ?? priceSpikeAlert.newINR,
+        lockedTotalUSD: lockedFromServer.lockedTotalUSD ?? priceSpikeAlert.newUSD,
+        strategy: updatedStrategy
+      });
+      setPriceSpikeAlert(null);
+    } catch (err) {
+      setErrorMsg(`Re-approval error: ${err.message}`);
+    }
   };
 
   const itemColumns = [
@@ -522,7 +596,7 @@ export default function App() {
                   <Button type="default" onClick={() => setShowClarifications(true)}>
                     Extract & Review Requirements Brief
                   </Button>
-                  <Button type="primary" size="large" icon={<ShoppingCartOutlined />} onClick={() => setCurrentStep(1)}>
+                  <Button type="primary" size="large" icon={<ShoppingCartOutlined />} onClick={handleGeneratePlan}>
                     Run Deterministic Optimizer →
                   </Button>
                 </Space>
@@ -663,6 +737,7 @@ export default function App() {
                         }}
                         actions={[
                           <Button
+                            key="approve"
                             type={strat.strategyKey === "BEST_VALUE" ? "primary" : "default"}
                             icon={<LockOutlined />}
                             size="large"
@@ -824,32 +899,60 @@ export default function App() {
 
                   {lockedPlan.status === "APPROVED" ? (
                     <PayPalButtons
+                      key={`paypal-${lockedPlan.planId}-${lockedPlan.version}-${lockedPlan.lockedTotalUSD}`}
                       style={{ layout: "vertical", shape: "rect", label: "pay" }}
                       createOrder={async () => {
-                        const res = await fetch(`${API_BASE}/api/paypal/create-order`, {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            planId: lockedPlan.planId,
-                            version: lockedPlan.version
-                          })
-                        });
-                        const data = await res.json();
-                        if (!res.ok) throw new Error(data.error || "Order creation blocked by server");
-                        return data.orderID;
+                        setErrorMsg(null);
+                        try {
+                          const res = await fetch(`${API_BASE}/api/paypal/create-order`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              planId: lockedPlan.planId,
+                              version: lockedPlan.version
+                            })
+                          });
+                          const data = await res.json();
+                          if (!res.ok) {
+                            const errText = data.error || data.details || "Order creation blocked by server";
+                            setErrorMsg(`PayPal Order Creation Blocked: ${errText}`);
+                            throw new Error(errText);
+                          }
+                          return data.orderID;
+                        } catch (err) {
+                          setErrorMsg(`PayPal Order Creation Error: ${err.message}`);
+                          throw err;
+                        }
                       }}
                       onApprove={async (data) => {
-                        const res = await fetch(`${API_BASE}/api/paypal/capture-order`, {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            orderID: data.orderID,
-                            planId: lockedPlan.planId
-                          })
-                        });
-                        const captureData = await res.json();
-                        setReceipt(captureData);
-                        setCurrentStep(3);
+                        setErrorMsg(null);
+                        try {
+                          const res = await fetch(`${API_BASE}/api/paypal/capture-order`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              orderID: data.orderID,
+                              planId: lockedPlan.planId
+                            })
+                          });
+                          const captureData = await res.json();
+                          if (!res.ok) {
+                            const errText = captureData.error || captureData.details || "Payment capture failed";
+                            setErrorMsg(`Payment Capture Error: ${errText}`);
+                            return;
+                          }
+                          setReceipt(captureData);
+                          setCurrentStep(3);
+                        } catch (err) {
+                          setErrorMsg(`Payment Capture Error: ${err.message}`);
+                        }
+                      }}
+                      onError={(err) => {
+                        console.error("PayPal checkout error:", err);
+                        setErrorMsg(`PayPal Checkout Error: ${err?.message || "Checkout failed or window was closed."}`);
+                      }}
+                      onCancel={() => {
+                        console.log("PayPal checkout cancelled by user");
                       }}
                     />
                   ) : (
@@ -876,7 +979,16 @@ export default function App() {
                   <Button icon={<PrinterOutlined />} key="print" onClick={() => window.print()}>
                     Print / Save PDF Audit Receipt
                   </Button>,
-                  <Button type="primary" key="again" onClick={() => setCurrentStep(0)}>
+                  <Button
+                    type="primary"
+                    key="again"
+                    onClick={() => {
+                      setReceipt(null);
+                      setLockedPlan(null);
+                      setPriceSpikeAlert(null);
+                      setCurrentStep(0);
+                    }}
+                  >
                     New Procurement Request
                   </Button>
                 ]}
