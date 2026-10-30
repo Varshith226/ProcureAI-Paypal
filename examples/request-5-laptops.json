@@ -1,0 +1,9 @@
+{
+  "requestId": "req_2026_laptops",
+  "rawQuery": "I need 5 laptops for a small shop under 3 lakh INR total, each with at least 16 GB RAM, delivery within 10 days and a minimum one-year warranty.",
+  "budgetINR": 300000,
+  "maxDeliveryDays": 10,
+  "requiredCategories": [{ "category": "laptop", "quantity": 5 }],
+  "hardConstraints": { "laptop": { "minRamGB": 16, "minWarrantyMonths": 12 } },
+  "weights": { "quality": 0.45, "reliability": 0.35, "delivery": 0.20 }
+}

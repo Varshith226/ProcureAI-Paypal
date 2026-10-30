@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const { validateRequest, ValidationError } = require("./requestValidator");
 const { verifyProduct, verifyLineQuantity, describeEvidence, categoryLabel, CHECK } = require("./verifier");
 const { unitScores, round, SCORING_DESCRIPTION } = require("./scoring");
-const { optimize, categoriesChanged } = require("./optimizer");
+const { optimize, categoriesChanged, unitsChanged } = require("./optimizer");
 const { toPaise, toRupees, formatINR } = require("./money");
 
 /**
@@ -212,7 +212,8 @@ function buildStrategy(strategyKey, basket, ctx) {
       const itemWarnings = [...v.warnings, ...evidence.warnings];
       // Product-specific data gaps bubble up to the plan; the generic demo-data
       // warning is added once per plan instead of once per item.
-      v.warnings.forEach((w) => strategyWarnings.add(`${product.productId}: ${w}`));
+      // Low-stock notes stay on the item: the optimizer already respected stock.
+      v.warnings.filter((w) => !v.stockNotes.includes(w)).forEach((w) => strategyWarnings.add(`${product.productId}: ${w}`));
       if (evidence.dataOrigin !== "SYNTHETIC_DEMO") {
         evidence.warnings.forEach((w) => strategyWarnings.add(`${product.productId}: ${w}`));
       }
@@ -293,6 +294,10 @@ const SPEC_FORMATTERS = {
   weightGrams: (v) => `${v} g`,
   dpi: (v) => `${Number(v).toLocaleString("en-IN")} DPI`,
   anc: (v) => (v ? "ANC" : "No ANC"),
+  ramGB: (v) => `${v} GB RAM`,
+  storageGB: (v) => (v >= 1024 && v % 1024 === 0 ? `${v / 1024} TB` : `${v} GB`),
+  weightKg: (v) => `${v} kg`,
+  screenInches: (v) => `${v}"`,
 };
 
 /** Display string for specs, e.g. '170 Hz · IPS · 1440p · 27"'. Unknown (null) specs are skipped. */
@@ -362,9 +367,11 @@ function assertIntegrity(strategyKey, items, totalPaise, optimizerCostPaise, bud
 
 function describeTradeOff(alt, best) {
   const changed = categoriesChanged(alt, best);
+  const units = unitsChanged(alt, best);
+  const totalUnits = alt.selections.reduce((sum, sel) => sum + sel.quantity, 0);
   const diffPaise = best.costPaise - alt.costPaise;
   const scoreDelta = round(alt.score - best.score);
-  const pieces = [`Changes the ${changed.join(", ")} pick(s) versus Best Value.`];
+  const pieces = [`Changes the ${changed.join(", ")} pick(s) versus Best Value (a different product for ${units} of ${totalUnits} unit(s)).`];
   if (diffPaise > 0) pieces.push(`Costs ${formatINR(diffPaise)} less`);
   else if (diffPaise < 0) pieces.push(`Costs ${formatINR(-diffPaise)} more`);
   else pieces.push("Costs the same");
@@ -372,6 +379,7 @@ function describeTradeOff(alt, best) {
   if (alt.evidence > best.evidence + 1e-9) pieces.push("Its products have more complete evidence.");
   return {
     categoriesChanged: changed,
+    unitsChanged: units,
     costDifferenceINR: toRupees(alt.costPaise - best.costPaise),
     compositeScoreDifference: scoreDelta,
     summary: pieces.join(" "),
