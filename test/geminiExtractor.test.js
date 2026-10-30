@@ -55,10 +55,9 @@ test("simplified provider schema preserves structure while local validation stil
     for (const [key, value] of Object.entries(provider)) checkShape(local[key], value);
   }
   checkShape(EXTRACTION_SCHEMA, GEMINI_EXTRACTION_SCHEMA);
-  assert.equal(EXTRACTION_SCHEMA.properties.ambiguities.maxItems, 20);
-  assert.equal(EXTRACTION_SCHEMA.properties.hardConstraints.properties.monitor.properties.minRefreshRateHz.minimum, 0);
-  assert.ok(schemaErrors(Array(21).fill("question"), EXTRACTION_SCHEMA.properties.ambiguities).some((message) => message.includes("too many")));
-  assert.ok(schemaErrors(-1, EXTRACTION_SCHEMA.properties.hardConstraints.properties.monitor.properties.minRefreshRateHz).length);
+  assert.equal(EXTRACTION_SCHEMA.properties.ambiguities.maxItems, 30);
+  assert.ok(schemaErrors(Array(31).fill("question"), EXTRACTION_SCHEMA.properties.ambiguities).some((message) => message.includes("too many")));
+  assert.ok(schemaErrors("BUY_NOW", EXTRACTION_SCHEMA.properties.intent).length);
 });
 
 test("503 overload retries at 2, 4 and 8 seconds, then can succeed", async () => {

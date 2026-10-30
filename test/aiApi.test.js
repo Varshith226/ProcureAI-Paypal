@@ -12,6 +12,7 @@ const { createAIService } = require("../src/aiService");
 const { createPlanStore } = require("../src/planStore");
 const { AIServiceError } = require("../src/aiErrors");
 const sample = require("../examples/request-60k-setup.json");
+const { extraction, condition } = require("./helpers");
 
 let server;
 let base;
@@ -37,11 +38,7 @@ test.before(async () => {
 });
 test.beforeEach(() => {
   nextError = null;
-  nextDraft = {
-    budgetINR: sample.budgetINR, maxDeliveryDays: sample.maxDeliveryDays,
-    requiredCategories: sample.requiredCategories, hardConstraints: sample.hardConstraints,
-    weights: null, assumptions: [], ambiguities: [], unsupportedRequirements: [],
-  };
+  nextDraft = extraction({ weights: null });
   store.clear();
 });
 test.after(async () => {
@@ -55,7 +52,10 @@ test("AI HTTP parse returns a ready request; plan returns all real baskets and s
   const body = { messages: [sample.rawQuery], requestId: sample.requestId };
   const parsed = await post("/api/ai/parse", body);
   assert.equal(parsed.status, 200);
-  assert.deepEqual((await parsed.json()).request, sample);
+  const parsedBody = await parsed.json();
+  assert.equal(parsedBody.contractVersion, 3);
+  assert.equal(parsedBody.request.budget.amount, 60000);
+  assert.equal(parsedBody.request.items.length, 4);
   assert.equal(store.size(), 0);
   const planned = await post("/api/ai/plan", body);
   assert.equal(planned.status, 200);
@@ -66,7 +66,7 @@ test("AI HTTP parse returns a ready request; plan returns all real baskets and s
 });
 
 test("AI HTTP clarification returns 200 without planning", async () => {
-  nextDraft.budgetINR = null;
+  nextDraft.budget.amount = null;
   const result = await (await post("/api/ai/plan", { messages: ["Need a setup"] })).json();
   assert.equal(result.status, "NEEDS_CLARIFICATION");
   assert.equal(result.plan, null);
@@ -100,7 +100,9 @@ test("AI routes are mounted in the existing server and expose no key", async () 
     const status = await (await fetch(`http://127.0.0.1:${mainServer.address().port}/api/ai/status`)).json();
     assert.equal(status.provider, "gemini");
     assert.equal(typeof status.configured, "boolean");
-    assert.deepEqual(Object.keys(status).sort(), ["configured", "model", "provider", "supportedCategories"]);
+    assert.equal(status.contractVersion, 3);
+    assert.equal(status.parsesAnyCategory, true);
+    assert.deepEqual(Object.keys(status).sort(), ["configured", "contractVersion", "model", "parsesAnyCategory", "provider", "scope"]);
   } finally { await new Promise((resolve) => mainServer.close(resolve)); }
 });
 
@@ -109,15 +111,68 @@ test("frontend helper handles extraction, clarification, real plan and provider 
   const options = { base, requestId: sample.requestId };
   const parsed = await client.parseRequirements(messages, options);
   assert.equal(parsed.status, "READY");
-  assert.deepEqual(parsed.request, sample);
-  nextDraft.budgetINR = null;
+  assert.equal(parsed.request.budget.amount, 60000);
+  assert.equal(parsed.request.items.length, 4);
+  nextDraft.budget.amount = null;
   const incomplete = await client.generatePlanFromMessages(messages, options);
   assert.equal(incomplete.status, "NEEDS_CLARIFICATION");
   assert.equal(incomplete.plan, null);
-  nextDraft.budgetINR = 60000;
+  nextDraft.budget.amount = 60000;
   const planned = await client.generatePlanFromMessages([...messages, "Keep budget at INR 60000"], options);
   assert.equal(planned.status, "PLANNED");
   assert.equal(planned.plan.strategies.BEST_VALUE.totalINR, 54996);
   nextError = new AIServiceError("AI_RATE_LIMITED", "Try later", 429);
   await assert.rejects(client.generatePlanFromMessages(messages, options), { code: "AI_RATE_LIMITED", status: 429 });
+});
+
+test("frontend clarification helper labels short answers without mutating earlier user turns", () => {
+  const messages = [sample.rawQuery];
+  const question = { field: "items[0].quantity", question: "How many monitors do you need?" };
+  const followup = client.appendClarificationAnswer(messages, question, "5");
+  assert.equal(messages.length, 1);
+  assert.equal(followup[0], sample.rawQuery);
+  assert.equal(followup[1], require("../src/requestUnderstanding").clarificationTurn(question, "5"));
+  assert.throws(() => client.appendClarificationAnswer(messages, question, " "));
+});
+
+test("AI HTTP preserves arbitrary attributes and returns engine gaps without inventing plans", async () => {
+  nextDraft = extraction({ items: [{ category: "chair", quantity: 4, unit: "unit", required: true, constraints: [condition("weightCapacity", "gte", 120, "must support 120 kg", "kg")] }] });
+  const response = await post("/api/ai/plan", { messages: ["4 chairs, INR 60000 total, 7 days, must support 120 kg"] });
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.status, "ENGINE_SUPPORT_REQUIRED");
+  assert.equal(result.understandingStatus, "READY");
+  assert.equal(result.requirements.items[0].constraints[0].value, 120);
+  assert.equal(result.request, null);
+  assert.equal(result.plan, null);
+  assert.deepEqual(result.questions, []);
+  assert.equal(store.size(), 0);
+});
+
+test("AI contract endpoint exposes the general schema and all outcome statuses", async () => {
+  const contract = await (await fetch(base + "/api/ai/contract")).json();
+  assert.equal(contract.contractVersion, 3);
+  assert.deepEqual(contract.statuses, ["READY", "NEEDS_CLARIFICATION", "NOT_PROCUREMENT", "CANCELLED"]);
+  assert.deepEqual(contract.requirementsSchema, require("../src/requestExtraction").EXTRACTION_SCHEMA);
+  const completedSchema = require("../shared/request-intelligence.schema.json");
+  assert.deepEqual(contract.completedRequestSchema, completedSchema);
+  const { requestId, rawQuery, ...properties } = completedSchema.properties;
+  const expected = JSON.parse(JSON.stringify(require("../src/requestExtraction").EXTRACTION_SCHEMA.properties));
+  expected.intent.enum = ["PROCUREMENT"];
+  expected.ambiguities.maxItems = 0;
+  assert.deepEqual(properties, expected);
+  assert.equal(requestId.maxLength, 128);
+  assert.ok(rawQuery.maxLength >= 16000);
+});
+
+test("parse endpoint marks arbitrary clear requirements ready without consulting optimizer support", async () => {
+  nextDraft = extraction({ budget: { currency: "USD", amount: 250, scope: "PER_ITEM" }, items: [{ category: "chair", quantity: 500, unit: "unit", required: true, constraints: [condition("weightCapacity", "gte", 120, "120 kg capacity", "kg")] }], delivery: { maxDays: 500, destination: "Delhi" } });
+  const response = await post("/api/ai/parse", { messages: ["500 chairs, 120 kg capacity, USD 250 each, deliver to Delhi within 500 days"] });
+  const result = await response.json();
+  assert.equal(result.status, "READY");
+  assert.equal(result.request.items[0].quantity, 500);
+  assert.equal(result.request.budget.scope, "PER_ITEM");
+  assert.deepEqual(result.questions, []);
+  assert.equal(Object.hasOwn(result, "unsupportedRequirements"), false);
+  assert.equal(store.size(), 0);
 });

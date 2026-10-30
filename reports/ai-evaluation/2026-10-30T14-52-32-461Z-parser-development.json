@@ -1,0 +1,169 @@
+{
+  "scope": "REQUEST_INTELLIGENCE",
+  "contractVersion": 3,
+  "model": "gemini-3.5-flash-lite",
+  "suite": "development",
+  "startedAt": "2026-10-30T14:52:32.461Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "4a3821151a00cc01ab69fc77f2212c131e321765b9f2f230c3c64f283e3fa320",
+  "schemaHash": "db4cbb70f5c958b32632e27a4d23cb4104d7d947d65facebacfeddf56eb87f9b",
+  "cases": [
+    {
+      "id": "followup-and-correction",
+      "passed": false,
+      "error": "Missing condition {\"category\":\"monitor\",\"attribute\":\"panel\",\"operator\":\"in\",\"value\":[\"IPS\"],\"importance\":\"HARD\"}",
+      "messages": [
+        "I need two 144 Hz monitors.",
+        "My total budget is INR 60000 and delivery must be within 7 days.",
+        "Actually change the total budget to INR 40000 and the quantity to three monitors. IPS panels are required."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "amount": 40000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": 3
+        },
+        "exactCategories": [
+          "monitor"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          },
+          {
+            "category": "monitor",
+            "attribute": "panel",
+            "operator": "in",
+            "value": [
+              "IPS"
+            ],
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_followup-and-correction",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_followup-and-correction",
+          "rawQuery": "I need two 144 Hz monitors.\nFollow-up: My total budget is INR 60000 and delivery must be within 7 days.\nFollow-up: Actually change the total budget to INR 40000 and the quantity to three monitors. IPS panels are required.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 3,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz"
+                },
+                {
+                  "attribute": "panel",
+                  "operator": "eq",
+                  "value": "IPS",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "IPS panels are required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 40000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 3,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz"
+                },
+                {
+                  "attribute": "panel",
+                  "operator": "eq",
+                  "value": "IPS",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "IPS panels are required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 40000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    }
+  ],
+  "passed": 0,
+  "requested": 1,
+  "completed": 1,
+  "finishedAt": "2026-10-30T14:52:37.258Z"
+}

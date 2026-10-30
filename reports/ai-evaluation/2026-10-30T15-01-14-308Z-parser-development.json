@@ -1,0 +1,139 @@
+{
+  "scope": "REQUEST_INTELLIGENCE",
+  "contractVersion": 3,
+  "model": "gemini-3.5-flash-lite",
+  "suite": "development",
+  "startedAt": "2026-10-30T15:01:14.308Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "4a3821151a00cc01ab69fc77f2212c131e321765b9f2f230c3c64f283e3fa320",
+  "schemaHash": "db4cbb70f5c958b32632e27a4d23cb4104d7d947d65facebacfeddf56eb87f9b",
+  "cases": [
+    {
+      "id": "answer-size-flexible",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 2 cotton shirts for INR 4000 total, delivery within 5 days.",
+        "Answer to clarification (items[0].size): What size do you need for the shirts, or should sizes be assorted/flexible?\nMy answer: Any size is fine; assorted sizes are okay."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "shirt": 2
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_answer-size-flexible",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_answer-size-flexible",
+          "rawQuery": "Buy 2 cotton shirts for INR 4000 total, delivery within 5 days.\nFollow-up: Answer to clarification (items[0].size): What size do you need for the shirts, or should sizes be assorted/flexible?\nMy answer: Any size is fine; assorted sizes are okay.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton"
+                },
+                {
+                  "attribute": "size",
+                  "operator": "eq",
+                  "value": "assorted",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "Any size is fine; assorted sizes are okay."
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton"
+                },
+                {
+                  "attribute": "size",
+                  "operator": "eq",
+                  "value": "assorted",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "Any size is fine; assorted sizes are okay."
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    }
+  ],
+  "passed": 1,
+  "requested": 1,
+  "completed": 1,
+  "finishedAt": "2026-10-30T15:01:25.273Z"
+}

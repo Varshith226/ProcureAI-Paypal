@@ -19,7 +19,7 @@ User request ─► Request agent ─► Catalog ─► Verification ─► Bask
 
 | Part | What it does | Where |
 |---|---|---|
-| Request intelligence | Extracts request JSON with Gemini, asks missing-field questions, then returns the existing optimizer's baskets | `src/aiService.js`, [Task 1 guide](docs/request-intelligence.md) |
+| Request intelligence | Understands arbitrary purchasing requests, asks necessary follow-ups, and emits complete general JSON independently of optimizer support | `src/aiService.js`, [Task 1 guide](docs/request-intelligence.md) |
 | Catalog, verification & optimizer | Checks every product against hard constraints, then finds the best complete baskets within budget, with reasons, and re-checks them before payment | `src/`, see [docs/procurement-engine.md](docs/procurement-engine.md) |
 | Frontend & PayPal | Compares plans, takes approval, runs PayPal sandbox checkout | `client/`, `server.js` *(`role-frontend` branch)* |
 
@@ -53,7 +53,9 @@ PayPal credentials go in `.env` only (git ignores it): `PAYPAL_CLIENT_ID`, `PAYP
 
 ## API
 
-**Natural-language intake:** set `GEMINI_API_KEY` in the server's `.env`, then use `POST /api/ai/parse` or `/api/ai/plan` with `{ "messages": ["your purchasing request"] }`. Missing requirements return `NEEDS_CLARIFICATION`; append the user's answer to `messages` and retry. `npm run demo:ai -- --sample` runs the complete request-to-plan path. See [setup, API examples, frontend handoff and validation limits](docs/request-intelligence.md).
+**Request intelligence:** set `GEMINI_API_KEY` in server `.env`, then call `POST /api/ai/parse` with `{ "messages": ["your purchasing request"] }`. Missing information returns `NEEDS_CLARIFICATION` and `nextQuestion`; append the labelled answer and retry. `npm run demo:ai` runs this conversation in the terminal. See [the parser contract and follow-up flow](docs/request-intelligence.md).
+
+Parser response **version 3** has four statuses: READY, NEEDS_CLARIFICATION, NOT_PROCUREMENT and CANCELLED. READY means the user's needs are clear, regardless of category, currency, unit or downstream capabilities. `request` contains complete general JSON, `requirements` retains partial data, and `GET /api/ai/contract` exposes the schema. The optimizer owner builds on this JSON. `/api/ai/plan` remains a separate legacy compatibility bridge; it does not define parser readiness.
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -74,7 +76,7 @@ PayPal credentials go in `.env` only (git ignores it): `PAYPAL_CLIENT_ID`, `PAYP
 
 - The product catalog (`src/catalog.json`) is **synthetic demo data**: the brands are fictional and prices, stock and delivery are illustrative. Plans label every item `UNVERIFIED_DEMO_DATA`. The catalog provider is pluggable, so a live product source can replace it (see the docs).
 - Plans are stored in memory, so a server restart clears them.
-- Request intelligence requires a Gemini API key. Automated tests use injected model responses; live extraction accuracy needs a real-model check. The current React screen still needs the Task 1 API hookup described in the integration guide.
+- Request intelligence requires a Gemini API key. Verified on 2026-10-30: 129 automated tests and 83 live parsing/follow-up cases passed ([evidence](reports/ai-evaluation/parser-acceptance-summary.json)). This finite coverage does not guarantee every possible wording or future model response. The current React screen still needs the Task 1 API hookup described in the integration guide.
 - The PayPal flow runs in the **sandbox** only, so no real money moves.
 
 ## License

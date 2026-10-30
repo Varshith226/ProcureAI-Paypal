@@ -3,11 +3,7 @@
 const { randomUUID } = require("node:crypto");
 const { AIServiceError } = require("./aiErrors");
 const { createGeminiExtractor } = require("./geminiExtractor");
-const { schemaErrors, SUPPORTED_CATEGORIES } = require("./requestExtraction");
-const { validateRequest, DEFAULT_WEIGHTS } = require("./requestValidator");
-const { buildPlanDetailed } = require("./planService");
-const { defaultCatalogProvider } = require("./checkoutGuard");
-const { planStore: defaultPlanStore } = require("./planStore");
+const { understandRequest } = require("./requestUnderstanding");
 
 function validateConversation(body) {
   const details = [];
@@ -16,9 +12,9 @@ function validateConversation(body) {
   }
   const extra = Object.keys(body).filter((key) => !["messages", "requestId"].includes(key));
   if (extra.length) details.push({ field: "(body)", message: `Unsupported fields: ${extra.join(", ")}. Send user messages, not a client-generated draft.` });
-  if (!Array.isArray(body.messages) || body.messages.length < 1 || body.messages.length > 20 ||
+  if (!Array.isArray(body.messages) || body.messages.length < 1 || body.messages.length > 100 ||
       body.messages.some((message) => typeof message !== "string" || !message.trim() || message.length > 8000)) {
-    details.push({ field: "messages", message: "Send 1..20 non-empty user messages, each at most 8000 characters." });
+    details.push({ field: "messages", message: "Send 1..100 non-empty user messages, each at most 8000 characters." });
   } else if (body.messages.join("\n").length > 16000) {
     details.push({ field: "messages", message: "Conversation must be at most 16000 characters in total." });
   }
@@ -29,53 +25,13 @@ function validateConversation(body) {
   return { requestId: body.requestId?.trim() || `req_${randomUUID()}`, messages: body.messages.map((message) => message.trim()) };
 }
 
-function buildBrief(draft, { requestId, messages }) {
-  const errors = schemaErrors(draft);
-  if (errors.length) throw new AIServiceError("AI_INVALID_OUTPUT", "AI output did not match the requirement schema. Try again.");
+function referenceDateInIndia(date = new Date()) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date).map(({ type, value }) => [type, value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
 
-  const assumptions = [...draft.assumptions];
-  const questions = [];
-  const unsupportedRequirements = [...draft.unsupportedRequirements];
-  const ask = (field, question) => {
-    if (!questions.some((entry) => entry.field === field)) questions.push({ field, question });
-  };
-  if (draft.budgetINR === null) ask("budgetINR", "What is your total budget in INR, including shipping?");
-  if (draft.maxDeliveryDays === null) ask("maxDeliveryDays", "Within how many days do you need all items delivered?");
-  if (!draft.requiredCategories.length) ask("requiredCategories", "Which items do you want to buy, and how many of each?");
-  for (const [i, entry] of draft.requiredCategories.entries()) {
-    if (entry.quantity === null) ask(`requiredCategories[${i}].quantity`, `How many ${entry.category} units do you need?`);
-    if (!SUPPORTED_CATEGORIES.includes(entry.category.trim().toLowerCase())) {
-      unsupportedRequirements.push(`Category '${entry.category}' is not supported. Available categories: ${SUPPORTED_CATEGORIES.join(", ")}.`);
-    }
-  }
-  draft.ambiguities.forEach((question, i) => ask(`ambiguities[${i}]`, question));
-  if (unsupportedRequirements.length) {
-    ask("unsupportedRequirements", "Some requirements cannot be checked by the current engine. Would you like to revise them, or wait for catalog/verifier support? See unsupportedRequirements.");
-  }
-  if (draft.weights === null) assumptions.push("Default scoring weights: quality 0.45, reliability 0.35, delivery 0.20. Price is a budget cap and tie-breaker; CHEAPEST minimizes cost separately.");
-  const candidate = {
-    requestId, rawQuery: messages.join("\nFollow-up: "),
-    budgetINR: draft.budgetINR, maxDeliveryDays: draft.maxDeliveryDays,
-    requiredCategories: draft.requiredCategories, hardConstraints: draft.hardConstraints,
-    weights: draft.weights ?? { ...DEFAULT_WEIGHTS },
-  };
-  const validation = validateRequest(candidate);
-  if (!validation.ok) {
-    for (const problem of validation.errors) ask(problem.field, `Please clarify ${problem.field}: ${problem.message}.`);
-  }
-  const ready = questions.length === 0;
-  const request = ready ? {
-    ...candidate,
-    requiredCategories: validation.value.requiredCategories,
-    hardConstraints: validation.value.hardConstraints,
-    weights: validation.value.weights,
-  } : null;
-  return {
-    requestId, status: ready ? "READY" : "NEEDS_CLARIFICATION",
-    request, draft, questions,
-    unsupportedRequirements: [...new Set(unsupportedRequirements)],
-    assumptions: [...new Set(assumptions)], plan: null, recommendation: null,
-  };
+function buildBrief(requirements, context) {
+  return require("./requirementsAdapter").compileRequirements(requirements, { referenceDate: referenceDateInIndia(), ...context });
 }
 
 function summarizePlan(plan) {
@@ -92,20 +48,30 @@ function summarizePlan(plan) {
 }
 
 function createAIService({
-  extract = createGeminiExtractor(), catalogProvider = defaultCatalogProvider,
-  planStore = defaultPlanStore,
+  extract = createGeminiExtractor(), catalogProvider,
+  planStore,
+  now = () => new Date(),
 } = {}) {
   async function parse(body) {
     const conversation = validateConversation(body);
-    return buildBrief(await extract(conversation.messages), conversation);
+    const current = now();
+    const referenceDate = referenceDateInIndia(current);
+    const referenceTime = current.toISOString();
+    return understandRequest(await extract(conversation.messages, { referenceDate, referenceTime, timezone: "Asia/Kolkata" }), { ...conversation, referenceDate, referenceTime });
   }
   return {
     parse,
     async plan(body) {
-      const brief = await parse(body);
+      // Legacy integration only. Parsing never loads or calls optimizer code.
+      const parsed = await parse(body);
+      if (parsed.status !== "READY") return { ...parsed, plan: null, recommendation: null };
+      const brief = buildBrief(parsed.requirements, { requestId: parsed.requestId, messages: validateConversation(body).messages, referenceDate: parsed.referenceDate });
       if (brief.status !== "READY") return brief;
-      const { plan, request } = await buildPlanDetailed(brief.request, catalogProvider);
-      planStore.save(plan, request);
+      const { buildPlanDetailed } = require("./planService");
+      const provider = catalogProvider || require("./checkoutGuard").defaultCatalogProvider;
+      const store = planStore || require("./planStore").planStore;
+      const { plan, request } = await buildPlanDetailed(brief.request, provider);
+      store.save(plan, request);
       return {
         ...brief, status: plan.status === "INFEASIBLE" ? "INFEASIBLE" : "PLANNED",
         plan, recommendation: summarizePlan(plan),

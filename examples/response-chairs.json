@@ -1,0 +1,91 @@
+{
+  "contractVersion": 3,
+  "requestId": "eval_furniture-capacity",
+  "status": "READY",
+  "request": {
+    "requestId": "eval_furniture-capacity",
+    "rawQuery": "Buy 4 chairs under INR 10000 total, delivery within 7 days. Each chair must support at least 120 kg.",
+    "intent": "PROCUREMENT",
+    "items": [
+      {
+        "category": "chair",
+        "quantity": 4,
+        "unit": "unit",
+        "required": true,
+        "constraints": [
+          {
+            "attribute": "weightCapacity",
+            "operator": "gte",
+            "value": 120,
+            "unit": "kg",
+            "importance": "HARD",
+            "sourceText": "Each chair must support at least 120 kg."
+          }
+        ]
+      }
+    ],
+    "budget": {
+      "amount": 10000,
+      "minAmount": null,
+      "currency": "INR",
+      "scope": "TOTAL",
+      "unlimited": false,
+      "includesShipping": null,
+      "includesTax": null
+    },
+    "delivery": {
+      "maxDays": 7,
+      "deadlineISO": null,
+      "unrestricted": false,
+      "destination": null
+    },
+    "globalConstraints": [],
+    "weights": null,
+    "ambiguities": [],
+    "assumptions": []
+  },
+  "requirements": {
+    "intent": "PROCUREMENT",
+    "items": [
+      {
+        "category": "chair",
+        "quantity": 4,
+        "unit": "unit",
+        "required": true,
+        "constraints": [
+          {
+            "attribute": "weightCapacity",
+            "operator": "gte",
+            "value": 120,
+            "unit": "kg",
+            "importance": "HARD",
+            "sourceText": "Each chair must support at least 120 kg."
+          }
+        ]
+      }
+    ],
+    "budget": {
+      "amount": 10000,
+      "minAmount": null,
+      "currency": "INR",
+      "scope": "TOTAL",
+      "unlimited": false,
+      "includesShipping": null,
+      "includesTax": null
+    },
+    "delivery": {
+      "maxDays": 7,
+      "deadlineISO": null,
+      "unrestricted": false,
+      "destination": null
+    },
+    "globalConstraints": [],
+    "weights": null,
+    "ambiguities": [],
+    "assumptions": []
+  },
+  "questions": [],
+  "nextQuestion": null,
+  "assumptions": [],
+  "referenceDate": "2026-10-30"
+}
