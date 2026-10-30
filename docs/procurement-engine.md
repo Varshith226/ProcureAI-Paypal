@@ -15,8 +15,9 @@ Requires Node 20+ (developed on Node 22). No new dependencies were added.
 
 ```bash
 npm install
-npm test              # 63 tests, Node's built-in test runner
+npm test              # all tests (engine, safety, AI agent), Node's built-in test runner
 npm run demo          # ₹60,000 setup request through the real pipeline, printed as tables
+npm run demo -- examples/request-5-laptops.json   # 5 laptops, ≥16 GB RAM, ≥1-year warranty, ₹3 lakh
 npm run demo -- --write   # also regenerates examples/response-60k-setup.json
 npm run demo:revalidate   # pre-checkout safety check: VALID / CHANGED / INVALID
 npm start             # http://localhost:3000
@@ -98,7 +99,7 @@ The data lives in `src/catalog.json` and is loaded through `createJsonFileCatalo
 | `provenance.dataOrigin` | `SYNTHETIC_DEMO` \| `CATALOG_UNCHECKED` \| `SOURCE_VERIFIED` | — |
 | `provenance.sourceLookup` | `NOT_CHECKED` \| `FOUND` \| `NOT_FOUND` \| `UNAVAILABLE` | `NOT_CHECKED` |
 
-> ⚠️ **All 37 records in `src/catalog.json` are synthetic demo data.** The brands and products are fictional. Prices, stock, delivery, warranty and scores are illustrative. No record has a source URL or a check timestamp. Some records are deliberately broken to demonstrate rejection:
+> ⚠️ **All 49 records in `src/catalog.json` (catalog v2026-10-30.1) are synthetic demo data.** The brands and products are fictional. Prices, stock, delivery, warranty and scores are illustrative. No record has a source URL or a check timestamp. Some records are deliberately broken to demonstrate rejection:
 > - `MON-004`: 75 Hz
 > - `MON-005`: refresh rate missing
 > - `MON-007`, `KB-006`, `MS-006`, `HP-007`: late delivery
@@ -108,6 +109,9 @@ The data lives in `src/catalog.json` and is loaded through `createJsonFileCatalo
 > - `KB-009`: stock unknown
 > - `MS-008`: no quality score, which only produces a warning
 > - `HP-008`: warranty unknown, which only produces a warning
+> - Laptops (`LAP-001`…`LAP-012`): `LAP-005` 8 GB RAM, `LAP-006` RAM missing, `LAP-007` 14-day delivery, `LAP-008` out of stock, `LAP-009` 6-month warranty, `LAP-010` warranty unknown (rejected only when a warranty minimum is requested)
+
+**Laptop constraints:** `minRamGB`, `minStorageGB`, `storageTypeIn`, `osIn`, `maxWeightKg`, `minScreenInches`, `maxScreenInches`, plus `minWarrantyMonths` and the other any-category rules. GPU, CPU model and battery life are not modelled, so the AI agent reports them as unsupported.
 
 ### Plugging in a live source later
 Write a provider with the same two methods and pass it in:
@@ -175,7 +179,7 @@ Each required category counts equally. **Price is not in the score.** It enters 
 |---|---|---|
 | `CHEAPEST` | lowest total among feasible baskets | higher score → better evidence → product IDs |
 | `BEST_VALUE` | highest `basketScore` within budget | lower total → better evidence → product IDs |
-| `ALTERNATIVE` | highest score among baskets that change ≥ 2 category picks vs BEST_VALUE, differ from CHEAPEST, and are cheaper **or** better evidenced | same as BEST_VALUE |
+| `ALTERNATIVE` | highest score among baskets that change ≥ 2 category picks (1 if only one category) **and** use a different product for at least half of all units vs BEST_VALUE, differ from CHEAPEST, and are cheaper **or** better evidenced | same as BEST_VALUE |
 
 No basket is ever returned under two labels. If CHEAPEST would equal BEST_VALUE, or no qualifying ALTERNATIVE exists, that strategy is left out of `strategies` and listed in `omittedStrategies` with a reason. `planId` is a hash of the validated request and the exact catalog data used, so identical inputs give byte-identical responses.
 
