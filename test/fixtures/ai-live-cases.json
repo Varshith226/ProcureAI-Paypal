@@ -67,16 +67,17 @@
     "id": "unsupported-laptop-ram",
     "messages": ["I need 5 laptops for a small shop under 3 lakh INR total, each with at least 16 GB RAM, delivery within 10 days and a minimum one-year warranty."],
     "expected": {
-      "status": "NEEDS_CLARIFICATION",
+      "status": "ENGINE_SUPPORT_REQUIRED",
       "draft": { "budgetINR": 300000, "maxDeliveryDays": 10, "requiredCategories": [{ "category": "laptop", "quantity": 5 }] },
-      "unsupportedPatterns": ["RAM", "warranty"]
+      "unsupportedPatterns": ["RAM"],
+      "conditions": [{ "category": "laptop", "attribute": "ramGB", "operator": "gte", "value": 16, "importance": "HARD" }, { "category": "laptop", "attribute": "warrantyMonths", "operator": "gte", "value": 12, "importance": "HARD" }]
     }
   },
   {
     "id": "mandatory-compatibility",
     "messages": ["Buy one monitor with a minimum 144 Hz refresh rate, total budget INR 20000, delivered within 7 days. It must output 144 Hz through my existing laptop HDMI port."],
     "expected": {
-      "status": "NEEDS_CLARIFICATION",
+      "status": "ENGINE_SUPPORT_REQUIRED",
       "draft": { "budgetINR": 20000, "maxDeliveryDays": 7, "requiredCategories": [{ "category": "monitor", "quantity": 1 }], "hardConstraints": { "monitor": { "minRefreshRateHz": 144 } } },
       "unsupportedPatterns": ["HDMI|compatib"]
     }

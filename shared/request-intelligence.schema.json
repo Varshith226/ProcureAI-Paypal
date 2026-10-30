@@ -1,0 +1,329 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "requestId",
+    "rawQuery",
+    "intent",
+    "items",
+    "budget",
+    "delivery",
+    "globalConstraints",
+    "weights",
+    "ambiguities",
+    "assumptions"
+  ],
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "rawQuery": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 18000
+    },
+    "intent": {
+      "type": "string",
+      "enum": [
+        "PROCUREMENT"
+      ]
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 60,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "quantity",
+          "unit",
+          "required",
+          "constraints"
+        ],
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "constraints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "attribute",
+                "operator",
+                "value",
+                "unit",
+                "importance",
+                "sourceText"
+              ],
+              "properties": {
+                "attribute": {
+                  "type": "string"
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": [
+                    "gt",
+                    "gte",
+                    "lt",
+                    "lte",
+                    "eq",
+                    "in",
+                    "not_in",
+                    "between",
+                    "contains"
+                  ]
+                },
+                "value": {
+                  "type": [
+                    "number",
+                    "string",
+                    "boolean",
+                    "array"
+                  ],
+                  "items": {
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  },
+                  "maxItems": 30
+                },
+                "unit": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "importance": {
+                  "type": "string",
+                  "enum": [
+                    "HARD",
+                    "SOFT"
+                  ]
+                },
+                "sourceText": {
+                  "type": "string"
+                }
+              }
+            },
+            "maxItems": 30
+          }
+        }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amount",
+        "minAmount",
+        "currency",
+        "scope",
+        "unlimited",
+        "includesShipping",
+        "includesTax"
+      ],
+      "properties": {
+        "amount": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "minAmount": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "TOTAL",
+            "PER_ITEM",
+            "UNKNOWN"
+          ]
+        },
+        "unlimited": {
+          "type": "boolean"
+        },
+        "includesShipping": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "includesTax": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxDays",
+        "deadlineISO",
+        "unrestricted",
+        "destination"
+      ],
+      "properties": {
+        "maxDays": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "deadlineISO": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unrestricted": {
+          "type": "boolean"
+        },
+        "destination": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "globalConstraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "attribute",
+          "operator",
+          "value",
+          "unit",
+          "importance",
+          "sourceText"
+        ],
+        "properties": {
+          "attribute": {
+            "type": "string"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "gt",
+              "gte",
+              "lt",
+              "lte",
+              "eq",
+              "in",
+              "not_in",
+              "between",
+              "contains"
+            ]
+          },
+          "value": {
+            "type": [
+              "number",
+              "string",
+              "boolean",
+              "array"
+            ],
+            "items": {
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            "maxItems": 30
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "importance": {
+            "type": "string",
+            "enum": [
+              "HARD",
+              "SOFT"
+            ]
+          },
+          "sourceText": {
+            "type": "string"
+          }
+        }
+      },
+      "maxItems": 30
+    },
+    "weights": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "quality",
+        "reliability",
+        "delivery"
+      ],
+      "properties": {
+        "quality": {
+          "type": "number"
+        },
+        "reliability": {
+          "type": "number"
+        },
+        "delivery": {
+          "type": "number"
+        }
+      }
+    },
+    "ambiguities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 0
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 30
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Completed procurement request v3"
+}

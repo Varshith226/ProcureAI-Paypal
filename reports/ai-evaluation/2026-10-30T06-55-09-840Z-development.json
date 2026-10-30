@@ -1,0 +1,202 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "suite": "development",
+  "startedAt": "2026-10-30T06:55:09.840Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "87b52e413ce23044752a86911e6e38cd71e41b6baeb0d791f8d88cf59fdf0fd9",
+  "schemaHash": "217653db0c746c08f9f71d1e8ba4928e868ae40c96c026f449c97efaa5425942",
+  "cases": [
+    {
+      "id": "grocery-fractional",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 0.5 kg of rice, total budget INR 100, delivery within 2 days."
+      ],
+      "expected": {
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "itemCounts": {
+          "rice": 0.5
+        },
+        "itemUnits": {
+          "rice": "kg"
+        },
+        "requirements": {
+          "budget": {
+            "amount": 100,
+            "currency": "INR"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_grocery-fractional",
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "understandingStatus": "READY",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "rice",
+              "quantity": 0.5,
+              "unit": "kg",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 100,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": 100,
+          "maxDeliveryDays": 2,
+          "requiredCategories": [
+            {
+              "category": "rice",
+              "quantity": 0.5
+            }
+          ],
+          "hardConstraints": {},
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "unsupportedRequirements": [
+            "rice: unit 'kg' is parsed; v1 requires catalog order-line units."
+          ],
+          "assumptions": []
+        },
+        "questions": [],
+        "unsupportedRequirements": [
+          "rice: unit 'kg' is parsed; v1 requires catalog order-line units."
+        ],
+        "assumptions": [],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    },
+    {
+      "id": "unlabelled-currency",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one monitor under 20000 total, delivery within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionFields": [
+          "budget.currency"
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 20000,
+            "currency": null
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_unlabelled-currency",
+        "status": "NEEDS_CLARIFICATION",
+        "understandingStatus": "NEEDS_CLARIFICATION",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": null,
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": null,
+          "maxDeliveryDays": 7,
+          "requiredCategories": [
+            {
+              "category": "monitor",
+              "quantity": 1
+            }
+          ],
+          "hardConstraints": {},
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "unsupportedRequirements": [],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "budget.currency",
+            "question": "Which currency is your budget in?"
+          }
+        ],
+        "unsupportedRequirements": [],
+        "assumptions": [],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    }
+  ],
+  "passed": 2,
+  "requested": 2,
+  "completed": 2,
+  "finishedAt": "2026-10-30T06:55:20.084Z"
+}
