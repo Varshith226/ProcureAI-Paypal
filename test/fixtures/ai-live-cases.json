@@ -2,92 +2,284 @@
   {
     "id": "original-setup",
     "action": "plan",
-    "messages": ["I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week."],
+    "messages": [
+      "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week."
+    ],
     "expected": {
       "status": "PLANNED",
       "draft": {
         "budgetINR": 60000,
         "maxDeliveryDays": 7,
-        "requiredCategories": [{ "category": "monitor", "quantity": 1 }, { "category": "keyboard", "quantity": 1 }, { "category": "mouse", "quantity": 1 }, { "category": "headphones", "quantity": 1 }],
-        "hardConstraints": { "monitor": { "minRefreshRateHz": 144 } }
+        "requiredCategories": [
+          {
+            "category": "monitor",
+            "quantity": 1
+          },
+          {
+            "category": "keyboard",
+            "quantity": 1
+          },
+          {
+            "category": "mouse",
+            "quantity": 1
+          },
+          {
+            "category": "headphones",
+            "quantity": 1
+          }
+        ],
+        "hardConstraints": {
+          "monitor": {
+            "minRefreshRateHz": 144
+          }
+        }
       },
       "noUnsupportedRequirements": true,
-      "totals": { "CHEAPEST": 12292, "BEST_VALUE": 54996, "ALTERNATIVE": 50296 }
+      "totals": {
+        "CHEAPEST": 12292,
+        "BEST_VALUE": 54996,
+        "ALTERNATIVE": 50296
+      }
     }
   },
   {
     "id": "context-paraphrase",
-    "messages": ["For my small shop I want a complete desk setup. I already have a computer. Buy one 144 Hz screen and one keyboard only, with a total INR 30000 cap and delivery within seven days."],
+    "messages": [
+      "For my small shop I want a complete desk setup. I already have a computer. Buy one 144 Hz screen and one keyboard only, with a total INR 30000 cap and delivery within seven days."
+    ],
     "expected": {
       "status": "READY",
-      "draft": { "budgetINR": 30000, "maxDeliveryDays": 7, "requiredCategories": [{ "category": "monitor", "quantity": 1 }, { "category": "keyboard", "quantity": 1 }], "hardConstraints": { "monitor": { "minRefreshRateHz": 144 } } },
+      "draft": {
+        "budgetINR": 30000,
+        "maxDeliveryDays": 7,
+        "requiredCategories": [
+          {
+            "category": "monitor",
+            "quantity": 1
+          },
+          {
+            "category": "keyboard",
+            "quantity": 1
+          }
+        ],
+        "hardConstraints": {
+          "monitor": {
+            "minRefreshRateHz": 144
+          }
+        }
+      },
       "noUnsupportedRequirements": true
     }
   },
   {
     "id": "missing-budget-and-deadline",
-    "messages": ["I need a 144 Hz monitor."],
+    "messages": [
+      "I need a 144 Hz monitor."
+    ],
     "expected": {
       "status": "NEEDS_CLARIFICATION",
-      "draft": { "budgetINR": null, "maxDeliveryDays": null, "requiredCategories": [{ "category": "monitor", "quantity": 1 }], "hardConstraints": { "monitor": { "minRefreshRateHz": 144 } } },
-      "questionFields": ["budgetINR", "maxDeliveryDays"],
+      "draft": {
+        "budgetINR": null,
+        "maxDeliveryDays": null,
+        "requiredCategories": [
+          {
+            "category": "monitor",
+            "quantity": 1
+          }
+        ],
+        "hardConstraints": {
+          "monitor": {
+            "minRefreshRateHz": 144
+          }
+        }
+      },
+      "questionFields": [
+        "budgetINR",
+        "maxDeliveryDays"
+      ],
       "noUnsupportedRequirements": true
     }
   },
   {
     "id": "unlisted-setup-items",
-    "messages": ["I need a complete coding setup under INR 40000 delivered within 7 days."],
+    "messages": [
+      "I need a complete coding setup under INR 40000 delivered within 7 days."
+    ],
     "expected": {
       "status": "NEEDS_CLARIFICATION",
-      "draft": { "budgetINR": 40000, "maxDeliveryDays": 7, "requiredCategories": [] },
-      "questionFields": ["requiredCategories"],
+      "draft": {
+        "budgetINR": 40000,
+        "maxDeliveryDays": 7,
+        "requiredCategories": []
+      },
+      "questionFields": [
+        "requiredCategories"
+      ],
       "noUnsupportedRequirements": true
     }
   },
   {
     "id": "missing-quantity",
-    "messages": ["Buy monitors under a total INR 60000 budget, delivered within 7 days."],
+    "messages": [
+      "Buy monitors under a total INR 60000 budget, delivered within 7 days."
+    ],
     "expected": {
       "status": "NEEDS_CLARIFICATION",
-      "draft": { "budgetINR": 60000, "maxDeliveryDays": 7, "requiredCategories": [{ "category": "monitor", "quantity": null }] },
-      "questionFields": ["requiredCategories[0].quantity"],
+      "draft": {
+        "budgetINR": 60000,
+        "maxDeliveryDays": 7,
+        "requiredCategories": [
+          {
+            "category": "monitor",
+            "quantity": null
+          }
+        ]
+      },
+      "questionFields": [
+        "requiredCategories[0].quantity"
+      ],
       "noUnsupportedRequirements": true
     }
   },
   {
     "id": "followup-and-correction",
-    "messages": ["I need two 144 Hz monitors.", "My total budget is INR 60000 and delivery must be within 7 days.", "Actually change the total budget to INR 40000 and the quantity to three monitors. IPS panels are required."],
+    "messages": [
+      "I need two 144 Hz monitors.",
+      "My total budget is INR 60000 and delivery must be within 7 days.",
+      "Actually change the total budget to INR 40000 and the quantity to three monitors. IPS panels are required."
+    ],
     "expected": {
       "status": "READY",
-      "draft": { "budgetINR": 40000, "maxDeliveryDays": 7, "requiredCategories": [{ "category": "monitor", "quantity": 3 }], "hardConstraints": { "monitor": { "minRefreshRateHz": 144, "panelIn": ["IPS"] } } },
+      "draft": {
+        "budgetINR": 40000,
+        "maxDeliveryDays": 7,
+        "requiredCategories": [
+          {
+            "category": "monitor",
+            "quantity": 3
+          }
+        ],
+        "hardConstraints": {
+          "monitor": {
+            "minRefreshRateHz": 144,
+            "panelIn": [
+              "IPS"
+            ]
+          }
+        }
+      },
       "noUnsupportedRequirements": true
     }
   },
   {
-    "id": "unsupported-laptop-ram",
-    "messages": ["I need 5 laptops for a small shop under 3 lakh INR total, each with at least 16 GB RAM, delivery within 10 days and a minimum one-year warranty."],
+    "id": "laptop-ram-warranty",
+    "action": "plan",
+    "messages": [
+      "I need 5 laptops for a small shop under 3 lakh INR total, each with at least 16 GB RAM, delivery within 10 days and a minimum one-year warranty."
+    ],
     "expected": {
-      "status": "ENGINE_SUPPORT_REQUIRED",
-      "draft": { "budgetINR": 300000, "maxDeliveryDays": 10, "requiredCategories": [{ "category": "laptop", "quantity": 5 }] },
-      "unsupportedPatterns": ["RAM"],
-      "conditions": [{ "category": "laptop", "attribute": "ramGB", "operator": "gte", "value": 16, "importance": "HARD" }, { "category": "laptop", "attribute": "warrantyMonths", "operator": "gte", "value": 12, "importance": "HARD" }]
+      "status": "PLANNED",
+      "draft": {
+        "budgetINR": 300000,
+        "maxDeliveryDays": 10,
+        "requiredCategories": [
+          {
+            "category": "laptop",
+            "quantity": 5
+          }
+        ],
+        "hardConstraints": {
+          "laptop": {
+            "minRamGB": 16,
+            "minWarrantyMonths": 12
+          }
+        }
+      },
+      "noUnsupportedRequirements": true,
+      "totals": {
+        "CHEAPEST": 250494,
+        "BEST_VALUE": 281249,
+        "ALTERNATIVE": 275450
+      }
+    }
+  },
+  {
+    "id": "unsupported-laptop-gpu",
+    "messages": [
+      "I need 2 laptops with an RTX 4060 GPU and at least 16 GB RAM, total budget INR 200000, delivered within 10 days."
+    ],
+    "expected": {
+      "status": "NEEDS_CLARIFICATION",
+      "draft": {
+        "budgetINR": 200000,
+        "maxDeliveryDays": 10,
+        "requiredCategories": [
+          {
+            "category": "laptop",
+            "quantity": 2
+          }
+        ],
+        "hardConstraints": {
+          "laptop": {
+            "minRamGB": 16
+          }
+        }
+      },
+      "unsupportedPatterns": [
+        "GPU|RTX"
+      ]
     }
   },
   {
     "id": "mandatory-compatibility",
-    "messages": ["Buy one monitor with a minimum 144 Hz refresh rate, total budget INR 20000, delivered within 7 days. It must output 144 Hz through my existing laptop HDMI port."],
+    "messages": [
+      "Buy one monitor with a minimum 144 Hz refresh rate, total budget INR 20000, delivered within 7 days. It must output 144 Hz through my existing laptop HDMI port."
+    ],
     "expected": {
-      "status": "ENGINE_SUPPORT_REQUIRED",
-      "draft": { "budgetINR": 20000, "maxDeliveryDays": 7, "requiredCategories": [{ "category": "monitor", "quantity": 1 }], "hardConstraints": { "monitor": { "minRefreshRateHz": 144 } } },
-      "unsupportedPatterns": ["HDMI|compatib"]
+      "status": "NEEDS_CLARIFICATION",
+      "draft": {
+        "budgetINR": 20000,
+        "maxDeliveryDays": 7,
+        "requiredCategories": [
+          {
+            "category": "monitor",
+            "quantity": 1
+          }
+        ],
+        "hardConstraints": {
+          "monitor": {
+            "minRefreshRateHz": 144
+          }
+        }
+      },
+      "unsupportedPatterns": [
+        "HDMI|compatib"
+      ]
     }
   },
   {
     "id": "withdrawn-compatibility-condition",
-    "messages": ["Buy one 144 Hz monitor, total budget INR 20000 and delivery within 7 days. It must output 144 Hz through my existing laptop HDMI port.", "Drop the laptop HDMI compatibility requirement. Keep the 144 Hz monitor, budget and delivery deadline."],
+    "messages": [
+      "Buy one 144 Hz monitor, total budget INR 20000 and delivery within 7 days. It must output 144 Hz through my existing laptop HDMI port.",
+      "Drop the laptop HDMI compatibility requirement. Keep the 144 Hz monitor, budget and delivery deadline."
+    ],
     "expected": {
       "status": "READY",
-      "draft": { "budgetINR": 20000, "maxDeliveryDays": 7, "requiredCategories": [{ "category": "monitor", "quantity": 1 }], "hardConstraints": { "monitor": { "minRefreshRateHz": 144 } } },
+      "draft": {
+        "budgetINR": 20000,
+        "maxDeliveryDays": 7,
+        "requiredCategories": [
+          {
+            "category": "monitor",
+            "quantity": 1
+          }
+        ],
+        "hardConstraints": {
+          "monitor": {
+            "minRefreshRateHz": 144
+          }
+        }
+      },
       "noUnsupportedRequirements": true
     }
   }

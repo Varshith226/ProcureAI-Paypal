@@ -36,6 +36,7 @@ npm install
 cp .env.example .env          # then add your own PayPal sandbox credentials
 npm test                      # automated tests
 npm run demo                  # ₹60,000 example → 3 plans + rejected products (no server needed)
+npm run demo -- examples/request-5-laptops.json   # 5 laptops for a shop, ₹3 lakh
 npm run demo:revalidate       # pre-checkout safety check: VALID / CHANGED / INVALID
 npm start                     # API at http://localhost:3000
 ```

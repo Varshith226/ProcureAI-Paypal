@@ -64,6 +64,9 @@ Produce this JSON. It is the same as the agreed draft, and `clarificationsNeeded
 | "noise cancelling" | `headphones.requireAnc: true` |
 | "at least 2-year warranty" | `<category>.minWarrantyMonths: 24` |
 | "no brand X" | `<category>.excludedBrands: ["X"]` |
+| "laptops with 16 GB RAM" | `laptop.minRamGB: 16` |
+| "512 GB SSD" | `laptop.minStorageGB: 512`, `laptop.storageTypeIn: ["SSD"]` |
+| "Windows laptops" / "under 1.5 kg" | `laptop.osIn: ["Windows"]` / `laptop.maxWeightKg: 1.5` |
 
 - **Things the user already owns** (the laptop) are left out of `requiredCategories`.
 - **Validate before sending** with no HTTP needed: `require("./src/requestValidator").validateRequest(json)` returns `{ ok, errors[] }`. Use `errors` to ask the user a clarifying question.

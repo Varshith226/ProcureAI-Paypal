@@ -210,6 +210,24 @@ function searchBest(perCategory, budgetPaise, objective, filter = null) {
   return { best, evaluated: Math.min(evaluated, MAX_BASKETS_EVALUATED), truncated };
 }
 
+/** Units (across the whole basket) that a different product is used for: total units - per-product overlap. */
+function unitsChanged(a, b) {
+  const qty = (basket) => {
+    const m = new Map();
+    for (const s of basket.selections) for (const l of s.option.lines) m.set(l.cand.product.productId, (m.get(l.cand.product.productId) || 0) + l.quantity);
+    return m;
+  };
+  const qa = qty(a);
+  const qb = qty(b);
+  let total = 0;
+  let overlap = 0;
+  for (const [id, q] of qa) {
+    total += q;
+    overlap += Math.min(q, qb.get(id) || 0);
+  }
+  return total - overlap;
+}
+
 /** Number of categories in which two baskets pick a different product/quantity mix. */
 function categoriesChanged(a, b) {
   return a.selections.filter((s, i) => s.option.key !== b.selections[i].option.key).map((s) => s.category);
@@ -277,20 +295,24 @@ function optimize(categories, budgetPaise) {
     cheapest = null;
   }
 
-  // ALTERNATIVE: highest-scoring basket that changes at least min(2, #categories)
-  // category selections vs BEST_VALUE, differs from CHEAPEST, and offers a real
-  // trade-off: it is cheaper than BEST_VALUE or has more complete evidence.
+  // ALTERNATIVE: highest-scoring basket that is materially different from
+  // BEST_VALUE — it changes at least min(2, #categories) category selections AND
+  // uses a different product for at least half of all units — differs from
+  // CHEAPEST, and offers a real trade-off: cheaper than BEST_VALUE or better evidenced.
   const minChanged = Math.min(2, perCategory.length);
+  const totalUnits = perCategory.reduce((s, c) => s + c.quantity, 0);
+  const minUnitsChanged = Math.ceil(totalUnits / 2);
   const cheapestKey = cheapest ? cheapest.key : null;
   const alternative = run("score", (b) => {
     if (b.key === bestValue.key || b.key === cheapestKey) return false;
     if (categoriesChanged(b, bestValue).length < minChanged) return false;
+    if (unitsChanged(b, bestValue) < minUnitsChanged) return false;
     return b.costPaise < bestValue.costPaise || b.evidence > bestValue.evidence + EPS;
   });
   if (!alternative) {
     omitted.push({
       strategyKey: "ALTERNATIVE",
-      reason: `No other feasible basket changes at least ${minChanged} category selection(s) while being cheaper than BEST_VALUE or better evidenced (and different from CHEAPEST).`,
+      reason: `No other feasible basket changes at least ${minChanged} category selection(s) and ${minUnitsChanged} of ${totalUnits} unit(s) while being cheaper than BEST_VALUE or better evidenced (and different from CHEAPEST).`,
     });
   }
 
@@ -314,6 +336,7 @@ module.exports = {
   buildCategoryOptions,
   searchBest,
   categoriesChanged,
+  unitsChanged,
   EPS,
   OPTION_LIMIT_PER_CATEGORY,
   MAX_BASKETS_EVALUATED,

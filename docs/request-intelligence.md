@@ -82,6 +82,8 @@ Current fixtures: `ai-parser-cases.json` and `ai-parser-heldout-cases.json`. The
 
 Verified on 2026-10-30 with `gemini-3.5-flash-lite`: **129/129 automated tests and 83/83 live cases (75 development + 8 reserved paraphrases)**. See [parser-acceptance-summary.json](../reports/ai-evaluation/parser-acceptance-summary.json) for source/prompt/schema hashes and the complete live report. The final invocation made 40 new model calls and reused 43 validated passes from source-matched interrupted runs. Provider timeouts and earlier semantic failures remain recorded rather than counted as passes.
 
+After integrating the laptop-category changes from main, **141/141 automated entries pass (140 named checks plus one helper file)**. The four primary parser files, prompt and schema still match the live-tested snapshot, so the 83-case evidence remains applicable without new model calls. See [integration-validation.json](../reports/ai-evaluation/integration-validation.json).
+
 Historical v2 reports/`acceptance-summary.json` included optimizer compatibility. They are not evidence for the current parser-only contract. A finite passing suite is measured coverage, not a guarantee for every possible sentence; new failures should become regression cases.
 
 After a transport/quota interruption, `npm run test:ai:live -- --resume=reports/ai-evaluation/REPORT.json` reuses only validated successful cases with matching input, expectations, model, prompt, schema and parser source. It preserves the original frozen date/time and report provenance. Failed or changed cases call the model again. Changing parsing behavior invalidates cached passes; earlier interrupted reports remain intact.

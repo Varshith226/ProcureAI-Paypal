@@ -30,7 +30,7 @@ test("real optimizer still returns and stores the three exact demo baskets", asy
 });
 
 test("arbitrary categories remain structured even with unsupported specifications", () => {
-  for (const [category, attribute, value, unit] of [["chair", "weightCapacity", 120, "kg"], ["laptop", "ramGB", 16, "GB"], ["shirt", "size", "XL", null], ["rice", "organic", true, null], ["printer", "duplex", true, null], ["subscription", "seats", 5, null], ["plumbing_service", "installation", true, null]]) {
+  for (const [category, attribute, value, unit] of [["chair", "weightCapacity", 120, "kg"], ["tablet", "ramGB", 16, "GB"], ["shirt", "size", "XL", null], ["rice", "organic", true, null], ["printer", "duplex", true, null], ["subscription", "seats", 5, null], ["plumbing_service", "installation", true, null]]) {
     const quote = `Must have ${attribute} ${value}`;
     const data = extraction({ items: [item(category, 2, [condition(attribute, typeof value === "number" ? "gte" : "eq", value, quote, unit)])] });
     const result = brief(data, [`Buy two ${category}. ${quote}. Budget INR 60000, 7 days.`]);

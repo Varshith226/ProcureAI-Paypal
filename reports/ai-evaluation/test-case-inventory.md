@@ -4,6 +4,8 @@ Generated: 2026-10-30T18:00:26.530Z. Scope: request intelligence, response v3.
 
 ## Results and how to read them
 
+**Integration update:** after syncing the laptop-category work from main, `npm.cmd test` passes 141 entries: 140 named behavioral checks plus the helper file. The original 128 named checks are listed below; the 12 laptop checks are appended at the end. The parser/prompt/schema still match the 83-case live acceptance. See [integration-validation.json](integration-validation.json).
+
 - **83/83 live parser scenarios passed:** 75 development cases and 8 reserved paraphrases. These use real Gemini responses, not injected extraction results.
 - **128/128 named automated checks passed in a fresh run.** Node reports 129 passing entries because it also discovers `test/helpers.js` as a file-level test; that helper is not an additional behavioral check.
 - Automated checks include parser/API/provider tests and retained legacy engine regressions. Engine tests are listed separately by source file; they are not additional live parser scenarios.
@@ -3153,3 +3155,18 @@ These passed in the fresh automated run linked above. Some names mention v1/engi
 ## Coverage limits
 
 Not separately established by this suite: exhaustive languages/dialects, arbitrary nested bundle/discount logic, every domain-specific compatibility detail, very long conversations beyond the documented input bounds, or reliability under every future provider/model change. New counterexamples should become regression cases. This inventory verifies parsing and clarification; downstream optimization, product availability and payment behavior are separate responsibilities.
+
+## Additional laptop integration checks from main
+
+129. laptop constraints are accepted by the request validator; typos are still rejected
+130. demo: 5 laptops, >=16 GB RAM, >=12-month warranty, <= ₹3 lakh, <= 10 days
+131. without a warranty requirement, warranty gaps are only warnings and price is never a rejection reason
+132. ALTERNATIVE is materially different: a different product for at least half of all units
+133. a one-unit swap is not offered as an ALTERNATIVE
+134. unitsChanged / categoriesChanged count real differences
+135. mixed laptops + accessories in one basket
+136. laptop specs display
+137. 3 lakh with RAM >= 32 GB is infeasible with a precise explanation
+138. AI agent: laptop and GPU requirements use the general extraction schema
+139. AI agent: '5 laptops, 16 GB, 1-year warranty, 3 lakh' goes straight to a plan
+140. AI agent: GPU requirements parse READY while the legacy planning bridge reports its limitation
