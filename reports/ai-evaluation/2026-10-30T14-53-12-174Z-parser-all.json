@@ -1,0 +1,4000 @@
+{
+  "scope": "REQUEST_INTELLIGENCE",
+  "contractVersion": 3,
+  "model": "gemini-3.5-flash-lite",
+  "suite": "all",
+  "startedAt": "2026-10-30T14:53:12.174Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "4a3821151a00cc01ab69fc77f2212c131e321765b9f2f230c3c64f283e3fa320",
+  "schemaHash": "db4cbb70f5c958b32632e27a4d23cb4104d7d947d65facebacfeddf56eb87f9b",
+  "cases": [
+    {
+      "id": "original-setup",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "amount": 60000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": 1,
+          "keyboard": 1,
+          "mouse": 1,
+          "headphones": 1
+        },
+        "exactCategories": [
+          "monitor",
+          "keyboard",
+          "mouse",
+          "headphones"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_original-setup",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_original-setup",
+          "rawQuery": "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz monitor"
+                }
+              ]
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "mouse",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "headphones",
+              "quantity": 1,
+              "unit": "pair",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 60000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0,
+            "reliability": 0.5,
+            "delivery": 0.5
+          },
+          "ambiguities": [],
+          "assumptions": [
+            "User already owns a laptop and it is excluded from the purchase list",
+            "Setup is intended for coding and gaming"
+          ]
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz monitor"
+                }
+              ]
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "mouse",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "headphones",
+              "quantity": 1,
+              "unit": "pair",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 60000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0,
+            "reliability": 0.5,
+            "delivery": 0.5
+          },
+          "ambiguities": [],
+          "assumptions": [
+            "User already owns a laptop and it is excluded from the purchase list",
+            "Setup is intended for coding and gaming"
+          ]
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [
+          "User already owns a laptop and it is excluded from the purchase list",
+          "Setup is intended for coding and gaming"
+        ],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "context-paraphrase",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "For my small shop I want a complete desk setup. I already have a computer. Buy one 144 Hz screen and one keyboard only, with a total INR 30000 cap and delivery within seven days."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "amount": 30000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": 1,
+          "keyboard": 1
+        },
+        "exactCategories": [
+          "monitor",
+          "keyboard"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_context-paraphrase",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_context-paraphrase",
+          "rawQuery": "For my small shop I want a complete desk setup. I already have a computer. Buy one 144 Hz screen and one keyboard only, with a total INR 30000 cap and delivery within seven days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz screen"
+                }
+              ]
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 30000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": [
+            "User already owns a computer"
+          ]
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz screen"
+                }
+              ]
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 30000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": [
+            "User already owns a computer"
+          ]
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [
+          "User already owns a computer"
+        ],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "missing-budget-and-deadline",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "I need a 144 Hz monitor."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionFields": [
+          "budget.amount",
+          "delivery"
+        ],
+        "requirements": {
+          "budget": {
+            "amount": null
+          },
+          "delivery": {
+            "maxDays": null
+          }
+        },
+        "itemCounts": {
+          "monitor": 1
+        },
+        "exactCategories": [
+          "monitor"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_missing-budget-and-deadline",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz monitor"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": null,
+            "minAmount": null,
+            "currency": null,
+            "scope": "UNKNOWN",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": null,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "budget.amount",
+            "question": "What is your budget and currency, or should there be no spending cap?"
+          },
+          {
+            "field": "delivery",
+            "question": "When do you need delivery, or is the timing flexible?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "budget.amount",
+          "question": "What is your budget and currency, or should there be no spending cap?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "unlisted-setup-items",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "I need a complete coding setup under INR 40000 delivered within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionFields": [
+          "items"
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 40000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {},
+        "exactCategories": []
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_unlisted-setup-items",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [],
+          "budget": {
+            "amount": 40000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": [
+            "User wants a complete coding setup"
+          ]
+        },
+        "questions": [
+          {
+            "field": "items",
+            "question": "Which items do you want to buy, and how many of each?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "items",
+          "question": "Which items do you want to buy, and how many of each?"
+        },
+        "assumptions": [
+          "User wants a complete coding setup"
+        ],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "missing-quantity",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy monitors under a total INR 60000 budget, delivered within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionFields": [
+          "items[0].quantity"
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 60000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": null
+        },
+        "exactCategories": [
+          "monitor"
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_missing-quantity",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": null,
+              "unit": null,
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 60000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "items[0].quantity",
+            "question": "How many monitor do you need, and in which unit?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "items[0].quantity",
+          "question": "How many monitor do you need, and in which unit?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "followup-and-correction",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "I need two 144 Hz monitors.",
+        "My total budget is INR 60000 and delivery must be within 7 days.",
+        "Actually change the total budget to INR 40000 and the quantity to three monitors. IPS panels are required."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "amount": 40000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": 3
+        },
+        "exactCategories": [
+          "monitor"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          },
+          {
+            "category": "monitor",
+            "attribute": "panel",
+            "operator": "in",
+            "value": [
+              "IPS"
+            ],
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_followup-and-correction",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_followup-and-correction",
+          "rawQuery": "I need two 144 Hz monitors.\nFollow-up: My total budget is INR 60000 and delivery must be within 7 days.\nFollow-up: Actually change the total budget to INR 40000 and the quantity to three monitors. IPS panels are required.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 3,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz"
+                },
+                {
+                  "attribute": "panel",
+                  "operator": "eq",
+                  "value": "IPS",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "IPS"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 40000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 3,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz"
+                },
+                {
+                  "attribute": "panel",
+                  "operator": "eq",
+                  "value": "IPS",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "IPS"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 40000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "unsupported-laptop-ram",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "I need 5 laptops for a small shop under 3 lakh INR total, each with at least 16 GB RAM, delivery within 10 days and a minimum one-year warranty."
+      ],
+      "expected": {
+        "status": "READY",
+        "conditions": [
+          {
+            "category": "laptop",
+            "attribute": "ramGB",
+            "operator": "gte",
+            "value": 16,
+            "importance": "HARD"
+          },
+          {
+            "category": "laptop",
+            "attribute": "warrantyMonths",
+            "operator": "gte",
+            "value": 12,
+            "importance": "HARD"
+          }
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 300000
+          },
+          "delivery": {
+            "maxDays": 10
+          }
+        },
+        "itemCounts": {
+          "laptop": 5
+        },
+        "exactCategories": [
+          "laptop"
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_unsupported-laptop-ram",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_unsupported-laptop-ram",
+          "rawQuery": "I need 5 laptops for a small shop under 3 lakh INR total, each with at least 16 GB RAM, delivery within 10 days and a minimum one-year warranty.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "laptop",
+              "quantity": 5,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "ramGB",
+                  "operator": "gte",
+                  "value": 16,
+                  "unit": "GB",
+                  "importance": "HARD",
+                  "sourceText": "at least 16 GB RAM"
+                },
+                {
+                  "attribute": "warrantyMonths",
+                  "operator": "gte",
+                  "value": 12,
+                  "unit": "months",
+                  "importance": "HARD",
+                  "sourceText": "minimum one-year warranty"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 300000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 10,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "laptop",
+              "quantity": 5,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "ramGB",
+                  "operator": "gte",
+                  "value": 16,
+                  "unit": "GB",
+                  "importance": "HARD",
+                  "sourceText": "at least 16 GB RAM"
+                },
+                {
+                  "attribute": "warrantyMonths",
+                  "operator": "gte",
+                  "value": 12,
+                  "unit": "months",
+                  "importance": "HARD",
+                  "sourceText": "minimum one-year warranty"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 300000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 10,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "mandatory-compatibility",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one monitor with a minimum 144 Hz refresh rate, total budget INR 20000, delivered within 7 days. It must output 144 Hz through my existing laptop HDMI port."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "amount": 20000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": 1
+        },
+        "exactCategories": [
+          "monitor"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          },
+          {
+            "attributePattern": "compatib|HDMI|port",
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_mandatory-compatibility",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_mandatory-compatibility",
+          "rawQuery": "Buy one monitor with a minimum 144 Hz refresh rate, total budget INR 20000, delivered within 7 days. It must output 144 Hz through my existing laptop HDMI port.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "minimum 144 Hz refresh rate"
+                },
+                {
+                  "attribute": "compatibility",
+                  "operator": "contains",
+                  "value": "existing laptop HDMI port",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "output 144 Hz through my existing laptop HDMI port"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "minimum 144 Hz refresh rate"
+                },
+                {
+                  "attribute": "compatibility",
+                  "operator": "contains",
+                  "value": "existing laptop HDMI port",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "output 144 Hz through my existing laptop HDMI port"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "withdrawn-compatibility-condition",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one 144 Hz monitor, total budget INR 20000 and delivery within 7 days. It must output 144 Hz through my existing laptop HDMI port.",
+        "Drop the laptop HDMI compatibility requirement. Keep the 144 Hz monitor, budget and delivery deadline."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "amount": 20000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": 1
+        },
+        "exactCategories": [
+          "monitor"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_withdrawn-compatibility-condition",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_withdrawn-compatibility-condition",
+          "rawQuery": "Buy one 144 Hz monitor, total budget INR 20000 and delivery within 7 days. It must output 144 Hz through my existing laptop HDMI port.\nFollow-up: Drop the laptop HDMI compatibility requirement. Keep the 144 Hz monitor, budget and delivery deadline.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz monitor"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz monitor"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "furniture-capacity",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 4 chairs under INR 10000 total, delivery within 7 days. Each chair must support at least 120 kg."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "chair": 4
+        },
+        "conditions": [
+          {
+            "category": "chair",
+            "attributePattern": "weight.*capacity|load.*capacity|capacity",
+            "operator": "gte",
+            "value": 120,
+            "unit": "kg",
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_furniture-capacity",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_furniture-capacity",
+          "rawQuery": "Buy 4 chairs under INR 10000 total, delivery within 7 days. Each chair must support at least 120 kg.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 4,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "weightCapacity",
+                  "operator": "gte",
+                  "value": 120,
+                  "unit": "kg",
+                  "importance": "HARD",
+                  "sourceText": "Each chair must support at least 120 kg."
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 10000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 4,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "weightCapacity",
+                  "operator": "gte",
+                  "value": 120,
+                  "unit": "kg",
+                  "importance": "HARD",
+                  "sourceText": "Each chair must support at least 120 kg."
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 10000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "furniture-basic",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 4 chairs under INR 10000 total and deliver within 7 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "chair": 4
+        },
+        "requirements": {
+          "budget": {
+            "amount": 10000,
+            "currency": "INR"
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_furniture-basic",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_furniture-basic",
+          "rawQuery": "Buy 4 chairs under INR 10000 total and deliver within 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 4,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 10000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 4,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 10000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "clothing-size-material",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 2 shirts, size XL and cotton material required, total INR 4000, deliver in 5 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "shirt": 2
+        },
+        "conditions": [
+          {
+            "category": "shirt",
+            "attributePattern": "size",
+            "value": "XL",
+            "importance": "HARD"
+          },
+          {
+            "category": "shirt",
+            "attributePattern": "material|fabric",
+            "value": "cotton",
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_clothing-size-material",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_clothing-size-material",
+          "rawQuery": "Buy 2 shirts, size XL and cotton material required, total INR 4000, deliver in 5 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "size",
+                  "operator": "eq",
+                  "value": "XL",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "size XL"
+                },
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton material required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "size",
+                  "operator": "eq",
+                  "value": "XL",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "size XL"
+                },
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton material required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "grocery-fractional",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 0.5 kg of rice, total budget INR 100, delivery within 2 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "rice": 0.5
+        },
+        "itemUnits": {
+          "rice": "kg"
+        },
+        "requirements": {
+          "budget": {
+            "amount": 100,
+            "currency": "INR"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_grocery-fractional",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_grocery-fractional",
+          "rawQuery": "Buy 0.5 kg of rice, total budget INR 100, delivery within 2 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "rice",
+              "quantity": 0.5,
+              "unit": "kg",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 100,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "rice",
+              "quantity": 0.5,
+              "unit": "kg",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 100,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "grocery-packs",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy two 5 kg bags of rice, total INR 2000, deliver in 3 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "rice": 2
+        },
+        "conditions": [
+          {
+            "category": "rice",
+            "attributePattern": "pack.*weight|bag.*weight|weight",
+            "value": 5,
+            "unit": "kg",
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_grocery-packs",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_grocery-packs",
+          "rawQuery": "Buy two 5 kg bags of rice, total INR 2000, deliver in 3 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "rice",
+              "quantity": 2,
+              "unit": "pack",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "packWeight",
+                  "operator": "eq",
+                  "value": 5,
+                  "unit": "kg",
+                  "importance": "HARD",
+                  "sourceText": "5 kg bags"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 2000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 3,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "rice",
+              "quantity": 2,
+              "unit": "pack",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "packWeight",
+                  "operator": "eq",
+                  "value": 5,
+                  "unit": "kg",
+                  "importance": "HARD",
+                  "sourceText": "5 kg bags"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 2000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 3,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "grocery-allergen",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 3 snack packs that must be peanut-free, INR 900 total, delivery in 4 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "conditions": [
+          {
+            "attributePattern": "peanut|allerg|ingredient",
+            "importance": "HARD"
+          }
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 900,
+            "currency": "INR"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_grocery-allergen",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_grocery-allergen",
+          "rawQuery": "Buy 3 snack packs that must be peanut-free, INR 900 total, delivery in 4 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "snack",
+              "quantity": 3,
+              "unit": "pack",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "allergen",
+                  "operator": "not_in",
+                  "value": [
+                    "peanut"
+                  ],
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "peanut-free"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 900,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 4,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "snack",
+              "quantity": 3,
+              "unit": "pack",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "allergen",
+                  "operator": "not_in",
+                  "value": [
+                    "peanut"
+                  ],
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "peanut-free"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 900,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 4,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "stationery",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 10 notebooks for INR 1000 total, delivery within a week."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "notebook": 10
+        },
+        "requirements": {
+          "delivery": {
+            "maxDays": 7
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_stationery",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_stationery",
+          "rawQuery": "Buy 10 notebooks for INR 1000 total, delivery within a week.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "notebook",
+              "quantity": 10,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 1000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "notebook",
+              "quantity": 10,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 1000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "appliance-capacity",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one refrigerator with at least 300 litres capacity under INR 40000 total. Deliver within 10 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "refrigerator": 1
+        },
+        "conditions": [
+          {
+            "attributePattern": "capacity|volume",
+            "operator": "gte",
+            "value": 300,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_appliance-capacity",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_appliance-capacity",
+          "rawQuery": "Buy one refrigerator with at least 300 litres capacity under INR 40000 total. Deliver within 10 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "refrigerator",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "capacity",
+                  "operator": "gte",
+                  "value": 300,
+                  "unit": "litres",
+                  "importance": "HARD",
+                  "sourceText": "at least 300 litres capacity"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 40000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 10,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "refrigerator",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "capacity",
+                  "operator": "gte",
+                  "value": 300,
+                  "unit": "litres",
+                  "importance": "HARD",
+                  "sourceText": "at least 300 litres capacity"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 40000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 10,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "printer-function",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one printer with mandatory duplex printing, INR 15000 total and delivery within 7 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "printer": 1
+        },
+        "conditions": [
+          {
+            "attributePattern": "duplex",
+            "value": true,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_printer-function",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_printer-function",
+          "rawQuery": "Buy one printer with mandatory duplex printing, INR 15000 total and delivery within 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "printer",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "duplex",
+                  "operator": "eq",
+                  "value": true,
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "mandatory duplex printing"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 15000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "printer",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "duplex",
+                  "operator": "eq",
+                  "value": true,
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "mandatory duplex printing"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 15000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "tool-voltage",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 2 cordless drills, each must operate at 18 volts, INR 20000 total and 7-day delivery."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "drill": 2
+        },
+        "categoryAliases": {
+          "drill": [
+            "cordless_drill"
+          ]
+        },
+        "conditions": [
+          {
+            "attributePattern": "voltage",
+            "value": 18,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_tool-voltage",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_tool-voltage",
+          "rawQuery": "Buy 2 cordless drills, each must operate at 18 volts, INR 20000 total and 7-day delivery.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "cordless_drill",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "voltage",
+                  "operator": "eq",
+                  "value": 18,
+                  "unit": "V",
+                  "importance": "HARD",
+                  "sourceText": "operate at 18 volts"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "cordless_drill",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "voltage",
+                  "operator": "eq",
+                  "value": 18,
+                  "unit": "V",
+                  "importance": "HARD",
+                  "sourceText": "operate at 18 volts"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "digital-subscription",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one project-management software subscription with 5 user seats required, INR 12000 total, activation within 2 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "conditions": [
+          {
+            "attributePattern": "seat|user",
+            "value": 5,
+            "importance": "HARD"
+          }
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 12000,
+            "currency": "INR"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_digital-subscription",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_digital-subscription",
+          "rawQuery": "Buy one project-management software subscription with 5 user seats required, INR 12000 total, activation within 2 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "software_subscription",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "purpose",
+                  "operator": "eq",
+                  "value": "project-management",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "project-management software subscription"
+                },
+                {
+                  "attribute": "user_seats",
+                  "operator": "eq",
+                  "value": 5,
+                  "unit": "seats",
+                  "importance": "HARD",
+                  "sourceText": "5 user seats required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 12000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "software_subscription",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "purpose",
+                  "operator": "eq",
+                  "value": "project-management",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "project-management software subscription"
+                },
+                {
+                  "attribute": "user_seats",
+                  "operator": "eq",
+                  "value": 5,
+                  "unit": "seats",
+                  "importance": "HARD",
+                  "sourceText": "5 user seats required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 12000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "service-request",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Book one plumbing service, fixing a leaking tap is required, INR 2000 total, within 2 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "conditions": [
+          {
+            "importance": "HARD"
+          }
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 2000,
+            "currency": "INR"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_service-request",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_service-request",
+          "rawQuery": "Book one plumbing service, fixing a leaking tap is required, INR 2000 total, within 2 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "plumbing_service",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "service",
+                  "operator": "eq",
+                  "value": "fixing a leaking tap",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "fixing a leaking tap is required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 2000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "plumbing_service",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "service",
+                  "operator": "eq",
+                  "value": "fixing a leaking tap",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "fixing a leaking tap is required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 2000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "mixed-domains",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 2 chairs and 3 keyboards for INR 30000 total, all delivered in 7 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "chair": 2,
+          "keyboard": 3
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_mixed-domains",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_mixed-domains",
+          "rawQuery": "Buy 2 chairs and 3 keyboards for INR 30000 total, all delivered in 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "keyboard",
+              "quantity": 3,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 30000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "keyboard",
+              "quantity": 3,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 30000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "usd-budget",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 2 monitors for a total of $500, delivery within 7 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "monitor": 2
+        },
+        "requirements": {
+          "budget": {
+            "amount": 500,
+            "currency": "USD",
+            "scope": "TOTAL"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_usd-budget",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_usd-budget",
+          "rawQuery": "Buy 2 monitors for a total of $500, delivery within 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 500,
+            "minAmount": null,
+            "currency": "USD",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 500,
+            "minAmount": null,
+            "currency": "USD",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "eur-budget",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard, total budget €100, deliver within 3 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "keyboard": 1
+        },
+        "requirements": {
+          "budget": {
+            "amount": 100,
+            "currency": "EUR"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_eur-budget",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_eur-budget",
+          "rawQuery": "Buy one keyboard, total budget €100, deliver within 3 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 100,
+            "minAmount": null,
+            "currency": "EUR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 3,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 100,
+            "minAmount": null,
+            "currency": "EUR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 3,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "per-item-budget",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 3 chairs for no more than INR 5000 each, deliver within 7 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "chair": 3
+        },
+        "requirements": {
+          "budget": {
+            "amount": 5000,
+            "currency": "INR",
+            "scope": "PER_ITEM"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_per-item-budget",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_per-item-budget",
+          "rawQuery": "Buy 3 chairs for no more than INR 5000 each, deliver within 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 3,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "unitPriceINR",
+                  "operator": "lte",
+                  "value": 5000,
+                  "unit": "INR",
+                  "importance": "HARD",
+                  "sourceText": "no more than INR 5000 each"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "PER_ITEM",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 3,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "unitPriceINR",
+                  "operator": "lte",
+                  "value": 5000,
+                  "unit": "INR",
+                  "importance": "HARD",
+                  "sourceText": "no more than INR 5000 each"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "PER_ITEM",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "budget-range",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy a keyboard with a total budget between INR 1000 and INR 3000, deliver in 7 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "minAmount": 1000,
+            "amount": 3000,
+            "currency": "INR"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_budget-range",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_budget-range",
+          "rawQuery": "Buy a keyboard with a total budget between INR 1000 and INR 3000, deliver in 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 3000,
+            "minAmount": 1000,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 3000,
+            "minAmount": 1000,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "unlimited-budget",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one monitor with no budget cap, delivery in 7 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "unlimited": true,
+            "amount": null
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_unlimited-budget",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_unlimited-budget",
+          "rawQuery": "Buy one monitor with no budget cap, delivery in 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": null,
+            "minAmount": null,
+            "currency": null,
+            "scope": "UNKNOWN",
+            "unlimited": true,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": null,
+            "minAmount": null,
+            "currency": null,
+            "scope": "UNKNOWN",
+            "unlimited": true,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "unlabelled-currency",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one monitor under 20000 total, delivery within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionFields": [
+          "budget.currency"
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 20000,
+            "currency": null
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_unlabelled-currency",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": null,
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "budget.currency",
+            "question": "Which currency is that budget in?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "budget.currency",
+          "question": "Which currency is that budget in?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "negative-budget",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard with a total budget of INR -500, delivery in 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionFields": [
+          "budget.amount"
+        ],
+        "requirements": {
+          "budget": {
+            "amount": -500
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_negative-budget",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": -500,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "budget.amount",
+            "question": "What positive, safely representable budget amount should I use?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "budget.amount",
+          "question": "What positive, safely representable budget amount should I use?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "zero-quantity",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 0 monitors, total budget INR 20000, delivery in 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "itemCounts": {
+          "monitor": 0
+        },
+        "questionFields": [
+          "items[0].quantity"
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_zero-quantity",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 0,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "items[0].quantity",
+            "question": "What positive quantity of monitor do you need?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "items[0].quantity",
+          "question": "What positive quantity of monitor do you need?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "fractional-countable",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 1.5 chairs for INR 10000 total, delivery in 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "itemCounts": {
+          "chair": 1.5
+        },
+        "questionFields": [
+          "items[0].quantity"
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_fractional-countable",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 1.5,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 10000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "items[0].quantity",
+            "question": "How many whole chair items or pairs do you need?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "items[0].quantity",
+          "question": "How many whole chair items or pairs do you need?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "large-order",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 500 chairs for INR 300000 total, delivery in 10 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "chair": 500
+        },
+        "requirements": {
+          "budget": {
+            "amount": 300000
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_large-order",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_large-order",
+          "rawQuery": "Buy 500 chairs for INR 300000 total, delivery in 10 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 500,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 300000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 10,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 500,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 300000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 10,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "same-day",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard, total budget INR 5000, deliver today."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "delivery": {
+            "maxDays": 0
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_same-day",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_same-day",
+          "rawQuery": "Buy one keyboard, total budget INR 5000, deliver today.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 0,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 0,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "tomorrow-date",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard, total budget INR 5000, deliver by tomorrow."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "delivery": {
+            "deadlineISO": "2026-10-31"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_tomorrow-date",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_tomorrow-date",
+          "rawQuery": "Buy one keyboard, total budget INR 5000, deliver by tomorrow.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 1,
+            "deadlineISO": "2026-10-31",
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 1,
+            "deadlineISO": "2026-10-31",
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "no-deadline",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard for INR 5000 total. There is no delivery deadline."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "delivery": {
+            "unrestricted": true
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_no-deadline",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_no-deadline",
+          "rawQuery": "Buy one keyboard for INR 5000 total. There is no delivery deadline.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": null,
+            "deadlineISO": null,
+            "unrestricted": true,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": null,
+            "deadlineISO": null,
+            "unrestricted": true,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "destination",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard under INR 5000 total, deliver to Bengaluru 560001 within 7 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "destinationPattern": "560001|Bengaluru"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_destination",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_destination",
+          "rawQuery": "Buy one keyboard under INR 5000 total, deliver to Bengaluru 560001 within 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": "Bengaluru 560001"
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": "Bengaluru 560001"
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "soft-colour",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard, INR 5000 total, 7-day delivery. Prefer purple keys, but other colours are fine."
+      ],
+      "expected": {
+        "status": "READY",
+        "conditions": [
+          {
+            "attributePattern": "colo[u]?r",
+            "value": "purple",
+            "importance": "SOFT"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_soft-colour",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_soft-colour",
+          "rawQuery": "Buy one keyboard, INR 5000 total, 7-day delivery. Prefer purple keys, but other colours are fine.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "colour",
+                  "operator": "eq",
+                  "value": "purple",
+                  "unit": null,
+                  "importance": "SOFT",
+                  "sourceText": "Prefer purple keys"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "colour",
+                  "operator": "eq",
+                  "value": "purple",
+                  "unit": null,
+                  "importance": "SOFT",
+                  "sourceText": "Prefer purple keys"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "brand-exclusion",
+      "passed": false,
+      "error": "Gemini timed out. Please try again.",
+      "messages": [
+        "Buy one mouse, total INR 3000, within 7 days. Exclude Acme brand."
+      ],
+      "expected": {
+        "status": "READY",
+        "conditions": [
+          {
+            "attribute": "brand",
+            "operator": "not_in",
+            "value": [
+              "Acme"
+            ],
+            "importance": "HARD"
+          },
+          {
+            "category": "mouse",
+            "attribute": "brand",
+            "operator": "not_in",
+            "value": [
+              "Acme"
+            ],
+            "importance": "HARD"
+          }
+        ],
+        "requirements": {}
+      },
+      "actual": null
+    }
+  ],
+  "passed": 37,
+  "requested": 82,
+  "completed": 38,
+  "finishedAt": "2026-10-30T15:01:27.192Z"
+}

@@ -1,0 +1,319 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "suite": "development",
+  "startedAt": "2026-10-30T06:45:11.527Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "6cdc0e4928aa8a056f4fd68f5ad23b8df6d89061914d4b9e42daa2cef2a2ce72",
+  "schemaHash": "411b0e70ef08d4c2c0da1ede09735b4c5a08de3a94c9ac361f9124aa072e82f6",
+  "cases": [
+    {
+      "id": "unlisted-setup-items",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "I need a complete coding setup under INR 40000 delivered within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "draft": {
+          "budgetINR": 40000,
+          "maxDeliveryDays": 7,
+          "requiredCategories": []
+        },
+        "questionFields": [
+          "requiredCategories"
+        ],
+        "noUnsupportedRequirements": true
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_unlisted-setup-items",
+        "status": "NEEDS_CLARIFICATION",
+        "understandingStatus": "NEEDS_CLARIFICATION",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [],
+          "budget": {
+            "amount": 40000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [
+            "Specific categories of goods for the complete coding setup are not specified."
+          ],
+          "assumptions": [
+            "Complete setup refers to a collection of unnamed items for coding."
+          ]
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": 40000,
+          "maxDeliveryDays": 7,
+          "requiredCategories": [],
+          "hardConstraints": {},
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [
+            "Specific categories of goods for the complete coding setup are not specified."
+          ],
+          "unsupportedRequirements": [],
+          "assumptions": [
+            "Complete setup refers to a collection of unnamed items for coding."
+          ]
+        },
+        "questions": [
+          {
+            "field": "ambiguities[0]",
+            "question": "Specific categories of goods for the complete coding setup are not specified."
+          },
+          {
+            "field": "requiredCategories",
+            "question": "Which items do you want to buy, and how many of each?"
+          }
+        ],
+        "unsupportedRequirements": [],
+        "assumptions": [
+          "Complete setup refers to a collection of unnamed items for coding."
+        ],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    },
+    {
+      "id": "tool-voltage",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 2 cordless drills, each must operate at 18 volts, INR 20000 total and 7-day delivery."
+      ],
+      "expected": {
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "itemCounts": {
+          "drill": 2
+        },
+        "categoryAliases": {
+          "drill": [
+            "cordless_drill"
+          ]
+        },
+        "conditions": [
+          {
+            "attributePattern": "voltage",
+            "value": 18,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_tool-voltage",
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "understandingStatus": "READY",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "cordless_drill",
+              "quantity": 2,
+              "unit": "unit",
+              "constraints": [
+                {
+                  "attribute": "voltage",
+                  "operator": "eq",
+                  "value": 18,
+                  "unit": "V",
+                  "importance": "HARD",
+                  "sourceText": "operate at 18 volts"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": 20000,
+          "maxDeliveryDays": 7,
+          "requiredCategories": [
+            {
+              "category": "cordless_drill",
+              "quantity": 2
+            }
+          ],
+          "hardConstraints": {},
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "unsupportedRequirements": [
+            "cordless_drill: cannot enforce voltage eq 18 V (operate at 18 volts)."
+          ],
+          "assumptions": []
+        },
+        "questions": [],
+        "unsupportedRequirements": [
+          "cordless_drill: cannot enforce voltage eq 18 V (operate at 18 volts)."
+        ],
+        "assumptions": [],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    },
+    {
+      "id": "per-item-budget",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 3 chairs for no more than INR 5000 each, deliver within 7 days."
+      ],
+      "expected": {
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "itemCounts": {
+          "chair": 3
+        },
+        "requirements": {
+          "budget": {
+            "amount": 5000,
+            "currency": "INR",
+            "scope": "PER_ITEM"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_per-item-budget",
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "understandingStatus": "READY",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": 3,
+              "unit": "unit",
+              "constraints": [
+                {
+                  "attribute": "unitPriceINR",
+                  "operator": "lte",
+                  "value": 5000,
+                  "unit": "INR",
+                  "importance": "HARD",
+                  "sourceText": "no more than INR 5000 each"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "PER_ITEM",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": 5000,
+          "maxDeliveryDays": 7,
+          "requiredCategories": [
+            {
+              "category": "chair",
+              "quantity": 3
+            }
+          ],
+          "hardConstraints": {
+            "chair": {
+              "maxUnitPriceINR": 5000
+            }
+          },
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "unsupportedRequirements": [
+            "Per-item budget is preserved; the v1 optimizer also needs a total basket budget including shipping."
+          ],
+          "assumptions": []
+        },
+        "questions": [],
+        "unsupportedRequirements": [
+          "Per-item budget is preserved; the v1 optimizer also needs a total basket budget including shipping."
+        ],
+        "assumptions": [],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    }
+  ],
+  "passed": 3,
+  "requested": 3,
+  "completed": 3,
+  "finishedAt": "2026-10-30T06:45:29.303Z"
+}

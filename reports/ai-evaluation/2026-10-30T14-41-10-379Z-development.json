@@ -1,0 +1,337 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "suite": "development",
+  "startedAt": "2026-10-30T14:41:10.379Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "0eb17590aaf3caf4bd48dcc4bb6673ed3c1e6f1e8bf1ebbd11f666fc266aac41",
+  "schemaHash": "db4cbb70f5c958b32632e27a4d23cb4104d7d947d65facebacfeddf56eb87f9b",
+  "cases": [
+    {
+      "id": "clarify-shirt-size",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 2 cotton shirts for INR 4000 total, delivery within 5 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionPattern": "size"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_clarify-shirt-size",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton shirts"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [
+            "What size do you need for the cotton shirts?"
+          ],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "ambiguities[0]",
+            "question": "What size do you need for the cotton shirts?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "ambiguities[0]",
+          "question": "What size do you need for the cotton shirts?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "answer-shirt-size",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 2 cotton shirts for INR 4000 total, delivery within 5 days.",
+        "Answer to clarification (ambiguities[0]): Which shirt size do you need?\nMy answer: XL"
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "shirt": 2
+        },
+        "conditions": [
+          {
+            "attributePattern": "size",
+            "value": "XL",
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_answer-shirt-size",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_answer-shirt-size",
+          "rawQuery": "Buy 2 cotton shirts for INR 4000 total, delivery within 5 days.\nFollow-up: Answer to clarification (ambiguities[0]): Which shirt size do you need?\nMy answer: XL",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton shirts"
+                },
+                {
+                  "attribute": "size",
+                  "operator": "eq",
+                  "value": "XL",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "XL"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton shirts"
+                },
+                {
+                  "attribute": "size",
+                  "operator": "eq",
+                  "value": "XL",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "XL"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "answer-budget-short",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one 144 Hz monitor, delivered within 7 days.",
+        "Answer to clarification (budget.amount): What is your budget and currency, or should there be no spending cap?\nMy answer: ₹20000"
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "monitor": 1
+        },
+        "requirements": {
+          "budget": {
+            "amount": 20000,
+            "currency": "INR"
+          }
+        },
+        "conditions": [
+          {
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_answer-budget-short",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_answer-budget-short",
+          "rawQuery": "Buy one 144 Hz monitor, delivered within 7 days.\nFollow-up: Answer to clarification (budget.amount): What is your budget and currency, or should there be no spending cap?\nMy answer: ₹20000",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz monitor"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz monitor"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    }
+  ],
+  "passed": 3,
+  "requested": 3,
+  "completed": 3,
+  "finishedAt": "2026-10-30T14:41:41.298Z"
+}

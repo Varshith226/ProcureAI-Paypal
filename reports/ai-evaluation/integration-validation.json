@@ -1,0 +1,24 @@
+{
+  "verifiedAt": "2026-10-30T18:08:10.693Z",
+  "mainRevision": "9aaf8d2c8dcd5b4f8d2c221356ec8537d67cb5a1",
+  "scope": "Integrate general request intelligence with the latest laptop-category changes on main",
+  "automatedTests": {
+    "command": "npm.cmd test",
+    "passed": 141,
+    "failed": 0,
+    "namedBehavioralChecks": 140,
+    "helperFileEntries": 1
+  },
+  "liveEvidence": {
+    "passed": 83,
+    "report": "reports/ai-evaluation/2026-10-30T15-07-04-491Z-parser-all.json",
+    "rerunAfterMerge": false,
+    "primaryParserSourceUnchanged": true,
+    "promptUnchanged": true,
+    "schemaUnchanged": true,
+    "parserHash": "34e2dc63021c42d2bf1b0f85af60ec7e6c9b6639ca62bfd3355d12cc526a9caf",
+    "promptHash": "4a3821151a00cc01ab69fc77f2212c131e321765b9f2f230c3c64f283e3fa320",
+    "schemaHash": "db4cbb70f5c958b32632e27a4d23cb4104d7d947d65facebacfeddf56eb87f9b"
+  },
+  "resolution": "Preserved generic v3 extraction and follow-up contract, retained upstream laptop catalog/rules/optimizer changes, and migrated legacy AI test fixtures to the general extraction schema. No optimizer implementation changes."
+}

@@ -1,0 +1,572 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "suite": "development",
+  "startedAt": "2026-10-30T14:44:31.657Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "4a3821151a00cc01ab69fc77f2212c131e321765b9f2f230c3c64f283e3fa320",
+  "schemaHash": "db4cbb70f5c958b32632e27a4d23cb4104d7d947d65facebacfeddf56eb87f9b",
+  "cases": [
+    {
+      "id": "digital-subscription",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one project-management software subscription with 5 user seats required, INR 12000 total, activation within 2 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "conditions": [
+          {
+            "attributePattern": "seat|user",
+            "value": 5,
+            "importance": "HARD"
+          }
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 12000,
+            "currency": "INR"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_digital-subscription",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_digital-subscription",
+          "rawQuery": "Buy one project-management software subscription with 5 user seats required, INR 12000 total, activation within 2 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "software_subscription",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "purpose",
+                  "operator": "eq",
+                  "value": "project-management",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "project-management"
+                },
+                {
+                  "attribute": "seats",
+                  "operator": "eq",
+                  "value": 5,
+                  "unit": "seats",
+                  "importance": "HARD",
+                  "sourceText": "5 user seats required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 12000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "software_subscription",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "purpose",
+                  "operator": "eq",
+                  "value": "project-management",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "project-management"
+                },
+                {
+                  "attribute": "seats",
+                  "operator": "eq",
+                  "value": 5,
+                  "unit": "seats",
+                  "importance": "HARD",
+                  "sourceText": "5 user seats required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 12000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "clarify-replacement-model",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy two replacement printer cartridges, INR 5000 total, within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionPattern": "model|printer|compatible|cartridge"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_clarify-replacement-model",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "printer_cartridge",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [
+            "What is the specific printer model or brand for the replacement cartridges?"
+          ],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "ambiguities[0]",
+            "question": "What is the specific printer model or brand for the replacement cartridges?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "ambiguities[0]",
+          "question": "What is the specific printer model or brand for the replacement cartridges?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "high-refresh-needs-number",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one monitor with a mandatory high refresh rate, INR 20000 total, within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionPattern": "refresh|Hz|rate"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_high-refresh-needs-number",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "contains",
+                  "value": "high refresh rate",
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "high refresh rate"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [
+            "What specific minimum refresh rate (in Hz) is required for the high refresh rate monitor?"
+          ],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "ambiguities[0]",
+            "question": "What specific minimum refresh rate (in Hz) is required for the high refresh rate monitor?"
+          },
+          {
+            "field": "items[0].constraints[0]",
+            "question": "What numeric limit do you mean by 'high refresh rate'?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "ambiguities[0]",
+          "question": "What specific minimum refresh rate (in Hz) is required for the high refresh rate monitor?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "answer-refresh-number",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one monitor with a mandatory high refresh rate, INR 20000 total, within 7 days.",
+        "Answer to clarification (ambiguities[0]): What minimum refresh rate do you need?\nMy answer: at least 165 Hz"
+      ],
+      "expected": {
+        "status": "READY",
+        "conditions": [
+          {
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 165,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_answer-refresh-number",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_answer-refresh-number",
+          "rawQuery": "Buy one monitor with a mandatory high refresh rate, INR 20000 total, within 7 days.\nFollow-up: Answer to clarification (ambiguities[0]): What minimum refresh rate do you need?\nMy answer: at least 165 Hz",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 165,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "at least 165 Hz"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 165,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "at least 165 Hz"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "fine-budget-precision",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one cloud-storage subscription with 1 TB of storage required, total budget 0.0001 BTC, activation within 7 days."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "amount": 0.0001,
+            "currency": "BTC"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_fine-budget-precision",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_fine-budget-precision",
+          "rawQuery": "Buy one cloud-storage subscription with 1 TB of storage required, total budget 0.0001 BTC, activation within 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "cloud_storage_subscription",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "storage",
+                  "operator": "eq",
+                  "value": 1,
+                  "unit": "TB",
+                  "importance": "HARD",
+                  "sourceText": "1 TB of storage required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 0.0001,
+            "minAmount": null,
+            "currency": "BTC",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "cloud_storage_subscription",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "storage",
+                  "operator": "eq",
+                  "value": 1,
+                  "unit": "TB",
+                  "importance": "HARD",
+                  "sourceText": "1 TB of storage required"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 0.0001,
+            "minAmount": null,
+            "currency": "BTC",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "clarify-software-purpose",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one software subscription, INR 12000 total, activation within 2 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionPattern": "software|purpose|type|function|which"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_clarify-software-purpose",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "software_subscription",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 12000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [
+            "What is the purpose or type of the software subscription?"
+          ],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "ambiguities[0]",
+            "question": "What is the purpose or type of the software subscription?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "ambiguities[0]",
+          "question": "What is the purpose or type of the software subscription?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    }
+  ],
+  "passed": 6,
+  "requested": 6,
+  "completed": 6,
+  "finishedAt": "2026-10-30T14:45:50.779Z"
+}

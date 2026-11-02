@@ -1,0 +1,644 @@
+{
+  "scope": "REQUEST_INTELLIGENCE",
+  "contractVersion": 3,
+  "model": "gemini-3.5-flash-lite",
+  "suite": "all",
+  "startedAt": "2026-10-30T14:47:25.422Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "4a3821151a00cc01ab69fc77f2212c131e321765b9f2f230c3c64f283e3fa320",
+  "schemaHash": "db4cbb70f5c958b32632e27a4d23cb4104d7d947d65facebacfeddf56eb87f9b",
+  "cases": [
+    {
+      "id": "original-setup",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "amount": 60000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": 1,
+          "keyboard": 1,
+          "mouse": 1,
+          "headphones": 1
+        },
+        "exactCategories": [
+          "monitor",
+          "keyboard",
+          "mouse",
+          "headphones"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_original-setup",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_original-setup",
+          "rawQuery": "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz monitor"
+                }
+              ]
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "mouse",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "headphones",
+              "quantity": 1,
+              "unit": "pair",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 60000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": [
+            "User already owns a laptop and it is excluded from the procurement list.",
+            "Coding and gaming are used as general context for the setup."
+          ]
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz monitor"
+                }
+              ]
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "mouse",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "headphones",
+              "quantity": 1,
+              "unit": "pair",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 60000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": [
+            "User already owns a laptop and it is excluded from the procurement list.",
+            "Coding and gaming are used as general context for the setup."
+          ]
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [
+          "User already owns a laptop and it is excluded from the procurement list.",
+          "Coding and gaming are used as general context for the setup."
+        ],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "context-paraphrase",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "For my small shop I want a complete desk setup. I already have a computer. Buy one 144 Hz screen and one keyboard only, with a total INR 30000 cap and delivery within seven days."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "amount": 30000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": 1,
+          "keyboard": 1
+        },
+        "exactCategories": [
+          "monitor",
+          "keyboard"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_context-paraphrase",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_context-paraphrase",
+          "rawQuery": "For my small shop I want a complete desk setup. I already have a computer. Buy one 144 Hz screen and one keyboard only, with a total INR 30000 cap and delivery within seven days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz screen"
+                }
+              ]
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 30000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": [
+            "User already has a computer and is excluding it from the procurement items."
+          ]
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz screen"
+                }
+              ]
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 30000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": [
+            "User already has a computer and is excluding it from the procurement items."
+          ]
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [
+          "User already has a computer and is excluding it from the procurement items."
+        ],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "missing-budget-and-deadline",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "I need a 144 Hz monitor."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionFields": [
+          "budget.amount",
+          "delivery"
+        ],
+        "requirements": {
+          "budget": {
+            "amount": null
+          },
+          "delivery": {
+            "maxDays": null
+          }
+        },
+        "itemCounts": {
+          "monitor": 1
+        },
+        "exactCategories": [
+          "monitor"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_missing-budget-and-deadline",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 144,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "144 Hz monitor"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": null,
+            "minAmount": null,
+            "currency": null,
+            "scope": "UNKNOWN",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": null,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "budget.amount",
+            "question": "What is your budget and currency, or should there be no spending cap?"
+          },
+          {
+            "field": "delivery",
+            "question": "When do you need delivery, or is the timing flexible?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "budget.amount",
+          "question": "What is your budget and currency, or should there be no spending cap?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "unlisted-setup-items",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "I need a complete coding setup under INR 40000 delivered within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionFields": [
+          "items"
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 40000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {},
+        "exactCategories": []
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_unlisted-setup-items",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [],
+          "budget": {
+            "amount": 40000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [
+            "What specific items are needed for the coding setup?"
+          ],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "ambiguities[0]",
+            "question": "What specific items are needed for the coding setup?"
+          },
+          {
+            "field": "items",
+            "question": "Which items do you want to buy, and how many of each?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "ambiguities[0]",
+          "question": "What specific items are needed for the coding setup?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "missing-quantity",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy monitors under a total INR 60000 budget, delivered within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionFields": [
+          "items[0].quantity"
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 60000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": null
+        },
+        "exactCategories": [
+          "monitor"
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_missing-quantity",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": null,
+              "unit": null,
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 60000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "items[0].quantity",
+            "question": "How many monitor do you need, and in which unit?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "items[0].quantity",
+          "question": "How many monitor do you need, and in which unit?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "followup-and-correction",
+      "passed": false,
+      "error": "Could not reach Gemini. Please try again later.",
+      "messages": [
+        "I need two 144 Hz monitors.",
+        "My total budget is INR 60000 and delivery must be within 7 days.",
+        "Actually change the total budget to INR 40000 and the quantity to three monitors. IPS panels are required."
+      ],
+      "expected": {
+        "status": "READY",
+        "requirements": {
+          "budget": {
+            "amount": 40000
+          },
+          "delivery": {
+            "maxDays": 7
+          }
+        },
+        "itemCounts": {
+          "monitor": 3
+        },
+        "exactCategories": [
+          "monitor"
+        ],
+        "conditions": [
+          {
+            "category": "monitor",
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 144,
+            "importance": "HARD"
+          },
+          {
+            "category": "monitor",
+            "attribute": "panel",
+            "operator": "in",
+            "value": [
+              "IPS"
+            ],
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": null
+    }
+  ],
+  "passed": 5,
+  "requested": 82,
+  "completed": 6,
+  "finishedAt": "2026-10-30T14:48:27.383Z"
+}

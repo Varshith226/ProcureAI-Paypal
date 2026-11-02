@@ -1,0 +1,649 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "suite": "development",
+  "startedAt": "2026-10-30T06:56:18.043Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "87b52e413ce23044752a86911e6e38cd71e41b6baeb0d791f8d88cf59fdf0fd9",
+  "schemaHash": "217653db0c746c08f9f71d1e8ba4928e868ae40c96c026f449c97efaa5425942",
+  "cases": [
+    {
+      "id": "optional-purchase",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard and optionally one mouse if the budget allows. INR 5000 total, delivery in 7 days."
+      ],
+      "expected": {
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "itemCounts": {
+          "keyboard": 1,
+          "mouse": 1
+        },
+        "itemRequired": {
+          "keyboard": true,
+          "mouse": false
+        }
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_optional-purchase",
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "understandingStatus": "READY",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "mouse",
+              "quantity": 1,
+              "unit": "unit",
+              "required": false,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "assumptions": [
+            "Mouse purchase is optional and depends on remaining budget after purchasing the keyboard."
+          ]
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": 5000,
+          "maxDeliveryDays": 7,
+          "requiredCategories": [
+            {
+              "category": "keyboard",
+              "quantity": 1
+            },
+            {
+              "category": "mouse",
+              "quantity": 1
+            }
+          ],
+          "hardConstraints": {},
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "unsupportedRequirements": [
+            "mouse: optional purchase is preserved; v1 only optimizes mandatory fixed-category baskets."
+          ],
+          "assumptions": [
+            "Mouse purchase is optional and depends on remaining budget after purchasing the keyboard."
+          ]
+        },
+        "questions": [],
+        "unsupportedRequirements": [
+          "mouse: optional purchase is preserved; v1 only optimizes mandatory fixed-category baskets."
+        ],
+        "assumptions": [
+          "Mouse purchase is optional and depends on remaining budget after purchasing the keyboard."
+        ],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    },
+    {
+      "id": "quantity-range",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy between 5 and 10 chairs, total budget INR 50000, delivery within 10 days."
+      ],
+      "expected": {
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "itemCounts": {
+          "chair": null
+        },
+        "conditions": [
+          {
+            "category": "chair",
+            "attribute": "quantity",
+            "operator": "between",
+            "value": [
+              5,
+              10
+            ],
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_quantity-range",
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "understandingStatus": "READY",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "chair",
+              "quantity": null,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "quantity",
+                  "operator": "between",
+                  "value": [
+                    5,
+                    10
+                  ],
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "between 5 and 10 chairs"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 50000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 10,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": 50000,
+          "maxDeliveryDays": 10,
+          "requiredCategories": [
+            {
+              "category": "chair",
+              "quantity": null
+            }
+          ],
+          "hardConstraints": {},
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "unsupportedRequirements": [
+            "chair: cannot enforce quantity between [5,10] (between 5 and 10 chairs)."
+          ],
+          "assumptions": []
+        },
+        "questions": [],
+        "unsupportedRequirements": [
+          "chair: cannot enforce quantity between [5,10] (between 5 and 10 chairs)."
+        ],
+        "assumptions": [],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    },
+    {
+      "id": "conditional-purchase",
+      "passed": false,
+      "error": "status\n+ actual - expected\n\n+ 'READY'\n- 'ENGINE_SUPPORT_REQUIRED'\n",
+      "messages": [
+        "Buy one monitor, and buy one keyboard only if the monitor costs less than INR 15000. Overall budget INR 30000, delivery within 7 days."
+      ],
+      "expected": {
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "conditions": [
+          {
+            "attributePattern": "condition",
+            "importance": "HARD"
+          }
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 30000,
+            "currency": "INR"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_conditional-purchase",
+        "status": "READY",
+        "understandingStatus": "READY",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "unitPriceINR",
+                  "operator": "lte",
+                  "value": 15000,
+                  "unit": "INR",
+                  "importance": "HARD",
+                  "sourceText": "the monitor costs less than INR 15000"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 30000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "assumptions": [
+            "Keyboard purchase is conditional on the monitor costing no more than INR 15000."
+          ]
+        },
+        "request": {
+          "requestId": "eval_conditional-purchase",
+          "rawQuery": "Buy one monitor, and buy one keyboard only if the monitor costs less than INR 15000. Overall budget INR 30000, delivery within 7 days.",
+          "budgetINR": 30000,
+          "maxDeliveryDays": 7,
+          "requiredCategories": [
+            {
+              "category": "monitor",
+              "quantity": 1
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1
+            }
+          ],
+          "hardConstraints": {
+            "keyboard": {
+              "maxUnitPriceINR": 15000
+            }
+          },
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          }
+        },
+        "draft": {
+          "budgetINR": 30000,
+          "maxDeliveryDays": 7,
+          "requiredCategories": [
+            {
+              "category": "monitor",
+              "quantity": 1
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1
+            }
+          ],
+          "hardConstraints": {
+            "keyboard": {
+              "maxUnitPriceINR": 15000
+            }
+          },
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "unsupportedRequirements": [],
+          "assumptions": [
+            "Keyboard purchase is conditional on the monitor costing no more than INR 15000."
+          ]
+        },
+        "questions": [],
+        "unsupportedRequirements": [],
+        "assumptions": [
+          "Keyboard purchase is conditional on the monitor costing no more than INR 15000."
+        ],
+        "canOptimize": true,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    },
+    {
+      "id": "tax-inclusive",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard, total budget INR 5000 inclusive of all taxes, deliver within 7 days."
+      ],
+      "expected": {
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "requirements": {
+          "budget": {
+            "includesTax": true
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_tax-inclusive",
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "understandingStatus": "READY",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": true
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": 5000,
+          "maxDeliveryDays": 7,
+          "requiredCategories": [
+            {
+              "category": "keyboard",
+              "quantity": 1
+            }
+          ],
+          "hardConstraints": {},
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "unsupportedRequirements": [
+            "An explicit tax-inclusive guarantee needs tax data; v1 does not model taxes separately."
+          ],
+          "assumptions": []
+        },
+        "questions": [],
+        "unsupportedRequirements": [
+          "An explicit tax-inclusive guarantee needs tax data; v1 does not model taxes separately."
+        ],
+        "assumptions": [],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    },
+    {
+      "id": "shipping-excluded",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard, budget INR 5000 excluding shipping, delivery in 7 days."
+      ],
+      "expected": {
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "requirements": {
+          "budget": {
+            "includesShipping": false
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_shipping-excluded",
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "understandingStatus": "READY",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": false,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": 5000,
+          "maxDeliveryDays": 7,
+          "requiredCategories": [
+            {
+              "category": "keyboard",
+              "quantity": 1
+            }
+          ],
+          "hardConstraints": {},
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "unsupportedRequirements": [
+            "Budget exclusions for shipping/tax need an engine that models the extra charges separately."
+          ],
+          "assumptions": []
+        },
+        "questions": [],
+        "unsupportedRequirements": [
+          "Budget exclusions for shipping/tax need an engine that models the extra charges separately."
+        ],
+        "assumptions": [],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    },
+    {
+      "id": "ambiguous-calendar-date",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard, INR 5000 total, delivered by 03/04/2027. The date format is unspecified."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionPattern": "date|March|April|format|03|04"
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_ambiguous-calendar-date",
+        "status": "NEEDS_CLARIFICATION",
+        "understandingStatus": "NEEDS_CLARIFICATION",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": null,
+            "deadlineISO": "2027-04-03",
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [
+            "Unspecified date format for 03/04/2027, interpreted as YYYY-MM-DD or DD-MM-YYYY."
+          ],
+          "assumptions": [
+            "Interpreted the date 03/04/2027 as April 3, 2027."
+          ]
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": 5000,
+          "maxDeliveryDays": 155,
+          "requiredCategories": [
+            {
+              "category": "keyboard",
+              "quantity": 1
+            }
+          ],
+          "hardConstraints": {},
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [
+            "Unspecified date format for 03/04/2027, interpreted as YYYY-MM-DD or DD-MM-YYYY."
+          ],
+          "unsupportedRequirements": [],
+          "assumptions": [
+            "Interpreted the date 03/04/2027 as April 3, 2027."
+          ]
+        },
+        "questions": [
+          {
+            "field": "ambiguities[0]",
+            "question": "Unspecified date format for 03/04/2027, interpreted as YYYY-MM-DD or DD-MM-YYYY."
+          }
+        ],
+        "unsupportedRequirements": [],
+        "assumptions": [
+          "Interpreted the date 03/04/2027 as April 3, 2027."
+        ],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    }
+  ],
+  "passed": 5,
+  "requested": 6,
+  "completed": 6,
+  "finishedAt": "2026-10-30T06:56:59.215Z"
+}

@@ -14,7 +14,7 @@ function createGeminiExtractor({
   timeoutMs = 30000,
   waitImpl = (ms, signal) => delay(ms, undefined, { signal }),
 } = {}) {
-  return async function extract(messages) {
+  return async function extract(messages, context = {}) {
     if (!apiKey || apiKey === "your-gemini-api-key") {
       throw new AIServiceError("AI_NOT_CONFIGURED", "Set GEMINI_API_KEY in the server's local .env, then restart the server.", 503);
     }
@@ -34,7 +34,7 @@ function createGeminiExtractor({
         signal: controller.signal,
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-          contents: [{ role: "user", parts: [{ text: JSON.stringify({ userMessages: messages }) }] }],
+          contents: [{ role: "user", parts: [{ text: JSON.stringify({ userMessages: messages, ...context }) }] }],
           generationConfig: { responseMimeType: "application/json", responseJsonSchema: GEMINI_EXTRACTION_SCHEMA, maxOutputTokens: 8192 },
         }),
       };

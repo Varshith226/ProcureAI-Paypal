@@ -1,0 +1,969 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "suite": "development",
+  "startedAt": "2026-10-30T14:38:58.910Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "5e849ee5174843d932b7b391703cae469f2b602de079b7939d098ac7eac84dec",
+  "schemaHash": "db4cbb70f5c958b32632e27a4d23cb4104d7d947d65facebacfeddf56eb87f9b",
+  "cases": [
+    {
+      "id": "clarify-milk-unit",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 5 milk for INR 500 total, delivered within 2 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "itemCounts": {
+          "milk": 5
+        },
+        "questionFields": [
+          "items[0].unit"
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_clarify-milk-unit",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "milk",
+              "quantity": 5,
+              "unit": null,
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 500,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [
+            "Does 5 milk mean litres, bottles, or packs?"
+          ],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "ambiguities[0]",
+            "question": "Does 5 milk mean litres, bottles, or packs?"
+          },
+          {
+            "field": "items[0].unit",
+            "question": "Which unit do you mean for 5 milk, for example kilograms, litres, or packs?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "ambiguities[0]",
+          "question": "Does 5 milk mean litres, bottles, or packs?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "answer-milk-unit",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 5 milk for INR 500 total, delivered within 2 days.",
+        "Answer to clarification (items[0].unit): Which unit do you mean for 5 milk, for example kilograms, litres, or packs?\nMy answer: litres"
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "milk": 5
+        },
+        "itemUnits": {
+          "milk": "litre"
+        }
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_answer-milk-unit",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_answer-milk-unit",
+          "rawQuery": "Buy 5 milk for INR 500 total, delivered within 2 days.\nFollow-up: Answer to clarification (items[0].unit): Which unit do you mean for 5 milk, for example kilograms, litres, or packs?\nMy answer: litres",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "milk",
+              "quantity": 5,
+              "unit": "litre",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 500,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "milk",
+              "quantity": 5,
+              "unit": "litre",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 500,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "clarify-shirt-size",
+      "passed": false,
+      "error": "status\n+ actual - expected\n\n+ 'READY'\n- 'NEEDS_CLARIFICATION'\n",
+      "messages": [
+        "Buy 2 cotton shirts for INR 4000 total, delivery within 5 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionPattern": "size"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_clarify-shirt-size",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_clarify-shirt-size",
+          "rawQuery": "Buy 2 cotton shirts for INR 4000 total, delivery within 5 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "answer-shirt-size",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy 2 cotton shirts for INR 4000 total, delivery within 5 days.",
+        "Answer to clarification (ambiguities[0]): Which shirt size do you need?\nMy answer: XL"
+      ],
+      "expected": {
+        "status": "READY",
+        "itemCounts": {
+          "shirt": 2
+        },
+        "conditions": [
+          {
+            "attributePattern": "size",
+            "value": "XL",
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_answer-shirt-size",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_answer-shirt-size",
+          "rawQuery": "Buy 2 cotton shirts for INR 4000 total, delivery within 5 days.\nFollow-up: Answer to clarification (ambiguities[0]): Which shirt size do you need?\nMy answer: XL",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton"
+                },
+                {
+                  "attribute": "size",
+                  "operator": "eq",
+                  "value": "XL",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "XL"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "shirt",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "material",
+                  "operator": "eq",
+                  "value": "cotton",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "cotton"
+                },
+                {
+                  "attribute": "size",
+                  "operator": "eq",
+                  "value": "XL",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "XL"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 4000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 5,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "clarify-replacement-model",
+      "passed": false,
+      "error": "status\n+ actual - expected\n\n+ 'READY'\n- 'NEEDS_CLARIFICATION'\n",
+      "messages": [
+        "Buy two replacement printer cartridges, INR 5000 total, within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionPattern": "model|printer|compatible|cartridge"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_clarify-replacement-model",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_clarify-replacement-model",
+          "rawQuery": "Buy two replacement printer cartridges, INR 5000 total, within 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "printer_cartridge",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "condition",
+                  "operator": "eq",
+                  "value": "replacement",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "replacement"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "printer_cartridge",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "condition",
+                  "operator": "eq",
+                  "value": "replacement",
+                  "unit": null,
+                  "importance": "HARD",
+                  "sourceText": "replacement"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "clarify-ticket-identity",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy two tickets, INR 5000 total, within 7 days. I have not specified what the tickets are for."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionPattern": "event|travel|ticket|what|which"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_clarify-ticket-identity",
+        "status": "NEEDS_CLARIFICATION",
+        "request": null,
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "ticket",
+              "quantity": 2,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [
+            "What are the tickets for?"
+          ],
+          "assumptions": []
+        },
+        "questions": [
+          {
+            "field": "ambiguities[0]",
+            "question": "What are the tickets for?"
+          }
+        ],
+        "nextQuestion": {
+          "field": "ambiguities[0]",
+          "question": "What are the tickets for?"
+        },
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "high-refresh-needs-number",
+      "passed": false,
+      "error": "status\n+ actual - expected\n\n+ 'READY'\n- 'NEEDS_CLARIFICATION'\n",
+      "messages": [
+        "Buy one monitor with a mandatory high refresh rate, INR 20000 total, within 7 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionPattern": "refresh|Hz|rate"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_high-refresh-needs-number",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_high-refresh-needs-number",
+          "rawQuery": "Buy one monitor with a mandatory high refresh rate, INR 20000 total, within 7 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gt",
+                  "value": 60,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "high refresh rate"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gt",
+                  "value": 60,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "high refresh rate"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "answer-refresh-number",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one monitor with a mandatory high refresh rate, INR 20000 total, within 7 days.",
+        "Answer to clarification (ambiguities[0]): What minimum refresh rate do you need?\nMy answer: at least 165 Hz"
+      ],
+      "expected": {
+        "status": "READY",
+        "conditions": [
+          {
+            "attribute": "refreshRateHz",
+            "operator": "gte",
+            "value": 165,
+            "importance": "HARD"
+          }
+        ]
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_answer-refresh-number",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_answer-refresh-number",
+          "rawQuery": "Buy one monitor with a mandatory high refresh rate, INR 20000 total, within 7 days.\nFollow-up: Answer to clarification (ambiguities[0]): What minimum refresh rate do you need?\nMy answer: at least 165 Hz",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 165,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "at least 165 Hz"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": [
+                {
+                  "attribute": "refreshRateHz",
+                  "operator": "gte",
+                  "value": 165,
+                  "unit": "Hz",
+                  "importance": "HARD",
+                  "sourceText": "at least 165 Hz"
+                }
+              ]
+            }
+          ],
+          "budget": {
+            "amount": 20000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "clock-deadline",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one keyboard for INR 5000 total, deliver by tomorrow at 10:00 Asia/Kolkata."
+      ],
+      "expected": {
+        "status": "READY",
+        "deadlineInstant": "2026-10-31T10:00:00+05:30"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_clock-deadline",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_clock-deadline",
+          "rawQuery": "Buy one keyboard for INR 5000 total, deliver by tomorrow at 10:00 Asia/Kolkata.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": null,
+            "deadlineISO": "2026-10-31T10:00:00+05:30",
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 5000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": null,
+            "deadlineISO": "2026-10-31T10:00:00+05:30",
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    },
+    {
+      "id": "clarify-software-purpose",
+      "passed": false,
+      "error": "status\n+ actual - expected\n\n+ 'READY'\n- 'NEEDS_CLARIFICATION'\n",
+      "messages": [
+        "Buy one software subscription, INR 12000 total, activation within 2 days."
+      ],
+      "expected": {
+        "status": "NEEDS_CLARIFICATION",
+        "questionPattern": "software|purpose|type|function|which"
+      },
+      "actual": {
+        "contractVersion": 3,
+        "requestId": "eval_clarify-software-purpose",
+        "status": "READY",
+        "request": {
+          "requestId": "eval_clarify-software-purpose",
+          "rawQuery": "Buy one software subscription, INR 12000 total, activation within 2 days.",
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "software_subscription",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 12000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "software_subscription",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 12000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 2,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [],
+          "weights": null,
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "questions": [],
+        "nextQuestion": null,
+        "assumptions": [],
+        "referenceDate": "2026-10-30",
+        "plan": null
+      }
+    }
+  ],
+  "passed": 6,
+  "requested": 10,
+  "completed": 10,
+  "finishedAt": "2026-10-30T14:40:48.135Z"
+}

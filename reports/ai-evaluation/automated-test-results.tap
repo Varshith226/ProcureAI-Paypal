@@ -1,0 +1,787 @@
+TAP version 13
+# Subtest: AI HTTP parse returns a ready request; plan returns all real baskets and stores them
+ok 1 - AI HTTP parse returns a ready request; plan returns all real baskets and stores them
+  ---
+  duration_ms: 730.6155
+  type: 'test'
+  ...
+# Subtest: AI HTTP clarification returns 200 without planning
+ok 2 - AI HTTP clarification returns 200 without planning
+  ---
+  duration_ms: 27.4526
+  type: 'test'
+  ...
+# Subtest: AI HTTP input errors are JSON including malformed and oversized bodies
+ok 3 - AI HTTP input errors are JSON including malformed and oversized bodies
+  ---
+  duration_ms: 115.7589
+  type: 'test'
+  ...
+# ◇ injected env (6) from .env
+# Subtest: AI HTTP provider errors remain actionable and do not become fake plans
+ok 4 - AI HTTP provider errors remain actionable and do not become fake plans
+  ---
+  duration_ms: 16.447
+  type: 'test'
+  ...
+# Subtest: AI routes are mounted in the existing server and expose no key
+ok 5 - AI routes are mounted in the existing server and expose no key
+  ---
+  duration_ms: 76.7719
+  type: 'test'
+  ...
+# Subtest: frontend helper handles extraction, clarification, real plan and provider errors over HTTP
+ok 6 - frontend helper handles extraction, clarification, real plan and provider errors over HTTP
+  ---
+  duration_ms: 79.3483
+  type: 'test'
+  ...
+# Subtest: frontend clarification helper labels short answers without mutating earlier user turns
+ok 7 - frontend clarification helper labels short answers without mutating earlier user turns
+  ---
+  duration_ms: 2.1651
+  type: 'test'
+  ...
+# Subtest: AI HTTP preserves arbitrary attributes and returns engine gaps without inventing plans
+ok 8 - AI HTTP preserves arbitrary attributes and returns engine gaps without inventing plans
+  ---
+  duration_ms: 19.0564
+  type: 'test'
+  ...
+# Subtest: AI contract endpoint exposes the general schema and all outcome statuses
+ok 9 - AI contract endpoint exposes the general schema and all outcome statuses
+  ---
+  duration_ms: 22.1223
+  type: 'test'
+  ...
+# Subtest: parse endpoint marks arbitrary clear requirements ready without consulting optimizer support
+ok 10 - parse endpoint marks arbitrary clear requirements ready without consulting optimizer support
+  ---
+  duration_ms: 23.0963
+  type: 'test'
+  ...
+# Subtest: live evaluation rejects false blockers, lost quantities, and dropped mandatory conditions
+ok 11 - live evaluation rejects false blockers, lost quantities, and dropped mandatory conditions
+  ---
+  duration_ms: 22.624
+  type: 'test'
+  ...
+# Subtest: equivalent category labels do not hide incorrect counts or missing specifications
+ok 12 - equivalent category labels do not hide incorrect counts or missing specifications
+  ---
+  duration_ms: 18.5901
+  type: 'test'
+  ...
+# Subtest: singleton equality/set equivalence retains the value and never weakens numeric thresholds
+ok 13 - singleton equality/set equivalence retains the value and never weakens numeric thresholds
+  ---
+  duration_ms: 10.2942
+  type: 'test'
+  ...
+# Subtest: resume never reuses failed, changed-input or changed-parser results
+ok 14 - resume never reuses failed, changed-input or changed-parser results
+  ---
+  duration_ms: 8.3404
+  type: 'test'
+  ...
+# Subtest: general extraction preserves the exact v1 request for the original setup
+ok 15 - general extraction preserves the exact v1 request for the original setup
+  ---
+  duration_ms: 253.6457
+  type: 'test'
+  ...
+# Subtest: real optimizer still returns and stores the three exact demo baskets
+ok 16 - real optimizer still returns and stores the three exact demo baskets
+  ---
+  duration_ms: 243.8859
+  type: 'test'
+  ...
+# Subtest: arbitrary categories remain structured even with unsupported specifications
+ok 17 - arbitrary categories remain structured even with unsupported specifications
+  ---
+  duration_ms: 22.9968
+  type: 'test'
+  ...
+# Subtest: new catalog categories are not rejected simply for being non-electronics
+ok 18 - new catalog categories are not rejected simply for being non-electronics
+  ---
+  duration_ms: 9.3595
+  type: 'test'
+  ...
+# Subtest: a new category actually plans once catalog data exists, without parser category changes
+ok 19 - a new category actually plans once catalog data exists, without parser category changes
+  ---
+  duration_ms: 7.0871
+  type: 'test'
+  ...
+# Subtest: missing budget, currency, deadline, category and quantities trigger actual questions
+ok 20 - missing budget, currency, deadline, category and quantities trigger actual questions
+  ---
+  duration_ms: 2.9228
+  type: 'test'
+  ...
+# Subtest: incomplete or unsupported requests never call the optimizer/catalog
+ok 21 - incomplete or unsupported requests never call the optimizer/catalog
+  ---
+  duration_ms: 2.5953
+  type: 'test'
+  ...
+# Subtest: invalid values ask for correction without changing the user's original requirements
+ok 22 - invalid values ask for correction without changing the user's original requirements
+  ---
+  duration_ms: 39.3599
+  type: 'test'
+  ...
+# Subtest: valid bulk units, high quantities, currencies and budget scopes are preserved as engine gaps
+ok 23 - valid bulk units, high quantities, currencies and budget scopes are preserved as engine gaps
+  ---
+  duration_ms: 12.147
+  type: 'test'
+  ...
+# Subtest: units are converted only when a registered rule supports them
+ok 24 - units are converted only when a registered rule supports them
+  ---
+  duration_ms: 54.7918
+  type: 'test'
+  ...
+# Subtest: exact equality is never weakened to a minimum-only rule
+ok 25 - exact equality is never weakened to a minimum-only rule
+  ---
+  duration_ms: 2.9875
+  type: 'test'
+  ...
+# Subtest: global warranty and exclusions apply to all items
+ok 26 - global warranty and exclusions apply to all items
+  ---
+  duration_ms: 2.3761
+  type: 'test'
+  ...
+# Subtest: soft arbitrary attributes stay optional and are disclosed
+ok 27 - soft arbitrary attributes stay optional and are disclosed
+  ---
+  duration_ms: 1.4907
+  type: 'test'
+  ...
+# Subtest: contradictory hard bounds and exclusions require clarification
+ok 28 - contradictory hard bounds and exclusions require clarification
+  ---
+  duration_ms: 5.1807
+  type: 'test'
+  ...
+# Subtest: invented constraint quotes and malformed comparison values fail closed
+ok 29 - invented constraint quotes and malformed comparison values fail closed
+  ---
+  duration_ms: 4.7544
+  type: 'test'
+  ...
+# Subtest: cross-unit contradictions and exact excluded brands cannot reach optimization
+ok 30 - cross-unit contradictions and exact excluded brands cannot reach optimization
+  ---
+  duration_ms: 9.3782
+  type: 'test'
+  ...
+# Subtest: negative physical bounds require correction, but a negative generic temperature is preserved
+ok 31 - negative physical bounds require correction, but a negative generic temperature is preserved
+  ---
+  duration_ms: 3.1991
+  type: 'test'
+  ...
+# Subtest: duplicate equivalent categories combine, distinct variants stay separate
+ok 32 - duplicate equivalent categories combine, distinct variants stay separate
+  ---
+  duration_ms: 2.3592
+  type: 'test'
+  ...
+# Subtest: dates are grounded to the server's reference date, including invalid calendar days
+ok 33 - dates are grounded to the server's reference date, including invalid calendar days
+  ---
+  duration_ms: 9.7674
+  type: 'test'
+  ...
+# Subtest: server date/timezone and full conversation reach the extractor
+ok 34 - server date/timezone and full conversation reach the extractor
+  ---
+  duration_ms: 1.429
+  type: 'test'
+  ...
+# Subtest: unrelated and cancelled requests never plan or call the catalog
+ok 35 - unrelated and cancelled requests never plan or call the catalog
+  ---
+  duration_ms: 2.0825
+  type: 'test'
+  ...
+# Subtest: malformed model output is rejected before it can reach the optimizer
+ok 36 - malformed model output is rejected before it can reach the optimizer
+  ---
+  duration_ms: 13.7782
+  type: 'test'
+  ...
+# Subtest: unsafe category names cannot modify JavaScript prototypes
+ok 37 - unsafe category names cannot modify JavaScript prototypes
+  ---
+  duration_ms: 3.6352
+  type: 'test'
+  ...
+# Subtest: invalid HTTP-level input is rejected before spending an AI call
+ok 38 - invalid HTTP-level input is rejected before spending an AI call
+  ---
+  duration_ms: 2.2421
+  type: 'test'
+  ...
+# Subtest: optional items and quantity ranges are never forced into mandatory fixed-size baskets
+ok 39 - optional items and quantity ranges are never forced into mandatory fixed-size baskets
+  ---
+  duration_ms: 6.3811
+  type: 'test'
+  ...
+# ◇ injected env (3) from .env
+# Subtest: (1) POST /api/procurement/plan returns a DRAFT plan for the ₹60,000 setup
+ok 40 - (1) POST /api/procurement/plan returns a DRAFT plan for the ₹60,000 setup
+  ---
+  duration_ms: 417.5113
+  type: 'test'
+  ...
+# Subtest: (16) invalid payloads return controlled JSON 400 errors
+ok 41 - (16) invalid payloads return controlled JSON 400 errors
+  ---
+  duration_ms: 230.7648
+  type: 'test'
+  ...
+# Subtest: (12) an over-tight budget returns 200 with status INFEASIBLE
+ok 42 - (12) an over-tight budget returns 200 with status INFEASIBLE
+  ---
+  duration_ms: 47.0068
+  type: 'test'
+  ...
+# Subtest: (18) planning never calls PayPal (or any network) and never captures payment
+ok 43 - (18) planning never calls PayPal (or any network) and never captures payment
+  ---
+  duration_ms: 49.0041
+  type: 'test'
+  ...
+# Subtest: (18) existing routes still behave as before
+ok 44 - (18) existing routes still behave as before
+  ---
+  duration_ms: 54.3117
+  type: 'test'
+  ...
+# Subtest: GET /api/procurement/catalog and /contract
+ok 45 - GET /api/procurement/catalog and /contract
+  ---
+  duration_ms: 32.7932
+  type: 'test'
+  ...
+# Subtest: shared/contracts.json lists exactly the constraints the verifier supports
+ok 46 - shared/contracts.json lists exactly the constraints the verifier supports
+  ---
+  duration_ms: 23.0292
+  type: 'test'
+  ...
+# Subtest: the committed example response has every documented top-level, strategy and item field
+ok 47 - the committed example response has every documented top-level, strategy and item field
+  ---
+  duration_ms: 0.8733
+  type: 'test'
+  ...
+# Subtest: demo catalog loads cleanly and is honestly labelled
+ok 48 - demo catalog loads cleanly and is honestly labelled
+  ---
+  duration_ms: 100.429
+  type: 'test'
+  ...
+# Subtest: demo: the sample request yields a complete plan within budget with explicit evidence
+ok 49 - demo: the sample request yields a complete plan within budget with explicit evidence
+  ---
+  duration_ms: 113.3314
+  type: 'test'
+  ...
+# Subtest: a missing or corrupt catalog file raises CatalogUnavailableError
+ok 50 - a missing or corrupt catalog file raises CatalogUnavailableError
+  ---
+  duration_ms: 7.1258
+  type: 'test'
+  ...
+# ◇ injected env (6) from .env
+# Subtest: client: generatePlan + toPlanViewModel give the shape App.jsx renders
+ok 51 - client: generatePlan + toPlanViewModel give the shape App.jsx renders
+  ---
+  duration_ms: 538.9088
+  type: 'test'
+  ...
+# Subtest: client: revalidate + demo override round-trip
+ok 52 - client: revalidate + demo override round-trip
+  ---
+  duration_ms: 159.6618
+  type: 'test'
+  ...
+# Subtest: client: API errors become Error objects with code and field details
+ok 53 - client: API errors become Error objects with code and field details
+  ---
+  duration_ms: 62.9685
+  type: 'test'
+  ...
+# Subtest: checkoutGuard shares the API's plan store and catalog (incl. demo overrides)
+ok 54 - checkoutGuard shares the API's plan store and catalog (incl. demo overrides)
+  ---
+  duration_ms: 81.7607
+  type: 'test'
+  ...
+# Subtest: Gemini adapter sends schema, user-only conversation and key header to the fixed API host
+ok 55 - Gemini adapter sends schema, user-only conversation and key header to the fixed API host
+  ---
+  duration_ms: 24.1334
+  type: 'test'
+  ...
+# Subtest: Gemini missing key and invalid model ID fail before network
+ok 56 - Gemini missing key and invalid model ID fail before network
+  ---
+  duration_ms: 11.656
+  type: 'test'
+  ...
+# Subtest: provider failures are controlled and never expose response bodies or secrets
+ok 57 - provider failures are controlled and never expose response bodies or secrets
+  ---
+  duration_ms: 13.1646
+  type: 'test'
+  ...
+# Subtest: simplified provider schema preserves structure while local validation still rejects bounds violations
+ok 58 - simplified provider schema preserves structure while local validation still rejects bounds violations
+  ---
+  duration_ms: 11.1394
+  type: 'test'
+  ...
+# Subtest: 503 overload retries at 2, 4 and 8 seconds, then can succeed
+ok 59 - 503 overload retries at 2, 4 and 8 seconds, then can succeed
+  ---
+  duration_ms: 1.5582
+  type: 'test'
+  ...
+# Subtest: persistent 503 overload stops after four attempts with an actionable 503 error
+ok 60 - persistent 503 overload stops after four attempts with an actionable 503 error
+  ---
+  duration_ms: 1.3446
+  type: 'test'
+  ...
+# Subtest: the total deadline also aborts a backoff wait without making another request
+ok 61 - the total deadline also aborts a backoff wait without making another request
+  ---
+  duration_ms: 17.1412
+  type: 'test'
+  ...
+# Subtest: blocked, truncated, missing, unreadable and non-JSON AI output fail closed
+ok 62 - blocked, truncated, missing, unreadable and non-JSON AI output fail closed
+  ---
+  duration_ms: 19.0296
+  type: 'test'
+  ...
+# Subtest: slow provider is aborted with a controlled timeout
+ok 63 - slow provider is aborted with a controlled timeout
+  ---
+  duration_ms: 26.9907
+  type: 'test'
+  ...
+# Subtest: test\\helpers.js
+ok 9 - test\\helpers.js
+  ---
+  duration_ms: 410.5735
+  type: 'test'
+  ...
+# Subtest: (1)(9) one product per category -> DRAFT plan covering all four categories
+ok 65 - (1)(9) one product per category -> DRAFT plan covering all four categories
+  ---
+  duration_ms: 87.5166
+  type: 'test'
+  ...
+# Subtest: (4)(12) a basket that cannot fit the budget is INFEASIBLE, with numbers and no fabricated plan
+ok 66 - (4)(12) a basket that cannot fit the budget is INFEASIBLE, with numbers and no fabricated plan
+  ---
+  duration_ms: 5.8193
+  type: 'test'
+  ...
+# Subtest: (12) all monitors rejected -> INFEASIBLE with per-product evidence
+ok 67 - (12) all monitors rejected -> INFEASIBLE with per-product evidence
+  ---
+  duration_ms: 2.4422
+  type: 'test'
+  ...
+# Subtest: (12) a category missing from the catalog is reported, not skipped
+ok 68 - (12) a category missing from the catalog is reported, not skipped
+  ---
+  duration_ms: 6.6935
+  type: 'test'
+  ...
+# Subtest: (3) an unknown-refresh-rate monitor is excluded even when it would be cheapest and best
+ok 69 - (3) an unknown-refresh-rate monitor is excluded even when it would be cheapest and best
+  ---
+  duration_ms: 4.1555
+  type: 'test'
+  ...
+# Subtest: (7) quantity above combined eligible stock is INFEASIBLE with a stock reason
+ok 70 - (7) quantity above combined eligible stock is INFEASIBLE with a stock reason
+  ---
+  duration_ms: 1.1212
+  type: 'test'
+  ...
+# Subtest: (8)(10) mixed SKUs and multiple quantities: stock respected, shipping once per line, exact totals
+ok 71 - (8)(10) mixed SKUs and multiple quantities: stock respected, shipping once per line, exact totals
+  ---
+  duration_ms: 5.1089
+  type: 'test'
+  ...
+# Subtest: (14) BEST_VALUE equals the brute-force maximum score; CHEAPEST equals the brute-force minimum cost
+ok 72 - (14) BEST_VALUE equals the brute-force maximum score; CHEAPEST equals the brute-force minimum cost
+  ---
+  duration_ms: 37.9533
+  type: 'test'
+  ...
+# Subtest: (14) greedy per-category picks would bust the budget; the optimizer finds the best complete basket
+ok 73 - (14) greedy per-category picks would bust the budget; the optimizer finds the best complete basket
+  ---
+  duration_ms: 4.348
+  type: 'test'
+  ...
+# Subtest: (15) ALTERNATIVE differs from BEST_VALUE in >= 2 categories, differs from CHEAPEST, and is cheaper or better evidenced
+ok 74 - (15) ALTERNATIVE differs from BEST_VALUE in >= 2 categories, differs from CHEAPEST, and is cheaper or better evidenced
+  ---
+  duration_ms: 4.3157
+  type: 'test'
+  ...
+# Subtest: (15) when only one feasible basket exists, CHEAPEST and ALTERNATIVE are omitted with reasons
+ok 75 - (15) when only one feasible basket exists, CHEAPEST and ALTERNATIVE are omitted with reasons
+  ---
+  duration_ms: 2.5122
+  type: 'test'
+  ...
+# Subtest: (13) ties are broken deterministically (lower product ID), regardless of catalog order
+ok 76 - (13) ties are broken deterministically (lower product ID), regardless of catalog order
+  ---
+  duration_ms: 5.5054
+  type: 'test'
+  ...
+# Subtest: (13) same score: the cheaper basket wins BEST_VALUE
+ok 77 - (13) same score: the cheaper basket wins BEST_VALUE
+  ---
+  duration_ms: 1.007
+  type: 'test'
+  ...
+# Subtest: (17) no fabricated evidence or PayPal conversion in a demo plan
+ok 78 - (17) no fabricated evidence or PayPal conversion in a demo plan
+  ---
+  duration_ms: 5.936
+  type: 'test'
+  ...
+# Subtest: (11) invalid weights surface as a ValidationError from buildPlan
+ok 79 - (11) invalid weights surface as a ValidationError from buildPlan
+  ---
+  duration_ms: 1.8396
+  type: 'test'
+  ...
+# Subtest: changing weights changes the BEST_VALUE pick in the documented direction
+ok 80 - changing weights changes the BEST_VALUE pick in the documented direction
+  ---
+  duration_ms: 1.541
+  type: 'test'
+  ...
+# Subtest: parsing is independent of optimizer and catalog modules
+ok 81 - parsing is independent of optimizer and catalog modules
+  ---
+  duration_ms: 494.5747
+  type: 'test'
+  ...
+# Subtest: arbitrary products, currencies, quantities and attributes are complete when understood
+ok 82 - arbitrary products, currencies, quantities and attributes are complete when understood
+  ---
+  duration_ms: 72.7938
+  type: 'test'
+  ...
+# Subtest: fractional physical quantities, fine currency precision and sub-day deadlines are preserved
+ok 83 - fractional physical quantities, fine currency precision and sub-day deadlines are preserved
+  ---
+  duration_ms: 2.3388
+  type: 'test'
+  ...
+# Subtest: explicit flexibility needs no fabricated budget or delivery horizon
+ok 84 - explicit flexibility needs no fabricated budget or delivery horizon
+  ---
+  duration_ms: 3.2888
+  type: 'test'
+  ...
+# Subtest: missing essentials produce targeted questions, not repeated currency questions
+ok 85 - missing essentials produce targeted questions, not repeated currency questions
+  ---
+  duration_ms: 2.4036
+  type: 'test'
+  ...
+# Subtest: unknown plural quantities and missing units ask only the unresolved detail
+ok 86 - unknown plural quantities and missing units ask only the unresolved detail
+  ---
+  duration_ms: 6.7212
+  type: 'test'
+  ...
+# Subtest: fitted clothing requires size once, including explicit flexible answers
+ok 87 - fitted clothing requires size once, including explicit flexible answers
+  ---
+  duration_ms: 2.8849
+  type: 'test'
+  ...
+# Subtest: purchase-critical replacement identity and software purpose prompt only while missing
+ok 88 - purchase-critical replacement identity and software purpose prompt only while missing
+  ---
+  duration_ms: 7.2484
+  type: 'test'
+  ...
+# Subtest: qualitative requirements cannot silently become fabricated numeric thresholds
+ok 89 - qualitative requirements cannot silently become fabricated numeric thresholds
+  ---
+  duration_ms: 3.0864
+  type: 'test'
+  ...
+# Subtest: ranges, conditional and optional purchases stay structured without engine-related questions
+ok 90 - ranges, conditional and optional purchases stay structured without engine-related questions
+  ---
+  duration_ms: 3.687
+  type: 'test'
+  ...
+# Subtest: strict inequalities, cross-unit contradictions and excluded equality are checked correctly
+ok 91 - strict inequalities, cross-unit contradictions and excluded equality are checked correctly
+  ---
+  duration_ms: 3.7137
+  type: 'test'
+  ...
+# Subtest: all simultaneous conflicting conditions are retained while asking for clarification
+ok 92 - all simultaneous conflicting conditions are retained while asking for clarification
+  ---
+  duration_ms: 0.7245
+  type: 'test'
+  ...
+# Subtest: invalid values require follow-up without imposing optimizer size limits
+ok 93 - invalid values require follow-up without imposing optimizer size limits
+  ---
+  duration_ms: 1.6118
+  type: 'test'
+  ...
+# Subtest: dates, timestamps and ambiguous/past dates use the reference context
+ok 94 - dates, timestamps and ambiguous/past dates use the reference context
+  ---
+  duration_ms: 31.9027
+  type: 'test'
+  ...
+# Subtest: non-shopping and cancellation never invent budget/quantity questions
+ok 95 - non-shopping and cancellation never invent budget/quantity questions
+  ---
+  duration_ms: 3.0677
+  type: 'test'
+  ...
+# Subtest: short answers keep their question context and prior user requirements
+ok 96 - short answers keep their question context and prior user requirements
+  ---
+  duration_ms: 2.2665
+  type: 'test'
+  ...
+# Subtest: long clarification conversations are accepted within the total size bound
+ok 97 - long clarification conversations are accepted within the total size bound
+  ---
+  duration_ms: 7.1452
+  type: 'test'
+  ...
+# Subtest: hallucinated quotes, wrong operators and unsafe categories fail clearly
+ok 98 - hallucinated quotes, wrong operators and unsafe categories fail clearly
+  ---
+  duration_ms: 2.0096
+  type: 'test'
+  ...
+# Subtest: accepts the canonical ₹60,000 setup request unchanged
+ok 99 - accepts the canonical ₹60,000 setup request unchanged
+  ---
+  duration_ms: 21.9343
+  type: 'test'
+  ...
+# Subtest: (11) weights that do not sum to 1 are rejected, not normalized
+ok 100 - (11) weights that do not sum to 1 are rejected, not normalized
+  ---
+  duration_ms: 9.4669
+  type: 'test'
+  ...
+# Subtest: (11) missing weights fall back to documented defaults with a warning
+ok 101 - (11) missing weights fall back to documented defaults with a warning
+  ---
+  duration_ms: 3.8558
+  type: 'test'
+  ...
+# Subtest: (11) partial, negative, non-numeric or extra weights are rejected
+ok 102 - (11) partial, negative, non-numeric or extra weights are rejected
+  ---
+  duration_ms: 0.9809
+  type: 'test'
+  ...
+# Subtest: (16) malformed payloads produce field-level errors
+ok 103 - (16) malformed payloads produce field-level errors
+  ---
+  duration_ms: 1.0153
+  type: 'test'
+  ...
+# Subtest: (16) unknown or misplaced hard constraints are rejected instead of ignored
+ok 104 - (16) unknown or misplaced hard constraints are rejected instead of ignored
+  ---
+  duration_ms: 0.6392
+  type: 'test'
+  ...
+# Subtest: category names are trimmed and lower-cased; nothing else is rewritten
+ok 105 - category names are trimmed and lower-cased; nothing else is rewritten
+  ---
+  duration_ms: 0.6997
+  type: 'test'
+  ...
+# Subtest: extra agent fields such as clarificationsNeeded are accepted and do not change the plan input
+ok 106 - extra agent fields such as clarificationsNeeded are accepted and do not change the plan input
+  ---
+  duration_ms: 2.0577
+  type: 'test'
+  ...
+# Subtest: generated plans are stored server-side and can be fetched by planId and strategy
+ok 107 - generated plans are stored server-side and can be fetched by planId and strategy
+  ---
+  duration_ms: 392.4445
+  type: 'test'
+  ...
+# Subtest: revalidate: unchanged catalog -> VALID and safe to check out
+ok 108 - revalidate: unchanged catalog -> VALID and safe to check out
+  ---
+  duration_ms: 64.39
+  type: 'test'
+  ...
+# Subtest: revalidate: price rise that still fits the budget -> CHANGED with exact difference
+ok 109 - revalidate: price rise that still fits the budget -> CHANGED with exact difference
+  ---
+  duration_ms: 66.3075
+  type: 'test'
+  ...
+# Subtest: revalidate: INVALID when the new total exceeds the budget, stock runs out, delivery slips, a spec is lost, or the product vanishes
+ok 110 - revalidate: INVALID when the new total exceeds the budget, stock runs out, delivery slips, a spec is lost, or the product vanishes
+  ---
+  duration_ms: 171.7525
+  type: 'test'
+  ...
+# Subtest: revalidate: stock below the approved quantity is INVALID
+ok 111 - revalidate: stock below the approved quantity is INVALID
+  ---
+  duration_ms: 54.7648
+  type: 'test'
+  ...
+# Subtest: revalidate: controlled errors for a missing strategyKey, unknown plan or unknown strategy
+ok 112 - revalidate: controlled errors for a missing strategyKey, unknown plan or unknown strategy
+  ---
+  duration_ms: 36.6616
+  type: 'test'
+  ...
+# Subtest: a catalog change produces a new planId, so an approved plan is never silently overwritten
+ok 113 - a catalog change produces a new planId, so an approved plan is never silently overwritten
+  ---
+  duration_ms: 2.609
+  type: 'test'
+  ...
+# Subtest: stored plans are immutable and the store evicts the oldest beyond its limit
+ok 114 - stored plans are immutable and the store evicts the oldest beyond its limit
+  ---
+  duration_ms: 3.2135
+  type: 'test'
+  ...
+# Subtest: display helpers: specsSummary and withinBudget
+ok 115 - display helpers: specsSummary and withinBudget
+  ---
+  duration_ms: 2.1922
+  type: 'test'
+  ...
+# Subtest: demo overrides: a real price spike flows through revalidation, and reset restores VALID
+ok 116 - demo overrides: a real price spike flows through revalidation, and reset restores VALID
+  ---
+  duration_ms: 90.4203
+  type: 'test'
+  ...
+# Subtest: demo overrides are validated and refused on non-demo catalogs or when disabled
+ok 117 - demo overrides are validated and refused on non-demo catalogs or when disabled
+  ---
+  duration_ms: 78.3241
+  type: 'test'
+  ...
+# Subtest: a 165 Hz monitor delivered in 3 days passes every mandatory check
+ok 118 - a 165 Hz monitor delivered in 3 days passes every mandatory check
+  ---
+  duration_ms: 58.2991
+  type: 'test'
+  ...
+# Subtest: (2) a 75 Hz monitor fails with a specific reason
+ok 119 - (2) a 75 Hz monitor fails with a specific reason
+  ---
+  duration_ms: 1.3334
+  type: 'test'
+  ...
+# Subtest: (3) an unknown refresh rate is UNKNOWN, never a pass
+ok 120 - (3) an unknown refresh rate is UNKNOWN, never a pass
+  ---
+  duration_ms: 1.8999
+  type: 'test'
+  ...
+# Subtest: (5) delivery beyond the limit fails; exactly at the limit passes
+ok 121 - (5) delivery beyond the limit fails; exactly at the limit passes
+  ---
+  duration_ms: 1.2593
+  type: 'test'
+  ...
+# Subtest: (6) unknown delivery is UNKNOWN and makes the product ineligible
+ok 122 - (6) unknown delivery is UNKNOWN and makes the product ineligible
+  ---
+  duration_ms: 0.6884
+  type: 'test'
+  ...
+# Subtest: unknown shipping is not assumed to be zero
+ok 123 - unknown shipping is not assumed to be zero
+  ---
+  duration_ms: 2.2563
+  type: 'test'
+  ...
+# Subtest: (7) stock: out of stock fails, unknown stock is UNKNOWN, over-quantity lines fail
+ok 124 - (7) stock: out of stock fails, unknown stock is UNKNOWN, over-quantity lines fail
+  ---
+  duration_ms: 0.9207
+  type: 'test'
+  ...
+# Subtest: price is never a per-product rejection reason
+ok 125 - price is never a per-product rejection reason
+  ---
+  duration_ms: 0.3795
+  type: 'test'
+  ...
+# Subtest: missing soft data only produces warnings
+ok 126 - missing soft data only produces warnings
+  ---
+  duration_ms: 3.7283
+  type: 'test'
+  ...
+# Subtest: other registry constraints: in / notIn / equals / max
+ok 127 - other registry constraints: in / notIn / equals / max
+  ---
+  duration_ms: 2.8652
+  type: 'test'
+  ...
+# Subtest: (17) evidence: demo data is never VERIFIED; only a fresh, found source is
+ok 128 - (17) evidence: demo data is never VERIFIED; only a fresh, found source is
+  ---
+  duration_ms: 3.6201
+  type: 'test'
+  ...
+# Subtest: (17) catalog loader refuses example.* links as evidence
+ok 129 - (17) catalog loader refuses example.* links as evidence
+  ---
+  duration_ms: 0.9516
+  type: 'test'
+  ...
+1..129
+# tests 129
+# suites 0
+# pass 129
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3499.1733

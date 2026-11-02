@@ -37,6 +37,8 @@ What the engine guarantees:
 
 **Task 1 is now implemented.** Use `POST /api/ai/parse` for the structured brief or `POST /api/ai/plan` for clarification + optimizer handoff. Both take `{ messages: string[], requestId?: string }`. See [request-intelligence.md](request-intelligence.md) for configuration, result statuses, terminal demo and the tested frontend helper. The rest of this section documents the canonical JSON the module produces.
 
+**Current scope: parser-only response v3.** `/api/ai/parse` returns READY when the user's needs are clear, independently of optimizer support. Its `request` is the complete general JSON, not the v1 ProcurementRequest below. Show `nextQuestion` for NEEDS_CLARIFICATION and append a labelled answer using the provided client helper. NOT_PROCUREMENT and CANCELLED do not create plans. The optimizer owner consumes this v3 JSON. `/api/ai/plan` remains an explicitly separate legacy bridge to the unchanged v1 contract below.
+
 Produce this JSON. It is the same as the agreed draft, and `clarificationsNeeded` is accepted and ignored.
 
 ```json

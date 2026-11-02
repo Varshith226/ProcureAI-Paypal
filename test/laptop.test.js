@@ -7,7 +7,7 @@ const { buildPlan, summarizeSpecs } = require("../src/planService");
 const { validateRequest } = require("../src/requestValidator");
 const { createJsonFileCatalogProvider } = require("../src/catalogProvider");
 const { unitsChanged, categoriesChanged } = require("../src/optimizer");
-const { product, request, provider, productIds } = require("./helpers");
+const { product, request, provider, productIds, extraction, condition } = require("./helpers");
 
 const laptopRequest = require("../examples/request-5-laptops.json");
 const demoCatalog = () => createJsonFileCatalogProvider(path.join(__dirname, "..", "src", "catalog.json"));
@@ -136,24 +136,29 @@ test("3 lakh with RAM >= 32 GB is infeasible with a precise explanation", async 
 // ---- AI handoff (injected model output; no live Gemini call) -----------------
 const { createAIService } = require("../src/aiService");
 const { createPlanStore } = require("../src/planStore");
-const { SUPPORTED_CATEGORIES, SYSTEM_INSTRUCTION, schemaErrors } = require("../src/requestExtraction");
+const { SYSTEM_INSTRUCTION, schemaErrors } = require("../src/requestExtraction");
 
 function aiWith(draft) {
   return createAIService({ extract: async () => structuredClone(draft), catalogProvider: demoCatalog(), planStore: createPlanStore() });
 }
-const laptopDraft = (overrides = {}) => ({
-  budgetINR: 300000, maxDeliveryDays: 10,
-  requiredCategories: [{ category: "laptop", quantity: 5 }],
-  hardConstraints: { laptop: { minRamGB: 16, minWarrantyMonths: 12 } },
-  weights: null, ambiguities: [], unsupportedRequirements: [], assumptions: [], ...overrides,
+const laptopDraft = (overrides = {}) => extraction({
+  budget: { amount: 300000 }, delivery: { maxDays: 10 },
+  items: [{ category: "laptop", quantity: 5, unit: "unit", required: true, constraints: [
+    condition("ramGB", "gte", 16, "at least 16 GB RAM", "GB"),
+    condition("warrantyMonths", "gte", 12, "minimum one-year warranty", "months"),
+  ] }],
+  weights: null, ...overrides,
 });
 
-test("AI agent: laptop is a supported category and its constraints pass the extraction schema", () => {
-  assert.ok(SUPPORTED_CATEGORIES.includes("laptop"));
+test("AI agent: laptop and GPU requirements use the general extraction schema", () => {
   assert.deepEqual(schemaErrors(laptopDraft()), []);
-  assert.ok(schemaErrors(laptopDraft({ hardConstraints: { laptop: { gpu: "RTX 4060" } } })).length > 0);
+  const gpu = laptopDraft();
+  gpu.items[0].constraints.push(condition("gpu", "eq", "RTX 4060", "RTX 4060"));
+  assert.deepEqual(schemaErrors(gpu), []);
+  gpu.items[0].constraints.at(-1).operator = "invalid";
+  assert.ok(schemaErrors(gpu).length > 0);
   assert.ok(!SYSTEM_INSTRUCTION.includes("Laptop/RAM support is currently unavailable"));
-  assert.match(SYSTEM_INSTRUCTION, /minRamGB/);
+  assert.match(SYSTEM_INSTRUCTION, /ramGB/);
 });
 
 test("AI agent: '5 laptops, 16 GB, 1-year warranty, 3 lakh' goes straight to a plan", async () => {
@@ -165,13 +170,20 @@ test("AI agent: '5 laptops, 16 GB, 1-year warranty, 3 lakh' goes straight to a p
   assert.equal(result.recommendation.strategyKey, "BEST_VALUE");
 });
 
-test("AI agent: an unsupported laptop GPU condition still blocks planning", async () => {
-  const result = await aiWith(laptopDraft({
-    requiredCategories: [{ category: "laptop", quantity: 2 }], budgetINR: 200000,
-    hardConstraints: { laptop: { minRamGB: 16 } },
-    unsupportedRequirements: ["Each laptop must have an RTX 4060 GPU"],
-  })).plan({ messages: ["2 laptops with RTX 4060 and 16 GB RAM, 2 lakh, 10 days"] });
-  assert.equal(result.status, "NEEDS_CLARIFICATION");
+test("AI agent: GPU requirements parse READY while the legacy planning bridge reports its limitation", async () => {
+  const api = aiWith(laptopDraft({
+    budget: { amount: 200000 },
+    items: [{ category: "laptop", quantity: 2, unit: "unit", required: true, constraints: [
+      condition("ramGB", "gte", 16, "16 GB RAM", "GB"),
+      condition("gpu", "eq", "RTX 4060", "RTX 4060"),
+    ] }],
+  }));
+  const body = { messages: ["2 laptops with RTX 4060 and 16 GB RAM, INR 2 lakh total, 10 days"] };
+  const parsed = await api.parse(body);
+  assert.equal(parsed.status, "READY");
+  assert.equal(parsed.request.items[0].constraints[1].value, "RTX 4060");
+  const result = await api.plan(body);
+  assert.equal(result.status, "ENGINE_SUPPORT_REQUIRED");
   assert.equal(result.plan, null);
   assert.match(result.unsupportedRequirements.join(" "), /RTX 4060/);
 });

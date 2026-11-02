@@ -1,144 +1,95 @@
-# Request intelligence — Task 1
+# Request intelligence and follow-up questions — response v3
 
-This module turns user messages into the team's existing `ProcurementRequest` JSON. It asks for missing requirements, then hands the complete request to the existing verifier/optimizer and returns its actual baskets. It does not generate product prices or authorize payment.
+Our responsibility is: **user messages -> understand purchasing intent -> ask necessary questions -> complete general JSON**. Completion does not depend on catalogs, product availability, INR pricing, quantity limits, verification rules or optimizer capabilities. The optimizer owner consumes the completed request and builds on it.
 
-## Run
+## Run and API
 
-Requires the repo's Node.js 20+ environment. No new npm dependencies.
+Node.js 20+, existing dependencies only. Run `npm ci`, configure server-only `GEMINI_API_KEY` in ignored `.env`, then `npm start`. Default `GEMINI_MODEL=gemini-3.5-flash-lite`. `npm run demo:ai` opens the parsing conversation; `npm run demo:ai -- --sample` prints the original example as general JSON. The demo now always parses; it does not optimize or pay.
 
-1. Run `npm ci` (`npm.cmd ci` in Windows PowerShell).
-2. Copy `.env.example` to `.env` if it does not exist.
-3. Create a Gemini API key in [Google AI Studio](https://aistudio.google.com/apikey). Put it in **the server's local `.env`** as `GEMINI_API_KEY=...`. Do not send keys in chat or put them in a `VITE_` variable.
-4. Set `GEMINI_MODEL` to a model available to that key. Default: `gemini-3.5-flash-lite`. Restart the server after changing environment settings.
-5. `npm run demo:ai -- --sample` prints extraction + actual optimizer output for the agreed ₹60,000 example. `npm run demo:ai` runs a terminal conversation. Add `--parse` to stop at request JSON.
-6. `npm start` exposes the HTTP endpoints below. `GET /api/ai/status` reports whether a key is set; it does **not** prove the key works.
-
-PayPal credentials are separate and are unnecessary for request extraction or basket planning. Only HTTP 503 overload responses are retried: at most three retries after 2, 4 and 8 seconds. One 30-second deadline covers all attempts and waits. Invalid requests, authentication errors, quota errors and incomplete model outputs return immediately. Account/model quotas and any charges depend on your Gemini project; check [active limits](https://ai.google.dev/gemini-api/docs/rate-limits) before making the demo public.
-
-## API contract
-
-| Method | Path | Result |
-|---|---|---|
-| GET | `/api/ai/status` | Configuration flag, provider/model ID, supported categories; no secret |
-| POST | `/api/ai/parse` | `READY` with canonical JSON, or `NEEDS_CLARIFICATION` |
-| POST | `/api/ai/plan` | Same clarification behavior; complete requests return `PLANNED` or `INFEASIBLE` with the optimizer response |
-
-Both POST endpoints take the same body:
-
-Saved inputs for API clients: [`examples/ai-request.json`](../examples/ai-request.json) and [`examples/ai-followup.json`](../examples/ai-followup.json).
-
-```json
-{
-  "requestId": "req_2026_01",
-  "messages": [
-    "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week."
-  ]
-}
-```
-
-`requestId` is optional; the server generates it when omitted. `messages` contains **user turns only**, in order: 1–20 non-empty strings, at most 8,000 characters each and 16,000 total. Do not send a previously generated draft as input. The service re-extracts all user turns each time, avoiding a separate conversation database and unvalidated client-side JSON merges.
-
-Every success response has these fields:
-
-```json
-{
-  "requestId": "req_2026_01",
-  "status": "NEEDS_CLARIFICATION",
-  "request": null,
-  "draft": {
-    "budgetINR": null,
-    "maxDeliveryDays": null,
-    "requiredCategories": [{ "category": "monitor", "quantity": 1 }],
-    "hardConstraints": {},
-    "weights": null,
-    "ambiguities": [],
-    "unsupportedRequirements": [],
-    "assumptions": []
-  },
-  "questions": [
-    { "field": "budgetINR", "question": "What is your total budget in INR, including shipping?" },
-    { "field": "maxDeliveryDays", "question": "Within how many days do you need all items delivered?" }
-  ],
-  "unsupportedRequirements": [],
-  "assumptions": ["Default scoring weights: quality 0.45, reliability 0.35, delivery 0.20. Price is a budget cap and tie-breaker; CHEAPEST minimizes cost separately."],
-  "plan": null,
-  "recommendation": null
-}
-```
-
-For that example, submit a follow-up as:
-
-```json
-{
-  "requestId": "req_2026_01",
-  "messages": ["I need a monitor.", "Total budget INR 20000; deliver within 7 days."]
-}
-```
-
-The original request is preserved in `request.rawQuery`, followed by labelled follow-up turns. `READY` means the canonical JSON is valid and no declared ambiguity/unsupported requirement remains. Parsing alone does not check product availability.
-
-`PLANNED` includes `request` in the agreed shape, `plan` in the existing [shared contract](../shared/contracts.json), and a deterministic `recommendation` containing the recommended strategy key, exact total, remaining budget, evidence status and `requiresUserApproval: true`. The engine still decides whether all three strategies have distinct feasible baskets. `INFEASIBLE` includes `plan.infeasibility` and no recommendation.
-
-Errors use `{ error, message, details? }`: 400 `INVALID_AI_REQUEST`, 413 oversized JSON, 503 `AI_NOT_CONFIGURED` / `AI_UNAVAILABLE` / `AI_OVERLOADED` / `CATALOG_UNAVAILABLE`, 429 `AI_RATE_LIMITED`, 504 `AI_TIMEOUT`, 502 `AI_INVALID_OUTPUT` / `AI_PROVIDER_ERROR`. Never continue to hardcoded plans after one of these errors.
-
-## Frontend handoff — teammate 3
-
-Copy [requestIntelligenceApi.js](integration/requestIntelligenceApi.js) to your frontend API folder. Keep user messages and the returned request ID in React state:
-
-```js
-const result = await generatePlanFromMessages(messages, { requestId, base: API_BASE });
-setRequestId(result.requestId);
-if (result.status === "NEEDS_CLARIFICATION") {
-  setQuestions(result.questions);
-  // Render unsupportedRequirements too. Append the user's labelled answer to
-  // messages and call again. Do not enable plan comparison or checkout yet.
-} else if (result.status === "INFEASIBLE") {
-  setInfeasibility(result.plan.infeasibility);
-} else {
-  setRawPlan(result.plan);
-  setPlan(toPlanViewModel(result.plan)); // existing procurementApi.js adapter
-}
-```
-
-For a separate "Extract & Review" button, call `parseRequirements(messages, options)`. The returned `request` can be shown as JSON or reviewed before sending it to the existing `/api/procurement/plan` endpoint. If structured form edits are used, validate and submit those edits through the existing endpoint; do not silently ignore them.
-
-Plans created by `/api/ai/plan` are saved in the **same server plan store** as `/api/procurement/plan`. No frontend plan registration is needed. Continue with the engine's `planId` and strategy key. The existing frontend still renders hardcoded baskets and the separate PayPal store still needs the checkout integration described in [INTEGRATION.md](INTEGRATION.md); Task 1 does not make those paths authoritative.
-
-## Extraction policies and limits
-
-- Budget, categories, uncertain quantities and deadline must be resolved before optimization. Singular item lists mean one each; ambiguous plural quantities remain unknown. An explicit lack of deadline maps to the engine's 365-day horizon with a disclosed assumption.
-- The prompt instructs the model to interpret `3 lakh` as 300000 INR, exclude already-owned equipment, preserve earlier constraints, and apply the latest explicit correction. Currency conversions and ambiguous calendar dates require clarification.
-- General use cases (coding, gaming, office work) are background context. An explicit item list defines the scope even when described as a "complete setup". Scope notes belong in `assumptions`; only specific unsupported mandatory conditions belong in `unsupportedRequirements`. Without a list, "complete setup" still needs a category question. Explicit laptop/monitor HDMI compatibility remains a blocker.
-- Exact defaults are the agreed weights `0.45/0.35/0.20`, disclosed in `assumptions`. Strong quality/reliability/delivery preferences use documented weight presets in the extraction prompt. Explicit invalid weights cause questions rather than silent normalization. BEST_VALUE uses the existing engine's weighted score; CHEAPEST handles price minimization.
-- The extraction schema and supported keys are derived from `constraintRegistry.js`. Gemini receives a copy without `maxItems` and `minimum` bounds because the full bounded schema produced HTTP 400 in live testing. Field shapes, types, required keys and supported constraint names remain in the provider schema. The server still enforces the original strict schema and canonical request validity, including array bounds and non-negative constraint values.
-- Current categories: monitor, keyboard, mouse, headphones, **laptop** (added in catalog v2026-10-30.1). A request for **5 laptops / 16 GB RAM / 1-year warranty / ₹3 lakh** now maps to `hardConstraints.laptop: { minRamGB: 16, minWarrantyMonths: 12 }` and is planned (₹2,50,494 / ₹2,81,249 / ₹2,75,450 on the demo catalog). Laptop GPU, CPU model and battery life are still unsupported and must block planning. Request intelligence discovers the registry keys automatically.
-- Compatibility, delivery to a specific postcode, and other unsupported mandatory conditions must appear as blockers. Soft preferences outside the score are disclosed rather than claimed as optimized.
-- LLM interpretation can still omit or misread a requirement. Schema validation guarantees structure and supported keys, **not semantic accuracy**. Show the extracted brief for user review; evaluate real prompts with your chosen model before the demo.
-- Catalog records remain **synthetic demo data** and are labelled `UNVERIFIED_DEMO_DATA`. This module preserves that evidence status. It never claims retailer verification.
-
-## Implementation and verification
-
-| File | Responsibility |
+| Endpoint | Purpose |
 |---|---|
-| `src/aiService.js` | Input bounds, missing-field questions, validation, optimizer handoff and deterministic recommendation |
-| `src/requestExtraction.js` | Extraction JSON schema, local schema checks and interpretation prompt |
-| `src/geminiExtractor.js` | Gemini REST call, bounded timeout, structured output and safe provider errors |
-| `src/routes/ai.js` | Express endpoints and JSON error responses |
-| `scripts/demo-ai.js` | Terminal conversation or one-shot live demo |
+| `POST /api/ai/parse` | Parse user turns and return general JSON or follow-up questions |
+| `GET /api/ai/contract` | Schema, input limits and parser statuses |
+| `GET /api/ai/status` | Model/configuration flag, scope REQUEST_INTELLIGENCE; no key or category allowlist |
 
-Use `npm test`. The request-intelligence tests inject model outputs and mock Gemini HTTP responses. They exercise real optimizer/store behavior but **do not measure live model extraction accuracy**. A live smoke test requires a Gemini key:
+Input: `{ "requestId": "optional-id", "messages": ["user request", "user answer"] }`. Send user turns in order. A request ID is generated if omitted. Bounds: 1–100 non-empty messages, <=8,000 characters each, <=16,000 total, ID <=128 characters. The larger turn count supports multi-step clarification while keeping a bounded total prompt size.
 
-```bash
-npm run demo:ai -- --sample --parse
-npm run demo:ai -- --sample
+## Completion means understanding
+
+| Status | Meaning |
+|---|---|
+| `READY` | The user's purchasing requirements are sufficiently clear. `request` is the completed general JSON. |
+| `NEEDS_CLARIFICATION` | Information is missing, invalid or contradictory. `request:null`; partial information remains in `requirements`. |
+| `NOT_PROCUREMENT` | Greeting/unrelated input, with a short invitation to state purchasing needs. No fabricated basket. |
+| `CANCELLED` | The user cancelled their purchasing brief. No order, payment or refund action is executed. |
+
+Response fields: `contractVersion:3`, `requestId`, `status`, `request`, `requirements`, `questions`, `nextQuestion`, `assumptions`, `referenceDate`, and a short `message` for unrelated/cancelled input. Each question has `field` and `question`. `nextQuestion` is the first unresolved question, or null when complete. The parser does not return engine-support blockers, product recommendations or feasibility claims.
+
+`READY` can include 500 chairs, USD pricing, fractional kg, an unlimited budget, per-item caps, taxes, destination-specific needs, conditional/optional purchases, or any other clearly expressed attributes. These remain requirements for downstream work, not reasons to interrogate the user or reject a category.
+
+## General request JSON
+
+The completed `request` includes `requestId`, `rawQuery` and these schema fields:
+
+The optimizer owner can use [the completed-request JSON Schema](../shared/request-intelligence.schema.json), also returned as `completedRequestSchema` by `/api/ai/contract`. The verified [chair input](../examples/request-chairs.json) and [READY response](../examples/response-chairs.json) illustrate the handoff. Partial extraction uses the separate `requirementsSchema`.
+
+| Field | Contents |
+|---|---|
+| `intent` | PROCUREMENT / NON_PROCUREMENT / CANCEL |
+| `items` | category, quantity, unit, required flag, typed constraints |
+| `budget` | amount, minimum, currency, TOTAL/PER_ITEM/UNKNOWN scope, unlimited flag, shipping/tax inclusion |
+| `delivery` | duration in days (including fractions), date or timestamp, flexible/no deadline flag, destination |
+| `globalConstraints` | Requirements applying to all items or relationships between purchases |
+| `weights` | Only explicitly supplied numeric quality/reliability/delivery weights; otherwise null |
+| `ambiguities` | Specific unresolved meaning/conflicts, phrased as questions |
+| `assumptions` | Disclosed context or interpretation notes |
+
+Each condition is `{ attribute, operator, value, unit, importance, sourceText }`. Attributes are arbitrary strings; values are typed numbers/strings/booleans/arrays. Operators are gt/gte/lt/lte/eq/in/not_in/between/contains. HARD and SOFT are distinct. `sourceText` quotes the user's words. A chair can carry `weightCapacity gte 120 kg`; a shirt can carry size XL; a freezer can carry temperature lte -20 C. No category-specific optimizer schema is required.
+
+## Correct follow-up flow
+
+1. Call `parseRequirements(messages, {requestId})` using [requestIntelligenceApi.js](integration/requestIntelligenceApi.js).
+2. If NEEDS_CLARIFICATION, display `nextQuestion.question`.
+3. Append the user's answer using `appendClarificationAnswer(messages, nextQuestion, answer)`.
+4. Call `/parse` again with the updated messages and same request ID.
+5. Repeat until READY. Send `result.request` to the optimizer owner as the completed general request.
+
+Example labelled turn:
+
+```text
+Answer to clarification (items[0].quantity): How many chairs do you need?
+My answer: 5
 ```
 
-Then try missing budget, missing categories, a correction in the next turn, the laptop/RAM example, and an impossible budget. Check the extracted JSON as well as the returned baskets.
+The label makes "5", "yes", "XL" or "no cap" interpretable without guessing which question it answers. Unaffected earlier requirements must survive every answer. Explicit corrections/removals replace only the relevant detail. The CLI asks one returned question at a time and applies the same label.
 
-For a repeatable live check, run `npm run test:ai:live`. It evaluates the ten fixed conversations in `test/fixtures/ai-live-cases.json`: the original setup, a context paraphrase, missing budget/deadline, missing categories, missing quantities, follow-up corrections, laptop RAM/warranty planning, unsupported laptop GPU, mandatory HDMI compatibility, and withdrawal of that condition. The original setup also runs the real optimizer and checks its expected totals. Run one case with `npm run test:ai:live -- original-setup`.
+## Asking where necessary
 
-This command uses your Gemini key and spends one extraction call per case, plus any bounded 503 retries. It is separate from `npm test`, stops on provider/configuration errors, and exits nonzero on a failed expectation. Passing these examples is smoke-test evidence for this prompt/model combination, not a guarantee for arbitrary wording.
+- Missing categories, counts, units, budget/currency/scope, or delivery expectations require a question. Budget/currency are combined when both are absent. Explicit no spending cap or flexible delivery are complete answers; no artificial limits are inserted.
+- A shirt/shoe size, replacement cartridge model, software purpose, or unspecified ticket/booking identity can be purchase-critical. Ask these rather than assuming. Common deterministic safeguards back up the model's clarification decisions; they are not category allowlists.
+- Vague mandatory numeric language ("high refresh", "lightweight") must not become an invented number. Ask the actual threshold. Optional qualitative preferences remain optional and can remain qualitative.
+- Do not ask optional brand/colour/style questions without a reason. Explicit "any size", "any brand" and "either is fine" resolve that detail; do not repeat it.
+- Raw mass stays a mass quantity; packaging is introduced only when requested. Per-item caps, currencies and decimal precision are preserved. The parser never manufactures a total, FX rate or product price.
+- Global and item conditions are checked together for contradictions, including strict inequalities and common unit conversions. Preserve conflicting statements while asking which should apply.
+- Relative dates use the supplied server date/time in Asia/Kolkata. Explicit clock deadlines preserve ISO offsets. Ambiguous calendar formats or past deadlines require clarification.
+- Greetings/unrelated questions are classified and redirected to purchasing requirements; this is not a general-purpose question-answering chatbot.
 
-Recorded local smoke evaluation on 2026-10-29 with `gemini-3.5-flash-lite`: **9/9 cases passed** (before laptop support; re-run after the laptop update, since two cases changed). The original setup reached `PLANNED` with demo-catalog totals of INR 12,292 / 54,996 / 50,296. Missing plural quantities required clarification; unsupported laptop quantities, RAM and warranty were retained; explicit HDMI compatibility blocked planning and an explicit withdrawal removed that blocker. General context and an explicit complete-setup item list did not create false blockers.
+## Verification and evidence
 
-API reference used: [Gemini generateContent](https://ai.google.dev/api/generate-content), [structured outputs](https://ai.google.dev/gemini-api/docs/structured-output), [models](https://ai.google.dev/gemini-api/docs/models). The API key is sent in a header; provider error bodies and user prompts are not logged by this module.
+`npm test` runs deterministic parser/schema/API/provider tests and retained legacy regression tests without model calls. `npm run test:ai:live -- --suite=all` runs the parser-only live acceptance suite. Use `--suite=development` or `--suite=heldout`, or list specific case IDs for repairs.
+
+Current fixtures: `ai-parser-cases.json` and `ai-parser-heldout-cases.json`. They cover product families, ambiguity, quantities/units, scope, currencies, deadlines, identity/size requirements, conditions, corrections, labelled short answers and non-shopping input. Live runs freeze the reference time, pause between calls, stop on provider errors, and save model, prompt/schema hashes, failed outputs and reruns under `reports/ai-evaluation/`. Failed runs remain available.
+
+Verified on 2026-10-30 with `gemini-3.5-flash-lite`: **129/129 automated tests and 83/83 live cases (75 development + 8 reserved paraphrases)**. See [parser-acceptance-summary.json](../reports/ai-evaluation/parser-acceptance-summary.json) for source/prompt/schema hashes and the complete live report. The final invocation made 40 new model calls and reused 43 validated passes from source-matched interrupted runs. Provider timeouts and earlier semantic failures remain recorded rather than counted as passes.
+
+After integrating the laptop-category changes from main, **141/141 automated entries pass (140 named checks plus one helper file)**. The four primary parser files, prompt and schema still match the live-tested snapshot, so the 83-case evidence remains applicable without new model calls. See [integration-validation.json](../reports/ai-evaluation/integration-validation.json).
+
+Historical v2 reports/`acceptance-summary.json` included optimizer compatibility. They are not evidence for the current parser-only contract. A finite passing suite is measured coverage, not a guarantee for every possible sentence; new failures should become regression cases.
+
+After a transport/quota interruption, `npm run test:ai:live -- --resume=reports/ai-evaluation/REPORT.json` reuses only validated successful cases with matching input, expectations, model, prompt, schema and parser source. It preserves the original frozen date/time and report provenance. Failed or changed cases call the model again. Changing parsing behavior invalidates cached passes; earlier interrupted reports remain intact.
+
+## Scope and compatibility
+
+The generic parser and schema have no dependency on the catalog, constraint registry, plan service or optimizer. The old `/api/ai/plan` endpoint remains a separate optional compatibility bridge for existing consumers; it lazily invokes the v1 adapter only when explicitly called. Its statuses and payload are not parsing-readiness rules. The existing frontend/PayPal code is outside this request-intelligence task. Use the v3 `/parse` contract for the new optimizer handoff.
+
+Keys stay in server `.env`. Provider error bodies and prompts are not logged by our adapter. Only HTTP 503 retries after 2/4/8 seconds within a total 30-second deadline; other provider errors are returned without fake results.

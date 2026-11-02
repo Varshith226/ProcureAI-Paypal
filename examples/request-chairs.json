@@ -1,0 +1,6 @@
+{
+  "requestId": "eval_furniture-capacity",
+  "messages": [
+    "Buy 4 chairs under INR 10000 total, delivery within 7 days. Each chair must support at least 120 kg."
+  ]
+}
