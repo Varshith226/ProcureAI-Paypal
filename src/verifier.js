@@ -32,6 +32,7 @@ const CATEGORY_LABEL = {
   keyboard: "Keyboard",
   mouse: "Mouse",
   headphones: "Headphones",
+  laptop: "Laptop",
 };
 const categoryLabel = (c) => CATEGORY_LABEL[c] || c.charAt(0).toUpperCase() + c.slice(1);
 
@@ -104,6 +105,7 @@ function checkRule(product, key, rule, expected) {
 function verifyProduct(product, ctx) {
   const checks = [];
   const warnings = [];
+  const stockNotes = []; // informational: the optimizer never exceeds stock
   const add = (c) => checks.push({ mandatory: true, ...c });
 
   // Price
@@ -128,9 +130,9 @@ function verifyProduct(product, ctx) {
   } else {
     add({ checkId: "stock.available", group: "STOCK", status: CHECK.PASS, detail: `${product.stockQuantity} unit(s) in stock.` });
     if (product.stockQuantity < ctx.categoryQuantity) {
-      warnings.push(
-        `Only ${product.stockQuantity} in stock; it can cover at most ${product.stockQuantity} of the ${ctx.categoryQuantity} requested ${product.category} unit(s).`
-      );
+      const note = `Only ${product.stockQuantity} in stock; it can cover at most ${product.stockQuantity} of the ${ctx.categoryQuantity} requested ${product.category} unit(s).`;
+      warnings.push(note);
+      stockNotes.push(note);
     }
   }
 
@@ -179,6 +181,7 @@ function verifyProduct(product, ctx) {
     eligible,
     checks,
     warnings,
+    stockNotes,
     rejectionType,
     rejectedReason,
     failedChecks: failed.map((c) => c.checkId),

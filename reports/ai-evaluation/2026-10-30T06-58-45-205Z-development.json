@@ -1,0 +1,133 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "suite": "development",
+  "startedAt": "2026-10-30T06:58:45.205Z",
+  "referenceDate": "2026-10-30",
+  "promptHash": "a065f51dda1d7333f93213a9d0ab61943461a4a41c3a708def4f31dd62b69bfa",
+  "schemaHash": "217653db0c746c08f9f71d1e8ba4928e868ae40c96c026f449c97efaa5425942",
+  "cases": [
+    {
+      "id": "conditional-purchase",
+      "passed": true,
+      "error": null,
+      "messages": [
+        "Buy one monitor, and buy one keyboard only if the monitor costs less than INR 15000. Overall budget INR 30000, delivery within 7 days."
+      ],
+      "expected": {
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "conditions": [
+          {
+            "attributePattern": "condition",
+            "importance": "HARD"
+          }
+        ],
+        "requirements": {
+          "budget": {
+            "amount": 30000,
+            "currency": "INR"
+          }
+        }
+      },
+      "actual": {
+        "contractVersion": 2,
+        "requestId": "eval_conditional-purchase",
+        "status": "ENGINE_SUPPORT_REQUIRED",
+        "understandingStatus": "READY",
+        "requirements": {
+          "intent": "PROCUREMENT",
+          "items": [
+            {
+              "category": "monitor",
+              "quantity": 1,
+              "unit": "unit",
+              "required": true,
+              "constraints": []
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1,
+              "unit": "unit",
+              "required": false,
+              "constraints": []
+            }
+          ],
+          "budget": {
+            "amount": 30000,
+            "minAmount": null,
+            "currency": "INR",
+            "scope": "TOTAL",
+            "unlimited": false,
+            "includesShipping": null,
+            "includesTax": null
+          },
+          "delivery": {
+            "maxDays": 7,
+            "deadlineISO": null,
+            "unrestricted": false,
+            "destination": null
+          },
+          "globalConstraints": [
+            {
+              "attribute": "purchaseCondition",
+              "operator": "contains",
+              "value": "buy one keyboard only if the monitor costs less than INR 15000",
+              "unit": null,
+              "importance": "HARD",
+              "sourceText": "buy one keyboard only if the monitor costs less than INR 15000"
+            }
+          ],
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "assumptions": []
+        },
+        "request": null,
+        "draft": {
+          "budgetINR": 30000,
+          "maxDeliveryDays": 7,
+          "requiredCategories": [
+            {
+              "category": "monitor",
+              "quantity": 1
+            },
+            {
+              "category": "keyboard",
+              "quantity": 1
+            }
+          ],
+          "hardConstraints": {},
+          "weights": {
+            "quality": 0.45,
+            "reliability": 0.35,
+            "delivery": 0.2
+          },
+          "ambiguities": [],
+          "unsupportedRequirements": [
+            "monitor: cannot enforce purchaseCondition contains \"buy one keyboard only if the monitor costs less than INR 15000\" (buy one keyboard only if the monitor costs less than INR 15000).",
+            "keyboard: optional purchase is preserved; v1 only optimizes mandatory fixed-category baskets.",
+            "keyboard: cannot enforce purchaseCondition contains \"buy one keyboard only if the monitor costs less than INR 15000\" (buy one keyboard only if the monitor costs less than INR 15000)."
+          ],
+          "assumptions": []
+        },
+        "questions": [],
+        "unsupportedRequirements": [
+          "monitor: cannot enforce purchaseCondition contains \"buy one keyboard only if the monitor costs less than INR 15000\" (buy one keyboard only if the monitor costs less than INR 15000).",
+          "keyboard: optional purchase is preserved; v1 only optimizes mandatory fixed-category baskets.",
+          "keyboard: cannot enforce purchaseCondition contains \"buy one keyboard only if the monitor costs less than INR 15000\" (buy one keyboard only if the monitor costs less than INR 15000)."
+        ],
+        "assumptions": [],
+        "canOptimize": false,
+        "plan": null,
+        "recommendation": null,
+        "referenceDate": "2026-10-30"
+      }
+    }
+  ],
+  "passed": 1,
+  "requested": 1,
+  "completed": 1,
+  "finishedAt": "2026-10-30T06:58:47.578Z"
+}

@@ -1,6 +1,6 @@
 {
   "catalogId": "procureai-demo-catalog",
-  "catalogVersion": "2026-10-23.1",
+  "catalogVersion": "2026-10-30.1",
   "dataOrigin": "SYNTHETIC_DEMO",
   "disclaimer": "Every record in this catalog is synthetic demo data. Brands and products are fictional. Prices, stock, delivery times, warranties and quality/reliability scores are illustrative only and were not retrieved from any retailer. No record has a source URL or a live check timestamp.",
   "shippingPolicy": "shippingINR is a flat charge per order line (per product), not per unit.",
@@ -934,6 +934,342 @@
       },
       "qualityScore": 0.97,
       "reliabilityScore": 0.88,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "LAP-001",
+      "name": "Corvex Book 14 Pro",
+      "category": "laptop",
+      "brand": "Corvex",
+      "seller": null,
+      "unitPriceINR": 58990,
+      "shippingINR": 0,
+      "stockQuantity": 3,
+      "deliveryDays": 4,
+      "warrantyMonths": 24,
+      "specs": {
+        "ramGB": 16,
+        "storageGB": 512,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 1.4,
+        "screenInches": 14
+      },
+      "qualityScore": 0.84,
+      "reliabilityScore": 0.82,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "LAP-002",
+      "name": "Corvex Book 15",
+      "category": "laptop",
+      "brand": "Corvex",
+      "seller": null,
+      "unitPriceINR": 52490,
+      "shippingINR": 0,
+      "stockQuantity": 8,
+      "deliveryDays": 5,
+      "warrantyMonths": 12,
+      "specs": {
+        "ramGB": 16,
+        "storageGB": 512,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 1.7,
+        "screenInches": 15.6
+      },
+      "qualityScore": 0.76,
+      "reliabilityScore": 0.78,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "LAP-003",
+      "name": "Arclite Air 13",
+      "category": "laptop",
+      "brand": "Arclite",
+      "seller": null,
+      "unitPriceINR": 49999,
+      "shippingINR": 499,
+      "stockQuantity": 10,
+      "deliveryDays": 6,
+      "warrantyMonths": 12,
+      "specs": {
+        "ramGB": 16,
+        "storageGB": 256,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 1.2,
+        "screenInches": 13.3
+      },
+      "qualityScore": 0.72,
+      "reliabilityScore": 0.75,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "LAP-004",
+      "name": "Arclite Pro 16",
+      "category": "laptop",
+      "brand": "Arclite",
+      "seller": null,
+      "unitPriceINR": 94990,
+      "shippingINR": 0,
+      "stockQuantity": 4,
+      "deliveryDays": 5,
+      "warrantyMonths": 24,
+      "specs": {
+        "ramGB": 32,
+        "storageGB": 1024,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 2.1,
+        "screenInches": 16
+      },
+      "qualityScore": 0.93,
+      "reliabilityScore": 0.86,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "LAP-005",
+      "name": "Novix Edge 14 (8 GB)",
+      "category": "laptop",
+      "brand": "Novix",
+      "seller": null,
+      "unitPriceINR": 39990,
+      "shippingINR": 0,
+      "stockQuantity": 20,
+      "deliveryDays": 3,
+      "warrantyMonths": 12,
+      "specs": {
+        "ramGB": 8,
+        "storageGB": 512,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 1.5,
+        "screenInches": 14
+      },
+      "qualityScore": 0.62,
+      "reliabilityScore": 0.7,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Only 8 GB RAM: fails a 16 GB minimum."
+      }
+    },
+    {
+      "productId": "LAP-006",
+      "name": "Novix Edge 15 (RAM not listed)",
+      "category": "laptop",
+      "brand": "Novix",
+      "seller": null,
+      "unitPriceINR": 44990,
+      "shippingINR": 0,
+      "stockQuantity": 12,
+      "deliveryDays": 4,
+      "warrantyMonths": 12,
+      "specs": {
+        "ramGB": null,
+        "storageGB": 512,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 1.8,
+        "screenInches": 15.6
+      },
+      "qualityScore": 0.7,
+      "reliabilityScore": 0.72,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "RAM intentionally missing to demonstrate UNKNOWN handling."
+      }
+    },
+    {
+      "productId": "LAP-007",
+      "name": "Tessel Studio 14",
+      "category": "laptop",
+      "brand": "Tessel",
+      "seller": null,
+      "unitPriceINR": 61500,
+      "shippingINR": 0,
+      "stockQuantity": 6,
+      "deliveryDays": 14,
+      "warrantyMonths": 24,
+      "specs": {
+        "ramGB": 16,
+        "storageGB": 1024,
+        "storageType": "SSD",
+        "os": "Linux",
+        "weightKg": 1.3,
+        "screenInches": 14
+      },
+      "qualityScore": 0.86,
+      "reliabilityScore": 0.8,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Delivery intentionally beyond 10 days."
+      }
+    },
+    {
+      "productId": "LAP-008",
+      "name": "Corvex Book 14 Lite",
+      "category": "laptop",
+      "brand": "Corvex",
+      "seller": null,
+      "unitPriceINR": 47990,
+      "shippingINR": 0,
+      "stockQuantity": 0,
+      "deliveryDays": 4,
+      "warrantyMonths": 12,
+      "specs": {
+        "ramGB": 16,
+        "storageGB": 512,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 1.4,
+        "screenInches": 14
+      },
+      "qualityScore": 0.7,
+      "reliabilityScore": 0.74,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Intentionally out of stock."
+      }
+    },
+    {
+      "productId": "LAP-009",
+      "name": "Halden Work 15",
+      "category": "laptop",
+      "brand": "Halden",
+      "seller": null,
+      "unitPriceINR": 45499,
+      "shippingINR": 0,
+      "stockQuantity": 2,
+      "deliveryDays": 7,
+      "warrantyMonths": 6,
+      "specs": {
+        "ramGB": 16,
+        "storageGB": 512,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 1.9,
+        "screenInches": 15.6
+      },
+      "qualityScore": 0.68,
+      "reliabilityScore": 0.7,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "6-month warranty: fails a 12-month warranty minimum."
+      }
+    },
+    {
+      "productId": "LAP-010",
+      "name": "Halden Work 15 Plus (warranty unknown)",
+      "category": "laptop",
+      "brand": "Halden",
+      "seller": null,
+      "unitPriceINR": 55990,
+      "shippingINR": 0,
+      "stockQuantity": 5,
+      "deliveryDays": 8,
+      "warrantyMonths": null,
+      "specs": {
+        "ramGB": 24,
+        "storageGB": 512,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 1.9,
+        "screenInches": 15.6
+      },
+      "qualityScore": 0.78,
+      "reliabilityScore": 0.76,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Warranty intentionally missing: UNKNOWN when a warranty minimum is required."
+      }
+    },
+    {
+      "productId": "LAP-011",
+      "name": "Arclite Air 15",
+      "category": "laptop",
+      "brand": "Arclite",
+      "seller": null,
+      "unitPriceINR": 51990,
+      "shippingINR": 299,
+      "stockQuantity": 4,
+      "deliveryDays": 4,
+      "warrantyMonths": 12,
+      "specs": {
+        "ramGB": 16,
+        "storageGB": 512,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 1.6,
+        "screenInches": 15.6
+      },
+      "qualityScore": 0.74,
+      "reliabilityScore": 0.77,
+      "sourceUrl": null,
+      "lastCheckedISO": null,
+      "provenance": {
+        "dataOrigin": "SYNTHETIC_DEMO",
+        "note": "Fictional brand and product; values are illustrative demo data, not live retail data."
+      }
+    },
+    {
+      "productId": "LAP-012",
+      "name": "Novix Creator 16",
+      "category": "laptop",
+      "brand": "Novix",
+      "seller": null,
+      "unitPriceINR": 108990,
+      "shippingINR": 0,
+      "stockQuantity": 3,
+      "deliveryDays": 6,
+      "warrantyMonths": 24,
+      "specs": {
+        "ramGB": 32,
+        "storageGB": 1024,
+        "storageType": "SSD",
+        "os": "Windows",
+        "weightKg": 2.3,
+        "screenInches": 16
+      },
+      "qualityScore": 0.95,
+      "reliabilityScore": 0.84,
       "sourceUrl": null,
       "lastCheckedISO": null,
       "provenance": {

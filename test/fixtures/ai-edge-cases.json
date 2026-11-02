@@ -1,0 +1,102 @@
+[
+  {
+    "id": "optional-purchase",
+    "messages": [
+      "Buy one keyboard and optionally one mouse if the budget allows. INR 5000 total, delivery in 7 days."
+    ],
+    "expected": {
+      "status": "ENGINE_SUPPORT_REQUIRED",
+      "itemCounts": {
+        "keyboard": 1,
+        "mouse": 1
+      },
+      "itemRequired": {
+        "keyboard": true,
+        "mouse": false
+      }
+    }
+  },
+  {
+    "id": "quantity-range",
+    "messages": [
+      "Buy between 5 and 10 chairs, total budget INR 50000, delivery within 10 days."
+    ],
+    "expected": {
+      "status": "ENGINE_SUPPORT_REQUIRED",
+      "itemCounts": {
+        "chair": null
+      },
+      "conditions": [
+        {
+          "category": "chair",
+          "attribute": "quantity",
+          "operator": "between",
+          "value": [
+            5,
+            10
+          ],
+          "importance": "HARD"
+        }
+      ]
+    }
+  },
+  {
+    "id": "conditional-purchase",
+    "messages": [
+      "Buy one monitor, and buy one keyboard only if the monitor costs less than INR 15000. Overall budget INR 30000, delivery within 7 days."
+    ],
+    "expected": {
+      "status": "ENGINE_SUPPORT_REQUIRED",
+      "conditions": [
+        {
+          "attributePattern": "condition",
+          "importance": "HARD"
+        }
+      ],
+      "requirements": {
+        "budget": {
+          "amount": 30000,
+          "currency": "INR"
+        }
+      }
+    }
+  },
+  {
+    "id": "tax-inclusive",
+    "messages": [
+      "Buy one keyboard, total budget INR 5000 inclusive of all taxes, deliver within 7 days."
+    ],
+    "expected": {
+      "status": "ENGINE_SUPPORT_REQUIRED",
+      "requirements": {
+        "budget": {
+          "includesTax": true
+        }
+      }
+    }
+  },
+  {
+    "id": "shipping-excluded",
+    "messages": [
+      "Buy one keyboard, budget INR 5000 excluding shipping, delivery in 7 days."
+    ],
+    "expected": {
+      "status": "ENGINE_SUPPORT_REQUIRED",
+      "requirements": {
+        "budget": {
+          "includesShipping": false
+        }
+      }
+    }
+  },
+  {
+    "id": "ambiguous-calendar-date",
+    "messages": [
+      "Buy one keyboard, INR 5000 total, delivered by 03/04/2027. The date format is unspecified."
+    ],
+    "expected": {
+      "status": "NEEDS_CLARIFICATION",
+      "questionPattern": "date|March|April|format|03|04"
+    }
+  }
+]

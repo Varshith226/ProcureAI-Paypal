@@ -7,7 +7,9 @@
     "start": "node server.js",
     "test": "node --test",
     "demo": "node scripts/demo-plan.js",
-    "demo:revalidate": "node scripts/demo-revalidate.js"
+    "demo:revalidate": "node scripts/demo-revalidate.js",
+    "demo:ai": "node scripts/demo-ai.js",
+    "test:ai:live": "node scripts/evaluate-ai.js"
   },
   "keywords": [],
   "author": "",

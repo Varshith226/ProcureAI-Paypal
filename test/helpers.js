@@ -57,4 +57,20 @@ function basicCatalog(extra = []) {
 
 const productIds = (strategy) => strategy.items.map((i) => `${i.productId}x${i.quantity}`).sort();
 
-module.exports = { product, request, provider, basicCatalog, productIds };
+function condition(attribute, operator, value, sourceText, unit = null, importance = "HARD") {
+  return { attribute, operator, value, sourceText, unit, importance };
+}
+
+function extraction(overrides = {}) {
+  const sample = require("../examples/request-60k-setup.json");
+  return {
+    intent: "PROCUREMENT",
+    items: sample.requiredCategories.map(({ category, quantity }) => ({ category, quantity, unit: "unit", required: true, constraints: category === "monitor" ? [condition("refreshRateHz", "gte", 144, "144 Hz", "Hz")] : [] })),
+    globalConstraints: [], weights: { ...sample.weights }, ambiguities: [], assumptions: [],
+    ...overrides,
+    budget: overrides.budget === null ? null : { amount: 60000, minAmount: null, currency: "INR", scope: "TOTAL", unlimited: false, includesShipping: null, includesTax: null, ...overrides.budget },
+    delivery: overrides.delivery === null ? null : { maxDays: 7, deadlineISO: null, unrestricted: false, destination: null, ...overrides.delivery },
+  };
+}
+
+module.exports = { product, request, provider, basicCatalog, productIds, condition, extraction };

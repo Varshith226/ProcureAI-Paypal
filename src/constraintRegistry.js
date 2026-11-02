@@ -48,6 +48,15 @@ const CATEGORY_RULES = {
     typeIn: { kind: "in", field: "specs.type", label: "headphone type" },
     requireAnc: { kind: "equals", field: "specs.anc", label: "active noise cancellation" },
   },
+  laptop: {
+    minRamGB: { kind: "min", field: "specs.ramGB", label: "RAM", unit: "GB" },
+    minStorageGB: { kind: "min", field: "specs.storageGB", label: "storage", unit: "GB" },
+    storageTypeIn: { kind: "in", field: "specs.storageType", label: "storage type" },
+    osIn: { kind: "in", field: "specs.os", label: "operating system" },
+    maxWeightKg: { kind: "max", field: "specs.weightKg", label: "weight", unit: "kg" },
+    minScreenInches: { kind: "min", field: "specs.screenInches", label: "screen size", unit: "inches" },
+    maxScreenInches: { kind: "max", field: "specs.screenInches", label: "screen size", unit: "inches" },
+  },
 };
 
 function rulesForCategory(category) {

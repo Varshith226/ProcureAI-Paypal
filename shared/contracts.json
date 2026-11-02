@@ -143,6 +143,15 @@
       "connectivityIn",
       "typeIn",
       "requireAnc"
+    ],
+    "laptop": [
+      "minRamGB",
+      "minStorageGB",
+      "storageTypeIn",
+      "osIn",
+      "maxWeightKg",
+      "minScreenInches",
+      "maxScreenInches"
     ]
   },
   "ProcurementPlan": {
@@ -177,7 +186,7 @@
     "verificationLevel": "EvidenceStatus — weakest evidence status among the items",
     "constraintSummary": "{ budgetCheck, categoryCoverageCheck, mandatorySpecCheck, deliveryCheck, stockCheck, priceDataCheck } each PASSED | FAILED",
     "warnings": "string[]",
-    "tradeOff": "ALTERNATIVE only — { categoriesChanged[], costDifferenceINR, compositeScoreDifference, summary }",
+    "tradeOff": "ALTERNATIVE only — { categoriesChanged[], unitsChanged, costDifferenceINR, compositeScoreDifference, summary }",
     "items": "Item[] — one per product line; a category may have several lines (mixed SKUs)"
   },
   "Item": {
@@ -252,7 +261,8 @@
     "verification.status 'VERIFIED' is now reserved for fresh, source-backed data; demo items are 'UNVERIFIED_DEMO_DATA'. Frontend must not show a verified badge for other statuses.",
     "BEST_VALUE objectiveSummary no longer claims to maximize quality-to-price ratio; price is a budget limit and tie-breaker unless the team agrees to add a value weight.",
     "Added fields (additive, nothing renamed): requestId, rawQuery, catalog, scoring, search, omittedStrategies, infeasibility, subtotalINR, shippingTotalINR, withinBudget, scoreBreakdown, verificationLevel, constraintSummary.stockCheck, constraintSummary.priceDataCheck, tradeOff, item.brand/deliveryDays/warrantyMonths/scores/specsSummary, rejectedProducts[].rejectionType/failedChecks/unknownChecks/dataOrigin.",
-    "Reconciled with the role-frontend draft contract: strategy keys are CHEAPEST/BEST_VALUE/ALTERNATIVE (draft: MIN_COST/BEST_VALUE/PERFORMANCE_FIRST); item.specs is an object plus specsSummary for display (draft: string); strategy.warnings is string[] (draft: {severity, message}); constraintSummary values are PASSED/FAILED (draft: PASSED (...) text); paypalSettlementUSD is null from the optimizer (the approve step sets the USD amount)."
+    "Reconciled with the role-frontend draft contract: strategy keys are CHEAPEST/BEST_VALUE/ALTERNATIVE (draft: MIN_COST/BEST_VALUE/PERFORMANCE_FIRST); item.specs is an object plus specsSummary for display (draft: string); strategy.warnings is string[] (draft: {severity, message}); constraintSummary values are PASSED/FAILED (draft: PASSED (...) text); paypalSettlementUSD is null from the optimizer (the approve step sets the USD amount).",
+    "Added the laptop category (catalog v2026-10-30.1): hard constraints minRamGB, minStorageGB, storageTypeIn, osIn, maxWeightKg, minScreenInches, maxScreenInches, plus anyCategory rules such as minWarrantyMonths. ALTERNATIVE now also requires a different product for at least half of all units (tradeOff.unitsChanged)."
   ],
   "RevalidationResult": {
     "planId": "string",

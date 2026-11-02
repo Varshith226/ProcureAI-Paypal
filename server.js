@@ -4,6 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const crypto = require("node:crypto");
+const { createAIRouter, aiJsonErrorHandler } = require("./src/routes/ai");
 
 const {
   createProcurementRouter,
@@ -13,6 +14,8 @@ const {
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/api/ai", createAIRouter());
+app.use("/api/ai", aiJsonErrorHandler);
 
 // Catalog, verification and basket optimization (plans only — no payment here)
 app.use("/api/procurement", createProcurementRouter());

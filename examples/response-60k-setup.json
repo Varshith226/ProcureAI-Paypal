@@ -1,5 +1,5 @@
 {
-  "planId": "plan_f90663493074",
+  "planId": "plan_47cf7583c64a",
   "version": 1,
   "requestId": "req_2026_01",
   "rawQuery": "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.",
@@ -7,7 +7,7 @@
   "budgetINR": 60000,
   "catalog": {
     "catalogId": "procureai-demo-catalog",
-    "catalogVersion": "2026-10-23.1",
+    "catalogVersion": "2026-10-30.1",
     "dataOrigin": "SYNTHETIC_DEMO",
     "disclaimer": "Every record in this catalog is synthetic demo data. Brands and products are fictional. Prices, stock, delivery times, warranties and quality/reliability scores are illustrative only and were not retrieved from any retailer. No record has a source URL or a live check timestamp."
   },
@@ -622,9 +622,10 @@
           "keyboard",
           "headphones"
         ],
+        "unitsChanged": 3,
         "costDifferenceINR": -4700,
         "compositeScoreDifference": -0.007,
-        "summary": "Changes the monitor, keyboard, headphones pick(s) versus Best Value. Costs ₹4,700 less with a composite score -0.007 relative to Best Value."
+        "summary": "Changes the monitor, keyboard, headphones pick(s) versus Best Value (a different product for 3 of 4 unit(s)). Costs ₹4,700 less with a composite score -0.007 relative to Best Value."
       }
     }
   },

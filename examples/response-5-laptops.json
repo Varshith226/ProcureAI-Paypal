@@ -1,0 +1,455 @@
+{
+  "planId": "plan_1320ce72484b",
+  "version": 1,
+  "requestId": "req_2026_laptops",
+  "rawQuery": "I need 5 laptops for a small shop under 3 lakh INR total, each with at least 16 GB RAM, delivery within 10 days and a minimum one-year warranty.",
+  "currency": "INR",
+  "budgetINR": 300000,
+  "catalog": {
+    "catalogId": "procureai-demo-catalog",
+    "catalogVersion": "2026-10-30.1",
+    "dataOrigin": "SYNTHETIC_DEMO",
+    "disclaimer": "Every record in this catalog is synthetic demo data. Brands and products are fictional. Prices, stock, delivery times, warranties and quality/reliability scores are illustrative only and were not retrieved from any retailer. No record has a source URL or a live check timestamp."
+  },
+  "scoring": {
+    "weights": {
+      "quality": 0.45,
+      "reliability": 0.35,
+      "delivery": 0.2
+    },
+    "weightsSource": "REQUEST",
+    "unitComposite": "weights.quality * qualityScore + weights.reliability * reliabilityScore + weights.delivery * deliveryScore",
+    "deliveryScore": "(maxDeliveryDays + 1 - deliveryDays) / (maxDeliveryDays + 1); only for products within the delivery limit",
+    "unknownSoftScores": "unknown qualityScore or reliabilityScore contributes 0",
+    "basketComposite": "mean over required categories of the quantity-weighted mean unit composite",
+    "priceRole": "hard budget limit and first tie-breaker; not part of the composite score"
+  },
+  "status": "DRAFT",
+  "strategies": {
+    "CHEAPEST": {
+      "strategyKey": "CHEAPEST",
+      "strategyName": "Plan A — Cheapest",
+      "objectiveSummary": "Lowest total cost among complete baskets that meet every hard constraint and the budget; higher composite score breaks ties.",
+      "subtotalINR": 249995,
+      "shippingTotalINR": 499,
+      "totalINR": 250494,
+      "leftoverBudgetINR": 49506,
+      "withinBudget": true,
+      "paypalSettlementUSD": null,
+      "compositeScore": 0.6774,
+      "scoreBreakdown": {
+        "quality": 0.72,
+        "reliability": 0.75,
+        "delivery": 0.4545
+      },
+      "verificationLevel": "UNVERIFIED_DEMO_DATA",
+      "constraintSummary": {
+        "budgetCheck": "PASSED",
+        "categoryCoverageCheck": "PASSED",
+        "mandatorySpecCheck": "PASSED",
+        "deliveryCheck": "PASSED",
+        "stockCheck": "PASSED",
+        "priceDataCheck": "PASSED"
+      },
+      "warnings": [
+        "Every item in this plan is synthetic demo data — confirm real prices, stock and delivery before paying."
+      ],
+      "items": [
+        {
+          "productId": "LAP-003",
+          "name": "Arclite Air 13",
+          "brand": "Arclite",
+          "category": "laptop",
+          "quantity": 5,
+          "unitPriceINR": 49999,
+          "shippingINR": 499,
+          "lineTotalINR": 250494,
+          "deliveryDays": 6,
+          "warrantyMonths": 12,
+          "specs": {
+            "ramGB": 16,
+            "storageGB": 256,
+            "storageType": "SSD",
+            "os": "Windows",
+            "weightKg": 1.2,
+            "screenInches": 13.3
+          },
+          "specsSummary": "16 GB RAM · 256 GB · SSD · Windows · 1.2 kg · 13.3\"",
+          "scores": {
+            "quality": 0.72,
+            "reliability": 0.75,
+            "delivery": 0.4545,
+            "composite": 0.6774
+          },
+          "selectionReason": "Laptop RAM is 16 GB (at least 16 GB required). Laptop warranty is 12 months (at least 12 months required). Delivers in 6 day(s); quality 0.72, reliability 0.75. Part of the lowest-cost complete basket that meets every hard constraint.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹49,999).",
+              "Shipping ₹499 per order line.",
+              "10 unit(s) in stock.",
+              "Estimated delivery 6 day(s) (limit 10).",
+              "Laptop RAM is 16 GB (at least 16 GB required).",
+              "Laptop warranty is 12 months (at least 12 months required)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        }
+      ]
+    },
+    "BEST_VALUE": {
+      "strategyKey": "BEST_VALUE",
+      "strategyName": "Plan B — Best Value",
+      "objectiveSummary": "Highest weighted quality, reliability and delivery score among complete baskets within budget; the lower total wins ties. Price is a budget limit and tie-breaker, not part of the score.",
+      "subtotalINR": 280950,
+      "shippingTotalINR": 299,
+      "totalINR": 281249,
+      "leftoverBudgetINR": 18751,
+      "withinBudget": true,
+      "paypalSettlementUSD": null,
+      "compositeScore": 0.7673,
+      "scoreBreakdown": {
+        "quality": 0.8,
+        "reliability": 0.8,
+        "delivery": 0.6364
+      },
+      "verificationLevel": "UNVERIFIED_DEMO_DATA",
+      "constraintSummary": {
+        "budgetCheck": "PASSED",
+        "categoryCoverageCheck": "PASSED",
+        "mandatorySpecCheck": "PASSED",
+        "deliveryCheck": "PASSED",
+        "stockCheck": "PASSED",
+        "priceDataCheck": "PASSED"
+      },
+      "warnings": [
+        "Every item in this plan is synthetic demo data — confirm real prices, stock and delivery before paying."
+      ],
+      "items": [
+        {
+          "productId": "LAP-001",
+          "name": "Corvex Book 14 Pro",
+          "brand": "Corvex",
+          "category": "laptop",
+          "quantity": 3,
+          "unitPriceINR": 58990,
+          "shippingINR": 0,
+          "lineTotalINR": 176970,
+          "deliveryDays": 4,
+          "warrantyMonths": 24,
+          "specs": {
+            "ramGB": 16,
+            "storageGB": 512,
+            "storageType": "SSD",
+            "os": "Windows",
+            "weightKg": 1.4,
+            "screenInches": 14
+          },
+          "specsSummary": "16 GB RAM · 512 GB · SSD · Windows · 1.4 kg · 14\"",
+          "scores": {
+            "quality": 0.84,
+            "reliability": 0.82,
+            "delivery": 0.6364,
+            "composite": 0.7923
+          },
+          "selectionReason": "Laptop RAM is 16 GB (at least 16 GB required). Laptop warranty is 24 months (at least 12 months required). Delivers in 4 day(s); quality 0.84, reliability 0.82. Part of the highest-scoring complete basket within budget.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹58,990).",
+              "Free shipping listed.",
+              "3 unit(s) in stock.",
+              "Estimated delivery 4 day(s) (limit 10).",
+              "Laptop RAM is 16 GB (at least 16 GB required).",
+              "Laptop warranty is 24 months (at least 12 months required)."
+            ],
+            "warnings": [
+              "Only 3 in stock; it can cover at most 3 of the 5 requested laptop unit(s).",
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "LAP-011",
+          "name": "Arclite Air 15",
+          "brand": "Arclite",
+          "category": "laptop",
+          "quantity": 2,
+          "unitPriceINR": 51990,
+          "shippingINR": 299,
+          "lineTotalINR": 104279,
+          "deliveryDays": 4,
+          "warrantyMonths": 12,
+          "specs": {
+            "ramGB": 16,
+            "storageGB": 512,
+            "storageType": "SSD",
+            "os": "Windows",
+            "weightKg": 1.6,
+            "screenInches": 15.6
+          },
+          "specsSummary": "16 GB RAM · 512 GB · SSD · Windows · 1.6 kg · 15.6\"",
+          "scores": {
+            "quality": 0.74,
+            "reliability": 0.77,
+            "delivery": 0.6364,
+            "composite": 0.7298
+          },
+          "selectionReason": "Laptop RAM is 16 GB (at least 16 GB required). Laptop warranty is 12 months (at least 12 months required). Delivers in 4 day(s); quality 0.74, reliability 0.77. Part of the highest-scoring complete basket within budget.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹51,990).",
+              "Shipping ₹299 per order line.",
+              "4 unit(s) in stock.",
+              "Estimated delivery 4 day(s) (limit 10).",
+              "Laptop RAM is 16 GB (at least 16 GB required).",
+              "Laptop warranty is 12 months (at least 12 months required)."
+            ],
+            "warnings": [
+              "Only 4 in stock; it can cover at most 4 of the 5 requested laptop unit(s).",
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        }
+      ]
+    },
+    "ALTERNATIVE": {
+      "strategyKey": "ALTERNATIVE",
+      "strategyName": "Plan C — Alternative",
+      "objectiveSummary": "Highest-scoring complete basket that changes at least two category picks versus Best Value and is cheaper or better evidenced.",
+      "subtotalINR": 275450,
+      "shippingTotalINR": 0,
+      "totalINR": 275450,
+      "leftoverBudgetINR": 24550,
+      "withinBudget": true,
+      "paypalSettlementUSD": null,
+      "compositeScore": 0.7514,
+      "scoreBreakdown": {
+        "quality": 0.792,
+        "reliability": 0.796,
+        "delivery": 0.5818
+      },
+      "verificationLevel": "UNVERIFIED_DEMO_DATA",
+      "constraintSummary": {
+        "budgetCheck": "PASSED",
+        "categoryCoverageCheck": "PASSED",
+        "mandatorySpecCheck": "PASSED",
+        "deliveryCheck": "PASSED",
+        "stockCheck": "PASSED",
+        "priceDataCheck": "PASSED"
+      },
+      "warnings": [
+        "Every item in this plan is synthetic demo data — confirm real prices, stock and delivery before paying."
+      ],
+      "items": [
+        {
+          "productId": "LAP-001",
+          "name": "Corvex Book 14 Pro",
+          "brand": "Corvex",
+          "category": "laptop",
+          "quantity": 2,
+          "unitPriceINR": 58990,
+          "shippingINR": 0,
+          "lineTotalINR": 117980,
+          "deliveryDays": 4,
+          "warrantyMonths": 24,
+          "specs": {
+            "ramGB": 16,
+            "storageGB": 512,
+            "storageType": "SSD",
+            "os": "Windows",
+            "weightKg": 1.4,
+            "screenInches": 14
+          },
+          "specsSummary": "16 GB RAM · 512 GB · SSD · Windows · 1.4 kg · 14\"",
+          "scores": {
+            "quality": 0.84,
+            "reliability": 0.82,
+            "delivery": 0.6364,
+            "composite": 0.7923
+          },
+          "selectionReason": "Laptop RAM is 16 GB (at least 16 GB required). Laptop warranty is 24 months (at least 12 months required). Delivers in 4 day(s); quality 0.84, reliability 0.82. Chosen for the alternative trade-off basket.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹58,990).",
+              "Free shipping listed.",
+              "3 unit(s) in stock.",
+              "Estimated delivery 4 day(s) (limit 10).",
+              "Laptop RAM is 16 GB (at least 16 GB required).",
+              "Laptop warranty is 24 months (at least 12 months required)."
+            ],
+            "warnings": [
+              "Only 3 in stock; it can cover at most 3 of the 5 requested laptop unit(s).",
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        },
+        {
+          "productId": "LAP-002",
+          "name": "Corvex Book 15",
+          "brand": "Corvex",
+          "category": "laptop",
+          "quantity": 3,
+          "unitPriceINR": 52490,
+          "shippingINR": 0,
+          "lineTotalINR": 157470,
+          "deliveryDays": 5,
+          "warrantyMonths": 12,
+          "specs": {
+            "ramGB": 16,
+            "storageGB": 512,
+            "storageType": "SSD",
+            "os": "Windows",
+            "weightKg": 1.7,
+            "screenInches": 15.6
+          },
+          "specsSummary": "16 GB RAM · 512 GB · SSD · Windows · 1.7 kg · 15.6\"",
+          "scores": {
+            "quality": 0.76,
+            "reliability": 0.78,
+            "delivery": 0.5455,
+            "composite": 0.7241
+          },
+          "selectionReason": "Laptop RAM is 16 GB (at least 16 GB required). Laptop warranty is 12 months (at least 12 months required). Delivers in 5 day(s); quality 0.76, reliability 0.78. Chosen for the alternative trade-off basket.",
+          "verification": {
+            "status": "UNVERIFIED_DEMO_DATA",
+            "dataOrigin": "SYNTHETIC_DEMO",
+            "sourceLookup": "NOT_CHECKED",
+            "checksPassed": [
+              "Unit price listed (₹52,490).",
+              "Free shipping listed.",
+              "8 unit(s) in stock.",
+              "Estimated delivery 5 day(s) (limit 10).",
+              "Laptop RAM is 16 GB (at least 16 GB required).",
+              "Laptop warranty is 12 months (at least 12 months required)."
+            ],
+            "warnings": [
+              "Synthetic demo record: price, stock, delivery and scores are illustrative, not live retail data."
+            ],
+            "sourceUrl": null,
+            "lastCheckedISO": null
+          }
+        }
+      ],
+      "tradeOff": {
+        "categoriesChanged": [
+          "laptop"
+        ],
+        "unitsChanged": 3,
+        "costDifferenceINR": -5799,
+        "compositeScoreDifference": -0.0159,
+        "summary": "Changes the laptop pick(s) versus Best Value (a different product for 3 of 5 unit(s)). Costs ₹5,799 less with a composite score -0.0159 relative to Best Value."
+      }
+    }
+  },
+  "omittedStrategies": [],
+  "infeasibility": null,
+  "warnings": [
+    "All products come from a synthetic demo catalog; prices, stock and delivery are not live retail data."
+  ],
+  "rejectedProducts": [
+    {
+      "productId": "LAP-005",
+      "name": "Novix Edge 14 (8 GB)",
+      "category": "laptop",
+      "unitPriceINR": 39990,
+      "rejectedReason": "Failed hard constraint: Laptop RAM is 8 GB; at least 16 GB is required.",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "constraint.minRamGB"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "LAP-006",
+      "name": "Novix Edge 15 (RAM not listed)",
+      "category": "laptop",
+      "unitPriceINR": 44990,
+      "rejectedReason": "Could not verify: Laptop RAM is not listed, so the mandatory 'minRamGB' requirement could not be verified.",
+      "rejectionType": "UNVERIFIABLE_MANDATORY_DATA",
+      "failedChecks": [],
+      "unknownChecks": [
+        "constraint.minRamGB"
+      ],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "LAP-007",
+      "name": "Tessel Studio 14",
+      "category": "laptop",
+      "unitPriceINR": 61500,
+      "rejectedReason": "Failed hard constraint: Estimated delivery is 14 days; the maximum allowed is 10 days.",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "delivery.withinLimit"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "LAP-008",
+      "name": "Corvex Book 14 Lite",
+      "category": "laptop",
+      "unitPriceINR": 47990,
+      "rejectedReason": "Failed hard constraint: Out of stock (0 units available).",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "stock.available"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "LAP-009",
+      "name": "Halden Work 15",
+      "category": "laptop",
+      "unitPriceINR": 45499,
+      "rejectedReason": "Failed hard constraint: Laptop warranty is 6 months; at least 12 months is required.",
+      "rejectionType": "FAILED_HARD_CONSTRAINT",
+      "failedChecks": [
+        "constraint.minWarrantyMonths"
+      ],
+      "unknownChecks": [],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    },
+    {
+      "productId": "LAP-010",
+      "name": "Halden Work 15 Plus (warranty unknown)",
+      "category": "laptop",
+      "unitPriceINR": 55990,
+      "rejectedReason": "Could not verify: Laptop warranty is not listed, so the mandatory 'minWarrantyMonths' requirement could not be verified.",
+      "rejectionType": "UNVERIFIABLE_MANDATORY_DATA",
+      "failedChecks": [],
+      "unknownChecks": [
+        "constraint.minWarrantyMonths"
+      ],
+      "dataOrigin": "SYNTHETIC_DEMO"
+    }
+  ],
+  "search": {
+    "exhaustive": true,
+    "basketsEvaluated": 38,
+    "notes": []
+  }
+}
