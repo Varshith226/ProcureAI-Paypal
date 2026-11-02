@@ -101,9 +101,22 @@ app.post("/api/plans/:planId/approve", (req, res) => {
   const { strategyKey, version, strategyData } = req.body;
 
   let plan = plansStore.get(planId);
-  if (!plan && strategyData) {
+  if (!plan) {
+    if (!strategyData) {
+      return res.status(404).json({ error: "Plan not found" });
+    }
     // Allow frontend mock/initial plans to register & lock seamlessly
     plan = { planId, version: version || 1, strategies: { [strategyKey]: strategyData } };
+  } else {
+    // If strategyData is passed, update or add the strategy
+    if (strategyData) {
+      plan.strategies = plan.strategies || {};
+      plan.strategies[strategyKey] = strategyData;
+    }
+    // Synchronize version when approved
+    if (version !== undefined && version !== null) {
+      plan.version = version;
+    }
   }
   if (!plan || !plan.strategies?.[strategyKey]) {
     return res.status(404).json({ error: "Plan or strategy not found" });
@@ -119,6 +132,7 @@ app.post("/api/plans/:planId/approve", (req, res) => {
 
   const lockedRecord = {
     ...plan,
+    version: plan.version || version || 1,
     status: "APPROVED",
     approvedStrategyKey: strategyKey,
     lockedTotalINR: calculatedINR,
@@ -165,7 +179,7 @@ app.post("/api/paypal/create-order", async (req, res) => {
     }
     if (version && plan.version !== version) {
       return res.status(409).json({
-        error: "Plan version mismatch. Re-approval required.",
+        error: `Plan version mismatch (server has v${plan.version}, client sent v${version}). Re-approval required.`,
       });
     }
 
@@ -182,11 +196,11 @@ app.post("/api/paypal/create-order", async (req, res) => {
         intent: "CAPTURE",
         purchase_units: [
           {
-            reference_id: `${plan.planId}_${plan.approvedStrategyKey}`,
-            description: `ProcureAI ${plan.planId} (${plan.approvedStrategyKey}) - Approved Total INR ${plan.lockedTotalINR}`,
+            reference_id: `${plan.planId}_${plan.approvedStrategyKey || "approved"}`,
+            description: `ProcureAI ${plan.planId} (${plan.approvedStrategyKey || "approved"}) - Total INR ${plan.lockedTotalINR}`,
             amount: {
               currency_code: "USD",
-              value: plan.lockedTotalUSD,
+              value: String(plan.lockedTotalUSD),
             },
           },
         ],
@@ -196,9 +210,10 @@ app.post("/api/paypal/create-order", async (req, res) => {
     const data = await response.json();
 
     if (!response.ok) {
+      console.error("PayPal create order API error:", data);
       return res.status(response.status).json({
-        error: "Could not create PayPal order",
-        details: data.message,
+        error: data.message || "Could not create PayPal order",
+        details: data.details?.[0]?.description || data.message,
       });
     }
 
