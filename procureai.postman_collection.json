@@ -1,0 +1,236 @@
+{
+  "info": {
+    "_postman_id": "c76a9172-8f92-4e5b-b9f1-d9a2444c8fa9",
+    "name": "ProcureAI — Agentic Commerce & PayPal API Suite",
+    "description": "Comprehensive Postman collection for ProcureAI: Agentic Procurement, Deterministic Constraint Verification, Multi-Strategy Optimization, Safety Boundary Lock, and PayPal Sandbox Checkout & SLA Refunds.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "planId",
+      "value": "plan_demo_1",
+      "type": "string"
+    },
+    {
+      "key": "captureId",
+      "value": "SAMPLE_CAPTURE_ID",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "AI Intent & Clarification",
+      "item": [
+        {
+          "name": "Extract Requirements Brief (Gemini 2.5)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messages\": [\n    \"I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ai/parse",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ai", "parse"]
+            }
+          }
+        },
+        {
+          "name": "Get AI Contract",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ai/contract",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ai", "contract"]
+            }
+          }
+        },
+        {
+          "name": "Get AI Provider Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ai/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ai", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Procurement Engine & Verification",
+      "item": [
+        {
+          "name": "Generate Procurement Plan (Deterministic Optimizer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestId\": \"req_postman_test\",\n  \"rawQuery\": \"60k coding and gaming setup\",\n  \"budgetINR\": 60000,\n  \"maxDeliveryDays\": 7,\n  \"requiredCategories\": [\n    { \"category\": \"monitor\", \"quantity\": 1 },\n    { \"category\": \"keyboard\", \"quantity\": 1 },\n    { \"category\": \"mouse\", \"quantity\": 1 },\n    { \"category\": \"headphones\", \"quantity\": 1 }\n  ],\n  \"hardConstraints\": {\n    \"monitor\": { \"minRefreshRateHz\": 144 }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/procurement/plan",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "procurement", "plan"]
+            }
+          }
+        },
+        {
+          "name": "List Hardware Catalog",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/procurement/catalog",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "procurement", "catalog"]
+            }
+          }
+        },
+        {
+          "name": "Get Procurement Contract Schema",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/procurement/contract",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "procurement", "contract"]
+            }
+          }
+        },
+        {
+          "name": "Revalidate Plan Against Live Catalog",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategyKey\": \"BEST_VALUE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/procurement/plans/{{planId}}/revalidate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "procurement", "plans", "{{planId}}", "revalidate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Safety Lock & Retailer Overrides",
+      "item": [
+        {
+          "name": "Approve & Lock Strategy (with AI Negotiated Rebate)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategyKey\": \"BEST_VALUE\",\n  \"version\": 1,\n  \"rebateINR\": 1850,\n  \"strategyData\": {\n    \"strategyKey\": \"BEST_VALUE\",\n    \"items\": [\n      {\n        \"productId\": \"MON-002\",\n        \"name\": \"AOC 24G2SP 24\\\" 165Hz IPS\",\n        \"category\": \"monitor\",\n        \"unitPriceINR\": 10149,\n        \"shippingINR\": 0,\n        \"quantity\": 1\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/plans/{{planId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "plans", "{{planId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Simulate Price Spike (Invalidates Safety Lock)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deltaINR\": 2500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/plans/{{planId}}/simulate-price-change",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "plans", "{{planId}}", "simulate-price-change"]
+            }
+          }
+        },
+        {
+          "name": "AG Grid Live Catalog Override",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"MON-002\",\n  \"deltaINR\": 1000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/procurement/demo/catalog-overrides",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "procurement", "demo", "catalog-overrides"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PayPal Sandbox v2 Orders & SLA Protection",
+      "item": [
+        {
+          "name": "Create PayPal Order (Full or Co-Pay Itemized)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"{{planId}}\",\n  \"version\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/paypal/create-order",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "paypal", "create-order"]
+            }
+          }
+        },
+        {
+          "name": "Capture PayPal Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderID\": \"SAMPLE_ORDER_ID\",\n  \"planId\": \"{{planId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/paypal/capture-order",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "paypal", "capture-order"]
+            }
+          }
+        },
+        {
+          "name": "Post-Capture SLA Delay Refund (10% or Full)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"captureID\": \"{{captureId}}\",\n  \"amountUSD\": 22.49,\n  \"reason\": \"ProcureAI SLA Delay Protection 10% Guarantee Credit\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/paypal/refund-capture",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "paypal", "refund-capture"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

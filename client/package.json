@@ -12,7 +12,12 @@
   "dependencies": {
     "@ant-design/icons": "^6.3.4",
     "@paypal/react-paypal-js": "^10.6.0",
+    "ag-grid-community": "^36.2.0",
+    "ag-grid-react": "^36.2.0",
     "antd": "^6.6.7",
+    "canvas-confetti": "^1.9.4",
+    "framer-motion": "^14.9.0",
+    "lucide-react": "^1.66.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
