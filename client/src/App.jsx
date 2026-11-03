@@ -1531,10 +1531,10 @@ export default function App() {
             {currentStep === 0 && (
               <motion.div
                 key="step-0"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25 }}
+                initial={{ opacity: 0, y: 18, scale: 0.995 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -14, scale: 0.995 }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
               >
                 {/* Hero Headline */}
                 <div style={{ textAlign: "center", marginBottom: 32, marginTop: 12 }}>
@@ -1579,11 +1579,14 @@ export default function App() {
 
                 {/* Primary Intake Card */}
                 <Card
+                  className="glass-card"
                   style={{
                     borderRadius: 20,
-                    background: isDarkMode ? "rgba(15, 23, 42, 0.75)" : "#ffffff",
+                    background: isDarkMode ? "rgba(15, 23, 42, 0.78)" : "#ffffff",
                     border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 82, 255, 0.15)"}`,
-                    boxShadow: "0 20px 40px -15px rgba(0, 82, 255, 0.12)",
+                    boxShadow: isDarkMode
+                      ? "0 20px 48px -12px rgba(0, 82, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)"
+                      : "0 12px 32px -8px rgba(0, 82, 255, 0.12)",
                     marginBottom: 24,
                   }}
                   bodyStyle={{ padding: 24 }}
@@ -1772,32 +1775,29 @@ export default function App() {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    gap: 24,
+                    gap: 16,
                     flexWrap: "wrap",
                     color: "#94a3b8",
                     fontSize: 13,
-                    padding: "8px 0",
+                    padding: "10px 0",
                   }}
                 >
-                  <Space size={6}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 100, background: isDarkMode ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.03)", border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.06)" : "#e2e8f0"}` }}>
                     <LockOutlined style={{ color: "#0052FF" }} />
                     <span>Ed25519 Spending Mandates</span>
-                  </Space>
-                  <span>•</span>
-                  <Space size={6}>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 100, background: isDarkMode ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.03)", border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.06)" : "#e2e8f0"}` }}>
                     <SafetyCertificateOutlined style={{ color: "#10b981" }} />
                     <span>PayPal Pay-on-Delivery Hold</span>
-                  </Space>
-                  <span>•</span>
-                  <Space size={6}>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 100, background: isDarkMode ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.03)", border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.06)" : "#e2e8f0"}` }}>
                     <DatabaseOutlined style={{ color: "#06b6d4" }} />
                     <span>36 Catalog Components</span>
-                  </Space>
-                  <span>•</span>
-                  <Space size={6}>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 100, background: isDarkMode ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.03)", border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.06)" : "#e2e8f0"}` }}>
                     <AuditOutlined style={{ color: "#8b5cf6" }} />
                     <span>Real-Time SSE Audit Stream</span>
-                  </Space>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -1808,10 +1808,10 @@ export default function App() {
             {currentStep === 1 && (
               <motion.div
                 key="step-1"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25 }}
+                initial={{ opacity: 0, y: 18, scale: 0.995 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -14, scale: 0.995 }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
               >
                 {/* Subheader & Controls */}
                 <div
@@ -1901,6 +1901,7 @@ export default function App() {
                     {/* PLAN A: CHEAPEST */}
                     <Col xs={24} lg={7}>
                       <Card
+                        className="glass-card-interactive"
                         style={{
                           height: "100%",
                           borderRadius: 18,
@@ -1950,6 +1951,7 @@ export default function App() {
                     {/* PLAN B: BEST VALUE (FEATURED HERO CARD) */}
                     <Col xs={24} lg={10}>
                       <Card
+                        className="plan-b-featured-card"
                         style={{
                           height: "100%",
                           borderRadius: 20,
@@ -2037,6 +2039,7 @@ export default function App() {
                     {/* PLAN C: TOP SPEC */}
                     <Col xs={24} lg={7}>
                       <Card
+                        className="glass-card-interactive"
                         style={{
                           height: "100%",
                           borderRadius: 18,
@@ -2124,10 +2127,10 @@ export default function App() {
             {currentStep === 2 && (
               <motion.div
                 key="step-2"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25 }}
+                initial={{ opacity: 0, y: 18, scale: 0.995 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -14, scale: 0.995 }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
               >
                 {/* Header info */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
@@ -2556,10 +2559,10 @@ export default function App() {
             {currentStep === 3 && (
               <motion.div
                 key="step-3"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25 }}
+                initial={{ opacity: 0, y: 18, scale: 0.995 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -14, scale: 0.995 }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div style={{ maxWidth: 880, margin: "0 auto" }}>
                   {/* Status Banner */}
@@ -2604,6 +2607,7 @@ export default function App() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
                     {/* Node 1: Authorization Active */}
                     <Card
+                      className="glass-card-interactive"
                       style={{
                         borderRadius: 14,
                         background: isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff",
@@ -2625,6 +2629,7 @@ export default function App() {
 
                     {/* Node 2: Courier Dispatched */}
                     <Card
+                      className="glass-card-interactive"
                       style={{
                         borderRadius: 14,
                         background: isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff",
@@ -2644,6 +2649,7 @@ export default function App() {
 
                     {/* Node 3: Delivery Confirmation & Dispute Resolution */}
                     <Card
+                      className="glass-card-interactive"
                       style={{
                         borderRadius: 14,
                         background: isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff",
@@ -2705,6 +2711,7 @@ export default function App() {
 
                     {/* Node 4: Post-Delivery Settlement, Invoicing & Reconciliation */}
                     <Card
+                      className="glass-card-interactive"
                       style={{
                         borderRadius: 16,
                         background: isDarkMode ? "rgba(15, 23, 42, 0.75)" : "#ffffff",

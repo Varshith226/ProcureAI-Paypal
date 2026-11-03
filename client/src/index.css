@@ -132,6 +132,133 @@ h1, h2, h3, h4, h5, h6, .ant-typography-headline, .price-display {
   display: inline-block;
 }
 
+/* Ambient Aurora Breathing Waves */
+@keyframes aurora-drift-1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(5%, 6%) scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes aurora-drift-2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-6%, -5%) scale(1.12);
+    opacity: 0.95;
+  }
+}
+
+.aurora-orb-1 {
+  animation: aurora-drift-1 18s ease-in-out infinite alternate;
+}
+
+.aurora-orb-2 {
+  animation: aurora-drift-2 22s ease-in-out infinite alternate;
+}
+
+/* Luxury Primary Button Shimmer Flow */
+@keyframes btn-shimmer-sweep {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  25%, 100% {
+    transform: translateX(250%) skewX(-20deg);
+  }
+}
+
+.btn-shimmer-flow,
+#btn-generate-plans,
+#btn-approve-plan-b,
+#btn-fast-simulation-auth,
+#btn-confirm-delivery {
+  position: relative !important;
+  overflow: hidden !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.2s ease !important;
+}
+
+.btn-shimmer-flow::after,
+#btn-generate-plans::after,
+#btn-approve-plan-b::after,
+#btn-fast-simulation-auth::after,
+#btn-confirm-delivery::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0.05) 80%,
+    transparent 100%
+  );
+  animation: btn-shimmer-sweep 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.btn-shimmer-flow:hover,
+#btn-generate-plans:hover,
+#btn-approve-plan-b:hover,
+#btn-fast-simulation-auth:hover,
+#btn-confirm-delivery:hover {
+  transform: translateY(-2px);
+}
+
+/* Stepper Active Glow Pulse in Header */
+@keyframes step-active-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 82, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+}
+
+.header-step-active {
+  animation: step-active-glow 2.8s ease-in-out infinite !important;
+}
+
+/* Plan B Featured Card Luminous Border */
+@keyframes border-glow-flow {
+  0%, 100% {
+    border-color: #0052FF;
+    box-shadow: 0 14px 36px -8px rgba(0, 82, 255, 0.32);
+  }
+  50% {
+    border-color: #38bdf8;
+    box-shadow: 0 18px 44px -8px rgba(56, 189, 248, 0.38);
+  }
+}
+
+.plan-b-featured-card {
+  animation: border-glow-flow 3.5s ease-in-out infinite !important;
+}
+
+/* Glass Card Interactive Micro-elevation */
+.glass-card-interactive {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.glass-card-interactive:hover {
+  transform: translateY(-3px);
+  border-color: rgba(56, 189, 248, 0.25) !important;
+  box-shadow: 0 12px 32px -8px rgba(0, 82, 255, 0.16) !important;
+}
+
 /* Shake Animation for Price Spike Alert */
 @keyframes shake-boundary {
   0%, 100% { transform: translateX(0); }

@@ -114,7 +114,7 @@ export default function AuroraVaultCanvas({
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 100);
-    camera.position.z = 24;
+    camera.position.set(0, 0, 24);
 
     let renderer;
     try {
@@ -129,21 +129,35 @@ export default function AuroraVaultCanvas({
     renderer.setClearColor(0x000000, 0); // transparent background
     container.appendChild(renderer.domElement);
 
+    // Mouse Parallax State
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+
+    const handlePointerMove = (e) => {
+      targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    };
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+
     // 1. Motes / Particle Field
-    const particleCount = 180;
+    const particleCount = 220;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
 
     const baseColor = new THREE.Color(0x0052ff);
     const accentColor = new THREE.Color(0x06b6d4);
+    const violetColor = new THREE.Color(0x8b5cf6);
 
     for (let i = 0; i < particleCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 45;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 35;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+      positions[i * 3] = (Math.random() - 0.5) * 50;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 38;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 22;
 
-      const mixed = baseColor.clone().lerp(accentColor, Math.random());
+      const rnd = Math.random();
+      const mixed = rnd < 0.5 ? baseColor.clone().lerp(accentColor, rnd * 2) : accentColor.clone().lerp(violetColor, (rnd - 0.5) * 2);
       colors[i * 3] = mixed.r;
       colors[i * 3 + 1] = mixed.g;
       colors[i * 3 + 2] = mixed.b;
@@ -153,16 +167,16 @@ export default function AuroraVaultCanvas({
     geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
     const particleMaterial = new THREE.PointsMaterial({
-      size: 0.22,
+      size: 0.24,
       vertexColors: true,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.75,
       blending: THREE.AdditiveBlending,
     });
     const particleSystem = new THREE.Points(geometry, particleMaterial);
     scene.add(particleSystem);
 
-    // 2. Concentric Vault Cryptographic Rings (Subtle in background)
+    // 2. Concentric Vault Cryptographic Rings (The "Mandate Ring")
     const ringGroup = new THREE.Group();
     ringGroup.position.set(0, 0, -4);
 
@@ -170,7 +184,7 @@ export default function AuroraVaultCanvas({
       color: 0x0052ff,
       wireframe: true,
       transparent: true,
-      opacity: 0.18,
+      opacity: 0.22,
     });
     const ringGeo1 = new THREE.TorusGeometry(8.5, 0.05, 12, 64);
     const ringMesh1 = new THREE.Mesh(ringGeo1, ringMat1);
@@ -180,25 +194,54 @@ export default function AuroraVaultCanvas({
       color: 0x06b6d4,
       wireframe: true,
       transparent: true,
-      opacity: 0.14,
+      opacity: 0.16,
     });
     const ringGeo2 = new THREE.TorusGeometry(11.2, 0.04, 12, 64);
     const ringMesh2 = new THREE.Mesh(ringGeo2, ringMat2);
     ringMesh2.rotation.x = Math.PI / 4;
     ringGroup.add(ringMesh2);
 
-    // Cryptographic Crystalline Node (Octahedron)
-    const octaGeo = new THREE.OctahedronGeometry(2.2, 0);
-    const octaMat = new THREE.MeshBasicMaterial({
+    // Central Core Octahedron
+    const coreOctaGeo = new THREE.OctahedronGeometry(2.2, 0);
+    const coreOctaMat = new THREE.MeshBasicMaterial({
       color: 0x38bdf8,
       wireframe: true,
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.18,
     });
-    const octaMesh = new THREE.Mesh(octaGeo, octaMat);
-    ringGroup.add(octaMesh);
+    const coreOctaMesh = new THREE.Mesh(coreOctaGeo, coreOctaMat);
+    ringGroup.add(coreOctaMesh);
 
     scene.add(ringGroup);
+
+    // 3. Floating Cryptographic Polyhedra Constellation
+    const crystalsGroup = new THREE.Group();
+    const crystalDisposables = [];
+
+    const crystalConfigs = [
+      { geo: new THREE.OctahedronGeometry(0.9, 0), color: 0x0052ff, r: 12, speed: 0.4, phase: 0.0, yOffset: 3 },
+      { geo: new THREE.IcosahedronGeometry(0.8, 0), color: 0x38bdf8, r: 14, speed: -0.32, phase: 1.5, yOffset: -4 },
+      { geo: new THREE.TetrahedronGeometry(1.0, 0), color: 0x8b5cf6, r: 10, speed: 0.45, phase: 3.1, yOffset: 1.5 },
+      { geo: new THREE.OctahedronGeometry(0.7, 0), color: 0x10b981, r: 13, speed: -0.38, phase: 4.5, yOffset: -2 },
+      { geo: new THREE.DodecahedronGeometry(0.65, 0), color: 0x0052ff, r: 15, speed: 0.28, phase: 5.2, yOffset: 4 },
+    ];
+
+    const crystalMeshes = crystalConfigs.map((cfg) => {
+      crystalDisposables.push(cfg.geo);
+      const mat = new THREE.MeshBasicMaterial({
+        color: cfg.color,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.25,
+      });
+      crystalDisposables.push(mat);
+      const mesh = new THREE.Mesh(cfg.geo, mat);
+      mesh.userData = cfg;
+      crystalsGroup.add(mesh);
+      return mesh;
+    });
+
+    scene.add(crystalsGroup);
 
     // Animation Loop
     let animId;
@@ -218,6 +261,13 @@ export default function AuroraVaultCanvas({
 
       const elapsed = clock.getElapsedTime();
 
+      // Smooth Mouse Parallax Lerp
+      mouseX += (targetMouseX - mouseX) * 0.04;
+      mouseY += (targetMouseY - mouseY) * 0.04;
+      camera.position.x = mouseX * 2.8;
+      camera.position.y = -mouseY * 2.2;
+      camera.lookAt(0, 0, 0);
+
       // State-driven dynamics
       let speedFactor = 1.0;
       let targetColor = new THREE.Color(0x0052ff);
@@ -225,14 +275,17 @@ export default function AuroraVaultCanvas({
       if (sceneState === "thinking") {
         speedFactor = 2.4;
         targetColor = new THREE.Color(0x06b6d4);
+      } else if (sceneState === "plans") {
+        speedFactor = 1.1;
+        targetColor = new THREE.Color(0x0052ff);
       } else if (sceneState === "locked") {
-        speedFactor = 0.5;
+        speedFactor = 0.6;
         targetColor = new THREE.Color(0x3b82f6);
       } else if (sceneState === "authorized") {
-        speedFactor = 0.8;
+        speedFactor = 0.85;
         targetColor = new THREE.Color(0x10b981);
       } else if (sceneState === "settled") {
-        speedFactor = 1.2;
+        speedFactor = 1.3;
         targetColor = new THREE.Color(0x10b981);
       } else if (sceneState === "blocked") {
         speedFactor = 1.8;
@@ -241,16 +294,27 @@ export default function AuroraVaultCanvas({
 
       // Rotate background rings slowly
       ringGroup.rotation.y = elapsed * 0.08 * speedFactor;
-      ringGroup.rotation.x = Math.sin(elapsed * 0.05) * 0.15;
-      octaMesh.rotation.y = -elapsed * 0.15 * speedFactor;
-      octaMesh.rotation.z = elapsed * 0.1;
+      ringGroup.rotation.x = Math.sin(elapsed * 0.05) * 0.15 + (mouseY * 0.1);
+      coreOctaMesh.rotation.y = -elapsed * 0.18 * speedFactor;
+      coreOctaMesh.rotation.z = elapsed * 0.12;
 
       // Pulse ring opacity and color smoothly
       ringMat1.color.lerp(targetColor, 0.05);
 
+      // Update Floating Constellation
+      crystalMeshes.forEach((mesh) => {
+        const { r, speed, phase, yOffset } = mesh.userData;
+        const angle = elapsed * speed * speedFactor + phase;
+        mesh.position.x = Math.cos(angle) * r;
+        mesh.position.z = Math.sin(angle) * (r * 0.7) - 3;
+        mesh.position.y = yOffset + Math.sin(elapsed * 1.5 + phase) * 0.8;
+        mesh.rotation.x += 0.012 * speedFactor;
+        mesh.rotation.y += 0.016 * speedFactor;
+      });
+
       // Drift particle positions gently
       particleSystem.rotation.y = elapsed * 0.02 * speedFactor;
-      particleSystem.rotation.x = Math.cos(elapsed * 0.02) * 0.05;
+      particleSystem.rotation.x = Math.cos(elapsed * 0.02) * 0.05 + (mouseY * 0.05);
 
       renderer.render(scene, camera);
       animId = requestAnimationFrame(animate);
@@ -272,14 +336,16 @@ export default function AuroraVaultCanvas({
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("pointermove", handlePointerMove);
       geometry.dispose();
       particleMaterial.dispose();
       ringGeo1.dispose();
       ringMat1.dispose();
       ringGeo2.dispose();
       ringMat2.dispose();
-      octaGeo.dispose();
-      octaMat.dispose();
+      coreOctaGeo.dispose();
+      coreOctaMat.dispose();
+      crystalDisposables.forEach((item) => item.dispose());
       renderer.dispose();
       if (container && renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
@@ -305,8 +371,9 @@ export default function AuroraVaultCanvas({
         overflow: "hidden",
       }}
     >
-      {/* Dynamic Aurora Glow Orbs */}
+      {/* Dynamic Aurora Glow Orbs with Living Ambient Drift */}
       <div
+        className="aurora-orb-ambient aurora-orb-1"
         style={{
           position: "absolute",
           top: "-15%",
@@ -317,30 +384,35 @@ export default function AuroraVaultCanvas({
           maxHeight: 800,
           borderRadius: "50%",
           background: isDarkMode
-            ? sceneState === "authorized"
-              ? "radial-gradient(circle, rgba(16, 185, 129, 0.14) 0%, rgba(5, 150, 105, 0.04) 50%, transparent 70%)"
+            ? sceneState === "authorized" || sceneState === "settled"
+              ? "radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.05) 50%, transparent 70%)"
               : sceneState === "locked"
-              ? "radial-gradient(circle, rgba(0, 82, 255, 0.18) 0%, rgba(14, 165, 233, 0.05) 50%, transparent 70%)"
-              : "radial-gradient(circle, rgba(0, 82, 255, 0.15) 0%, rgba(99, 102, 241, 0.04) 50%, transparent 70%)"
+              ? "radial-gradient(circle, rgba(0, 82, 255, 0.22) 0%, rgba(14, 165, 233, 0.07) 50%, transparent 70%)"
+              : sceneState === "thinking"
+              ? "radial-gradient(circle, rgba(6, 182, 212, 0.22) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 70%)"
+              : "radial-gradient(circle, rgba(0, 82, 255, 0.16) 0%, rgba(99, 102, 241, 0.05) 50%, transparent 70%)"
             : "radial-gradient(circle, rgba(0, 82, 255, 0.08) 0%, transparent 70%)",
           filter: "blur(60px)",
           transition: "background 1s ease",
         }}
       />
       <div
+        className="aurora-orb-ambient aurora-orb-2"
         style={{
           position: "absolute",
           bottom: "-10%",
           right: "10%",
-          width: "45vw",
-          height: "45vw",
-          maxWidth: 600,
-          maxHeight: 600,
+          width: "48vw",
+          height: "48vw",
+          maxWidth: 650,
+          maxHeight: 650,
           borderRadius: "50%",
           background: isDarkMode
-            ? sceneState === "authorized"
-              ? "radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, transparent 70%)"
-              : "radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%)"
+            ? sceneState === "authorized" || sceneState === "settled"
+              ? "radial-gradient(circle, rgba(6, 182, 212, 0.16) 0%, transparent 70%)"
+              : sceneState === "locked"
+              ? "radial-gradient(circle, rgba(124, 58, 237, 0.18) 0%, transparent 70%)"
+              : "radial-gradient(circle, rgba(124, 58, 237, 0.14) 0%, transparent 70%)"
             : "radial-gradient(circle, rgba(6, 182, 212, 0.06) 0%, transparent 70%)",
           filter: "blur(50px)",
           transition: "background 1s ease",

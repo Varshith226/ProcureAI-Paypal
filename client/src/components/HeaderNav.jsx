@@ -130,6 +130,7 @@ export default function HeaderNav({
               onClick={() => {
                 if (isDone || isActive) onStepChange(s.num);
               }}
+              className={isActive ? "header-step-active" : ""}
               style={{
                 border: "none",
                 background: isActive
