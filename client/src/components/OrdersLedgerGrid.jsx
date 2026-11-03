@@ -1,7 +1,7 @@
 // client/src/components/OrdersLedgerGrid.jsx
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { Button, Input, Space, Tag, Typography, Card, Tooltip, message } from "antd";
+import { Button, Input, Space, Tag, Typography, Card, Tooltip, message, Modal } from "antd";
 import {
   DownloadOutlined,
   SearchOutlined,
@@ -16,11 +16,19 @@ import { fetchOrders } from "../api/paypalApi";
 
 const { Text } = Typography;
 
-export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
+export default function OrdersLedgerGrid({
+  open,
+  onClose,
+  isDarkMode = true,
+  onSelectOrder,
+  onOpenInvoice,
+}) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [quickFilterText, setQuickFilterText] = useState("");
   const gridRef = useRef();
+
+  const isModalMode = open !== undefined;
 
   const loadOrders = async () => {
     setLoading(true);
@@ -35,8 +43,10 @@ export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
   };
 
   useEffect(() => {
-    loadOrders();
-  }, []);
+    if (!isModalMode || open) {
+      loadOrders();
+    }
+  }, [open]);
 
   const statusCellRenderer = (params) => {
     const status = params.value;
@@ -61,13 +71,20 @@ export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
   const invoiceCellRenderer = (params) => {
     if (params.value) {
       return (
-        <a
-          href={`https://www.sandbox.paypal.com/invoice/viewer/${params.value}`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Tag
+          color="cyan"
+          icon={<FileTextOutlined />}
+          style={{ cursor: "pointer", borderRadius: 4 }}
+          onClick={() => {
+            if (onOpenInvoice) {
+              onOpenInvoice(params.data);
+            } else {
+              window.open(`/api/orders/${params.data.order_id}/invoice-view`, "_blank");
+            }
+          }}
         >
-          <Tag color="cyan" icon={<FileTextOutlined />}>{params.value}</Tag>
-        </a>
+          {params.value.slice(0, 14)}...
+        </Tag>
       );
     }
     return <Text type="secondary" style={{ fontSize: 11 }}>—</Text>;
@@ -78,11 +95,11 @@ export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
       headerName: "Order ID",
       field: "order_id",
       pinned: "left",
-      width: 170,
+      width: 180,
       cellRenderer: (p) => (
         <Tooltip title="Click to view timeline">
           <span
-            style={{ fontFamily: "var(--font-mono)", cursor: "pointer", fontWeight: 700, color: "#0052FF" }}
+            style={{ fontFamily: "var(--font-mono)", cursor: "pointer", fontWeight: 700, color: "#38bdf8" }}
             onClick={() => onSelectOrder && onSelectOrder(p.data)}
           >
             {p.value}
@@ -101,7 +118,7 @@ export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
       field: "total_usd",
       width: 140,
       cellRenderer: (p) => (
-        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: "#10b981" }}>
           ${Number(p.value || 0).toFixed(2)} USD
         </span>
       ),
@@ -131,7 +148,7 @@ export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
     {
       headerName: "PayPal Invoice",
       field: "invoice_id",
-      width: 150,
+      width: 160,
       cellRenderer: invoiceCellRenderer,
     },
     {
@@ -140,7 +157,7 @@ export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
       width: 160,
       valueFormatter: (p) => p.value ? new Date(p.value).toLocaleString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "",
     },
-  ], [onSelectOrder]);
+  ], [onSelectOrder, onOpenInvoice]);
 
   const defaultColDef = useMemo(() => ({
     sortable: true,
@@ -155,15 +172,8 @@ export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
     }
   };
 
-  return (
-    <Card
-      style={{
-        borderRadius: 16,
-        marginBottom: 20,
-        background: isDarkMode ? "rgba(15, 23, 42, 0.75)" : "#ffffff",
-        border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 82, 255, 0.15)"}`,
-      }}
-    >
+  const gridContent = (
+    <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
         <Space align="center">
           <Text strong style={{ fontSize: 16 }}>
@@ -181,7 +191,7 @@ export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
             style={{ width: 180, borderRadius: 6 }}
           />
           <Button size="small" icon={<ReloadOutlined />} onClick={loadOrders} loading={loading} />
-          <Button size="small" type="primary" icon={<DownloadOutlined />} onClick={onExportCsv} style={{ borderRadius: 6 }}>
+          <Button size="small" type="primary" icon={<DownloadOutlined />} onClick={onExportCsv} style={{ borderRadius: 6, background: "#0052FF" }}>
             Export CSV
           </Button>
         </Space>
@@ -190,7 +200,7 @@ export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
       <div className="ag-grid-responsive-container">
         <div
           className={isDarkMode ? "ag-theme-quartz-dark" : "ag-theme-quartz"}
-          style={{ height: 320, width: "100%", minWidth: 700, borderRadius: 8, overflow: "hidden" }}
+          style={{ height: isModalMode ? 440 : 320, width: "100%", minWidth: 700, borderRadius: 8, overflow: "hidden" }}
         >
           <AgGridReact
             ref={gridRef}
@@ -203,7 +213,41 @@ export default function OrdersLedgerGrid({ isDarkMode = true, onSelectOrder }) {
           />
         </div>
       </div>
+    </div>
+  );
+
+  if (isModalMode) {
+    return (
+      <Modal
+        open={open}
+        onCancel={onClose}
+        width={1120}
+        footer={null}
+        destroyOnClose
+        title={
+          <Space align="center">
+            <span style={{ fontSize: 16, fontWeight: 700 }}>📊 Enterprise Orders & Settlement Ledger (AG Grid)</span>
+            <Tag color="blue">{orders.length} Synced Records</Tag>
+          </Space>
+        }
+      >
+        <div style={{ paddingTop: 8 }}>
+          {gridContent}
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Card
+      style={{
+        borderRadius: 16,
+        marginBottom: 20,
+        background: isDarkMode ? "rgba(15, 23, 42, 0.75)" : "#ffffff",
+        border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 82, 255, 0.15)"}`,
+      }}
+    >
+      {gridContent}
     </Card>
   );
 }
-

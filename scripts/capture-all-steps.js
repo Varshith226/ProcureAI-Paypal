@@ -77,10 +77,26 @@ async function captureSteps() {
   console.log("✓ Captured Step 2: Checkout & Mandate");
 
   // Click Confirm & Authorize Hold (1-Click Sandbox) -> Step 3
-  await page.click("button:has-text('Confirm & Authorize Hold')");
+  await page.click('#btn-fast-simulation-auth');
   await page.waitForTimeout(1500);
   await page.screenshot({ path: path.join(SCREENSHOTS_DIR, "step3-settle.png"), fullPage: false });
   console.log("✓ Captured Step 3: Settle & Escrow Release");
+
+  // Open Official PayPal Invoice Modal
+  await page.click("button:has-text('View Official PayPal Invoice v2')");
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, "step3-invoice-modal.png"), fullPage: false });
+  console.log("✓ Captured Step 3: Official PayPal Invoice Modal");
+
+  // Close invoice modal
+  await page.click("button:has-text('Close')");
+  await page.waitForTimeout(400);
+
+  // Open Orders Ledger Modal
+  await page.click("button:has-text('View AG Grid Ledger')");
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, "orders-ledger-modal.png"), fullPage: false });
+  console.log("✓ Captured Orders Ledger Modal");
 
   // Also capture mobile view of Step 0 & Step 2
   await page.setViewportSize({ width: 390, height: 844 });

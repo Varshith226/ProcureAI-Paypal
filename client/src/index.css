@@ -266,17 +266,165 @@ h1, h2, h3, h4, h5, h6, .ant-typography-headline, .price-display {
   background: rgba(0, 82, 255, 0.1);
 }
 
-/* AG Grid Polish in App */
-.ag-theme-quartz, .ag-theme-quartz-dark {
-  --ag-font-family: var(--font-sans);
-  --ag-font-size: 13px;
+/* AG Grid Polish & Dark/Light Theme System */
+.ag-theme-quartz-dark,
+.ag-theme-quartz-dark.ag-theme-quartz,
+div.ag-theme-quartz-dark {
+  --ag-active-color: #38bdf8 !important;
+  --ag-background-color: #0b1329 !important;
+  --ag-data-background-color: #0b1329 !important;
+  --ag-odd-row-background-color: #0e172e !important;
+  --ag-foreground-color: #f1f5f9 !important;
+  --ag-border-color: rgba(255, 255, 255, 0.08) !important;
+  --ag-secondary-border-color: rgba(255, 255, 255, 0.05) !important;
+  --ag-header-background-color: #0f172a !important;
+  --ag-header-foreground-color: #94a3b8 !important;
+  --ag-header-cell-hover-background-color: rgba(255, 255, 255, 0.04) !important;
+  --ag-row-hover-color: rgba(56, 189, 248, 0.12) !important;
+  --ag-selected-row-background-color: rgba(56, 189, 248, 0.18) !important;
+  --ag-pinned-row-background-color: #0e1834 !important;
+  --ag-pinned-source-row-background-color: #0e1834 !important;
+  --ag-modal-overlay-background-color: rgba(0, 0, 0, 0.8) !important;
+  --ag-control-panel-background-color: #0b1329 !important;
+  --ag-subheader-background-color: #0f172a !important;
+  --ag-cell-horizontal-border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  --ag-font-family: var(--font-sans) !important;
+  --ag-font-size: 13px !important;
+  --ag-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  color: #f1f5f9 !important;
+  background-color: #0b1329 !important;
   border-radius: 12px;
-  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
-.ag-theme-quartz .ag-row-pinned, .ag-theme-quartz-dark .ag-row-pinned {
+
+.ag-theme-quartz-dark .ag-root,
+.ag-theme-quartz-dark .ag-root-wrapper,
+.ag-theme-quartz-dark .ag-body,
+.ag-theme-quartz-dark .ag-body-viewport,
+.ag-theme-quartz-dark .ag-center-cols-clipper,
+.ag-theme-quartz-dark .ag-center-cols-viewport,
+.ag-theme-quartz-dark .ag-center-cols-container,
+.ag-theme-quartz-dark .ag-scroller,
+.ag-theme-quartz-dark .ag-grid-scrolling-rows,
+.ag-theme-quartz-dark .ag-floating-bottom,
+.ag-theme-quartz-dark .ag-floating-bottom-viewport,
+.ag-theme-quartz-dark .ag-floating-bottom-container,
+.ag-theme-quartz-dark .ag-pinned-bottom-rows-container,
+.ag-theme-quartz-dark .ag-grid-pinned-bottom-rows-container,
+.ag-theme-quartz-dark .ag-paging-panel {
+  background-color: #0b1329 !important;
+  background: #0b1329 !important;
+  color: #f1f5f9 !important;
+}
+
+.ag-theme-quartz-dark .ag-header {
+  background-color: #0f172a !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.ag-theme-quartz-dark .ag-grid-pinned-top-rows,
+.ag-theme-quartz-dark .ag-grid-pinned-top-rows-container,
+.ag-theme-quartz-dark .ag-grid-sticky-top-rows-container,
+.ag-theme-quartz-dark .ag-grid-pinned-bottom-rows,
+.ag-theme-quartz-dark .ag-grid-pinned-bottom-rows-container,
+.ag-theme-quartz-dark .ag-grid-sticky-bottom-rows-container,
+.ag-theme-quartz-dark .ag-body-horizontal-scroll-viewport,
+.ag-theme-quartz-dark .ag-body-horizontal-scroll,
+.ag-theme-quartz-dark .ag-body-vertical-scroll-viewport,
+.ag-theme-quartz-dark .ag-body-vertical-scroll,
+.ag-theme-quartz-dark .ag-horizontal-left-spacer,
+.ag-theme-quartz-dark .ag-horizontal-right-spacer {
+  background-color: #0b1329 !important;
+  background: #0b1329 !important;
+  color: #f1f5f9 !important;
+}
+
+.ag-theme-quartz-dark .ag-row {
+  background-color: #0b1329 !important;
+  color: #f1f5f9 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+.ag-theme-quartz-dark .ag-row-odd {
+  background-color: #0e172e !important;
+  background: #0e172e !important;
+}
+
+.ag-theme-quartz-dark .ag-row-even {
+  background-color: #090e1f !important;
+  background: #090e1f !important;
+}
+
+.ag-theme-quartz-dark .ag-row-pinned,
+.ag-theme-quartz-dark .ag-row-pinned .ag-cell {
+  background-color: #0e1834 !important;
+  background: #0e1834 !important;
+  font-weight: 700 !important;
+  color: #f1f5f9 !important;
+  border-top: 2px solid rgba(56, 189, 248, 0.3) !important;
+}
+
+.ag-theme-quartz-dark .ag-row-hover,
+.ag-theme-quartz-dark .ag-row:hover {
+  background-color: rgba(56, 189, 248, 0.12) !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+}
+
+.ag-theme-quartz-dark .ag-cell {
+  color: #f1f5f9 !important;
+  display: flex;
+  align-items: center;
+}
+
+.ag-theme-quartz-dark .ag-header-cell-text {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #cbd5e1;
+}
+
+.ag-theme-quartz-dark .ag-paging-panel {
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.ag-theme-quartz {
+  --ag-active-color: #0052ff !important;
+  --ag-background-color: #ffffff !important;
+  --ag-foreground-color: #0f172a !important;
+  --ag-border-color: rgba(0, 0, 0, 0.08) !important;
+  --ag-header-background-color: #f8fafc !important;
+  --ag-header-foreground-color: #475569 !important;
+  --ag-odd-row-background-color: rgba(0, 0, 0, 0.015) !important;
+  --ag-row-hover-color: rgba(0, 82, 255, 0.06) !important;
+  --ag-selected-row-background-color: rgba(0, 82, 255, 0.12) !important;
+  --ag-font-family: var(--font-sans) !important;
+  --ag-font-size: 13px !important;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.ag-theme-quartz .ag-header-cell-text {
+  font-weight: 700;
+  color: #334155;
+}
+
+.ag-theme-quartz .ag-cell {
+  display: flex;
+  align-items: center;
+}
+
+.ag-theme-quartz-dark .ag-row-pinned {
+  font-weight: 700 !important;
+  font-family: var(--font-mono) !important;
+  background: linear-gradient(90deg, rgba(0, 82, 255, 0.15) 0%, rgba(34, 211, 238, 0.1) 100%) !important;
+  border-top: 2px solid rgba(56, 189, 248, 0.3) !important;
+}
+
+.ag-theme-quartz .ag-row-pinned {
   font-weight: 700 !important;
   font-family: var(--font-mono) !important;
   background-color: rgba(0, 82, 255, 0.08) !important;
+  border-top: 2px solid rgba(0, 82, 255, 0.2) !important;
 }
 
 /* Micro-bar score renderers */
