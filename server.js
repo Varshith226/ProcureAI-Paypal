@@ -711,13 +711,37 @@ app.use((req, res, next) => {
   next();
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Only listen when run directly (`node server.js`); tests import `app` instead.
 if (require.main === module) {
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-  });
+  function startServer(portToTry) {
+    const srv = app.listen(portToTry, "0.0.0.0", () => {
+      console.log(`\n=================================================`);
+      console.log(`  🚀 ProcureAI is live at http://localhost:${portToTry}`);
+      console.log(`  📡 API & SSE Streams: http://localhost:${portToTry}/api/events`);
+      console.log(`=================================================\n`);
+    });
+
+    srv.on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.warn(`\n⚠️  Port ${portToTry} is already in use by an existing process.`);
+        const nextPort = portToTry + 1;
+        console.log(`🔄 Automatically retrying on port ${nextPort}...\n`);
+        startServer(nextPort);
+      } else {
+        console.error("Server startup error:", err);
+        process.exit(1);
+      }
+    });
+
+    process.on("SIGINT", () => {
+      console.log("\nGracefully shutting down ProcureAI...");
+      srv.close(() => process.exit(0));
+    });
+  }
+
+  startServer(PORT);
 }
 
 module.exports = app;

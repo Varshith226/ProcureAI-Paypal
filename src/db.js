@@ -3,7 +3,16 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { DatabaseSync } = require("node:sqlite");
+
+let DatabaseSync;
+try {
+  DatabaseSync = require("node:sqlite").DatabaseSync;
+} catch (err) {
+  console.error("\n❌ ProcureAI Error: Node.js >= 22.5.0 is required for native SQLite (node:sqlite).");
+  console.error(`👉 Your current Node.js version is ${process.version}.`);
+  console.error("👉 Please run: 'nvm use 24' or install Node 22+ before starting the server.\n");
+  process.exit(1);
+}
 
 let dbInstance = null;
 
