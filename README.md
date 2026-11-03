@@ -2,7 +2,8 @@
 ### Powered by PayPal Pay-on-Delivery Authorization Holds & Cryptographic Spending Mandates
 
 [![Hackathon](https://img.shields.io/badge/Hackathon-Build_What's_Next_with_PayPal_%26_AI-0052FF.svg)](https://paypalaihackathon.devpost.com/)
-[![Tests](https://img.shields.io/badge/Tests-204_Passing-10b981.svg)](test/)
+[![Tests](https://img.shields.io/badge/Tests-206_Passing-10b981.svg)](test/)
+[![Lighthouse](https://img.shields.io/badge/Lighthouse_Mobile-Perf_98_|_A11y_96-success.svg)](docs/screenshots/lighthouse-mobile-report.json)
 [![PayPal Sandbox](https://img.shields.io/badge/PayPal-Authorize--then--Capture-003087.svg)](https://developer.paypal.com/)
 [![AI Model](https://img.shields.io/badge/AI-Google_Gemini_2.5_Flash-8b5cf6.svg)](https://ai.google.dev/)
 [![AG Grid](https://img.shields.io/badge/AG_Grid-Community_v36-00e5ff.svg)](https://www.ag-grid.com/)
@@ -48,7 +49,7 @@ flowchart TD
     
     Approver -->|Interactive Matrix| AGGrid["AG Grid Community Data Matrix<br>(Inline Quantity Editing · Pinned Totals)"]
     
-    AGGrid -->|Enforce Mandate Ceiling| PPAuth["PayPal Orders v2 (intent: AUTHORIZE)<br>(Funds Held in Authorization Hold up to 29 Days)"]
+    AGGrid -->|Enforce Mandate Ceiling| PPAuth["PayPal Orders v2 (intent: AUTHORIZE)<br>(Authorization valid up to 29 days; honor period ~3 days)"]
     
     PPAuth -->|Physical Inspection Confirmed| PPCapture["PayPal Payments v2 Capture<br>(Or SLA Credit Partial Capture: 90% capture / 10% void)"]
     
@@ -74,8 +75,8 @@ ProcureAI utilizes a complete B2B pay-on-delivery authorization hold and settlem
 
 | PayPal API / Capability | Endpoint Used | Purpose in ProcureAI |
 |---|---|---|
-| **Orders v2 (Authorize Intent)** | `POST /v2/checkout/orders` with `intent: "AUTHORIZE"` | Creates orders that **hold funds in an authorization hold** rather than capturing immediately. Gives buyers 100% protection against delayed or defective goods. |
-| **Orders v2 (Authorize Call)** | `POST /v2/checkout/orders/:id/authorize` | Authorizes the held amount after buyer approval, establishing a 29-day validity window with PayPal `authorization_id`. |
+| **Orders v2 (Authorize Intent)** | `POST /v2/checkout/orders` with `intent: "AUTHORIZE"` | Creates orders that **hold funds in a pay-on-delivery authorization hold** rather than capturing immediately. Gives buyers protection against delayed or defective goods. |
+| **Orders v2 (Authorize Call)** | `POST /v2/checkout/orders/:id/authorize` | Authorizes the held amount after buyer approval, establishing a validity window up to 29 days (funds guaranteed ~3 days honor period; reauthorize if delivery is later) with PayPal `authorization_id`. |
 | **Payments v2 (Capture)** | `POST /v2/payments/authorizations/:id/capture` | Captures held funds atomically upon physical delivery confirmation and inspection sign-off. |
 | **Atomic SLA Penalty Capture** | `POST /v2/payments/authorizations/:id/capture` with `final_capture: true` | On SLA delivery slippage, captures only 90% and automatically voids the remaining 10% penalty credit in a **single atomic call**—no separate refunds needed. |
 | **Payments v2 (Void)** | `POST /v2/payments/authorizations/:id/void` | Immediately voids the authorization if the order is cancelled, a fraud alert triggers, or the spending mandate fails verification. |
@@ -260,8 +261,8 @@ npm test
 | 3 | **Ed25519 Cryptographic Spending Mandate** | **PASS** | `node:crypto` Ed25519 asymmetric key signing. Hard ceiling enforcement at PayPal authorization. Single-use expiring tokens for CFO approval. Verified in [test/approvalTokens.test.js](file:///home/varshith/paypal-ai-hackathon/test/approvalTokens.test.js). |
 | 4 | **AG Grid Community Integration** | **PASS** | AG Grid Community v36 Plan Matrix with inline cell editing, live USD recalculation, and Orders Ledger with CSV export. Implemented in [client/src/components/PlanMatrixGrid.jsx](file:///home/varshith/paypal-ai-hackathon/client/src/components/PlanMatrixGrid.jsx) and [client/src/components/OrdersLedgerGrid.jsx](file:///home/varshith/paypal-ai-hackathon/client/src/components/OrdersLedgerGrid.jsx). |
 | 5 | **Cryptographic Audit Trail** | **PASS** | Native SQLite WAL database with SHA-256 hash-chaining across all order transitions. Verified in [test/auditLogResilience.test.js](file:///home/varshith/paypal-ai-hackathon/test/auditLogResilience.test.js). |
-| 6 | **Automated Test Suite** | **PASS** | **204 automated tests passing**, 0 failing (`npm test`). Verified via `node --test`. |
-| 7 | **Mobile & Desktop Responsive Layout** | **PASS** | Playwright test verified zero horizontal overflow at 390x844 and 1440x900. Verified in [scripts/test-responsive.js](file:///home/varshith/paypal-ai-hackathon/scripts/test-responsive.js); screenshots in [docs/screenshots/](file:///home/varshith/paypal-ai-hackathon/docs/screenshots/). |
+| 6 | **Automated Test Suite** | **PASS** | **206 automated tests passing**, 0 failing (`npm test`). Verified via `node --test`. |
+| 7 | **Mobile & Desktop Responsive Layout** | **PASS** | Playwright test verified zero horizontal overflow and full flow completion at 390x844 and 1440x900. Mobile Lighthouse: **Performance: 98/100**, **Accessibility: 96/100**. Verified in [scripts/test-responsive.js](file:///home/varshith/paypal-ai-hackathon/scripts/test-responsive.js); screenshots in [docs/screenshots/](file:///home/varshith/paypal-ai-hackathon/docs/screenshots/). |
 | 8 | **Production Deployment** | **PASS** | Configured in [render.yaml](file:///home/varshith/paypal-ai-hackathon/render.yaml) with pinned Node version (`22.12.0`) and health check `/api/health`. |
 | 9 | **Public GitHub & Open Source License** | **PASS** | Fully open source under standard **MIT License** with visible [LICENSE](file:///home/varshith/paypal-ai-hackathon/LICENSE) file and clean [.env.example](file:///home/varshith/paypal-ai-hackathon/.env.example). |
 | 10 | **Postman / APIMatic Specification** | **PASS** | Complete [openapi.yaml](file:///home/varshith/paypal-ai-hackathon/openapi.yaml) (OpenAPI 3.1) and [procureai.postman_collection.json](file:///home/varshith/paypal-ai-hackathon/procureai.postman_collection.json) with automated test assertions. |

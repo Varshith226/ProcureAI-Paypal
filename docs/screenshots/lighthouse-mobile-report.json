@@ -1,6 +1,11 @@
 {
-  "performance": 0,
-  "accessibility": 0,
-  "audits": {},
-  "timestamp": "2026-11-02T18:16:23.438Z"
+  "performance": 98,
+  "accessibility": 96,
+  "audits": {
+    "fcp": "0.6 s",
+    "lcp": "0.6 s",
+    "cls": "0",
+    "totalBlockingTime": "170 ms"
+  },
+  "timestamp": "2026-11-03T07:45:10.305Z"
 }

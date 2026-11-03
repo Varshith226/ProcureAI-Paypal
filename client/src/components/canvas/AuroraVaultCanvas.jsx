@@ -11,7 +11,17 @@ export default function AuroraVaultCanvas({
   const [webglSupported, setWebglSupported] = useState(true);
 
   useEffect(() => {
-    if (quality === "off" || !isDarkMode) return;
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (quality === "off" || !isDarkMode || prefersReducedMotion) {
+      if (typeof window !== "undefined") {
+        window.__PROCUREAI_SCENE_FPS__ = 0;
+      }
+      return;
+    }
 
     const container = mountRef.current;
     if (!container) return;
@@ -54,7 +64,18 @@ export default function AuroraVaultCanvas({
         alpha: Math.random() * 0.5 + 0.2,
       }));
 
+      let liteFrames = 0;
+      let liteLastTime = performance.now();
+
       const renderLite = () => {
+        liteFrames++;
+        const now = performance.now();
+        if (now - liteLastTime >= 1000) {
+          window.__PROCUREAI_SCENE_FPS__ = Math.round((liteFrames * 1000) / (now - liteLastTime));
+          liteFrames = 0;
+          liteLastTime = now;
+        }
+
         ctx.clearRect(0, 0, width, height);
         ctx.fillStyle = sceneState === "authorized" ? "rgba(16, 185, 129, " : sceneState === "locked" ? "rgba(0, 82, 255, " : "rgba(56, 189, 248, ";
         for (const p of particles) {
@@ -183,7 +204,18 @@ export default function AuroraVaultCanvas({
     let animId;
     let clock = new THREE.Clock();
 
+    let webglFrames = 0;
+    let webglLastTime = performance.now();
+
     const animate = () => {
+      webglFrames++;
+      const now = performance.now();
+      if (now - webglLastTime >= 1000) {
+        window.__PROCUREAI_SCENE_FPS__ = Math.round((webglFrames * 1000) / (now - webglLastTime));
+        webglFrames = 0;
+        webglLastTime = now;
+      }
+
       const elapsed = clock.getElapsedTime();
 
       // State-driven dynamics
@@ -258,6 +290,8 @@ export default function AuroraVaultCanvas({
   // CSS Aurora Gradient Base Layer (Always rendered for instantaneous depth)
   return (
     <div
+      data-testid="aurora-canvas-layer"
+      aria-hidden="true"
       style={{
         position: "fixed",
         top: 0,
@@ -327,3 +361,4 @@ export default function AuroraVaultCanvas({
     </div>
   );
 }
+

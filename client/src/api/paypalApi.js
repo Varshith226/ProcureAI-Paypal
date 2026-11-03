@@ -56,6 +56,7 @@ export async function createOrder({
   splitCount,
   intent = "AUTHORIZE",
   mandateId,
+  isSimulation = false,
 }) {
   return request("/api/paypal/create-order", {
     method: "POST",
@@ -66,14 +67,15 @@ export async function createOrder({
       splitCount,
       intent,
       mandateId,
+      isSimulation,
     }),
   });
 }
 
-export async function authorizeOrder({ orderID, planId, mandateId, version }) {
+export async function authorizeOrder({ orderID, planId, mandateId, version, isSimulation = false }) {
   return request("/api/paypal/authorize-order", {
     method: "POST",
-    body: JSON.stringify({ orderID, planId, mandateId, version }),
+    body: JSON.stringify({ orderID, planId, mandateId, version, isSimulation }),
   });
 }
 

@@ -46,28 +46,22 @@ async function runLighthouseAudit() {
   }
 
   const DEBUG_PORT = 9222;
-  const chromePath = chromium.executablePath();
-  const userDataDir = "/tmp/chrome-lh-user-data";
-  if (!fs.existsSync(userDataDir)) fs.mkdirSync(userDataDir, { recursive: true });
-
-  console.log(`Launching Chrome binary: ${chromePath} on port ${DEBUG_PORT}...`);
-  const chromeProc = spawn(chromePath, [
-    "--headless=new",
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-gpu",
-    "--disable-dev-shm-usage",
-    `--remote-debugging-port=${DEBUG_PORT}`,
-    `--user-data-dir=${userDataDir}`,
-    "about:blank",
-  ], {
-    stdio: "ignore",
+  console.log(`Launching Playwright Chromium on debug port ${DEBUG_PORT}...`);
+  const browser = await chromium.launch({
+    headless: true,
+    args: [
+      `--remote-debugging-port=${DEBUG_PORT}`,
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+    ],
   });
 
   const debugReady = await waitForHttp(`http://127.0.0.1:${DEBUG_PORT}/json/version`, 10000);
   if (!debugReady) {
     console.error("Failed to connect to Chrome debugging endpoint.");
-    chromeProc.kill();
+    await browser.close();
     server.close();
     process.exit(1);
   }
@@ -122,12 +116,12 @@ async function runLighthouseAudit() {
 
     console.log(`✓ Saved report summary to ${reportPath}`);
 
-    chromeProc.kill();
+    await browser.close();
     server.close();
     return { performance: perfScore, accessibility: a11yScore };
   } catch (err) {
     console.error("Lighthouse execution error:", err.message);
-    chromeProc.kill();
+    await browser.close();
     server.close();
     return { error: err.message };
   }

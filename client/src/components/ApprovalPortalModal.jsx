@@ -6,6 +6,7 @@ import {
   LockOutlined,
   AuditOutlined,
 } from "@ant-design/icons";
+import { consumeApprovalTokenApi } from "../api/paypalApi";
 
 const { Text, Paragraph } = Typography;
 
@@ -26,6 +27,13 @@ export default function ApprovalPortalModal({
   const handleApprove = async () => {
     setApproving(true);
     try {
+      if (tokenRecord?.token) {
+        await consumeApprovalTokenApi(tokenRecord.token, {
+          mandateId: mandate?.mandateId,
+          planVersion: plan?.version || 1,
+          approverId: "executive_cfo",
+        });
+      }
       if (onApprove) {
         await onApprove(tokenRecord);
       }

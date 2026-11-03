@@ -29,7 +29,7 @@ export default function EscrowFlowVisual({
 
   const expiryDisplay = authorizationExpiresAt
     ? new Date(authorizationExpiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
-    : "29 days from approval";
+    : "within authorization window";
 
   return (
     <div
@@ -158,7 +158,7 @@ export default function EscrowFlowVisual({
       <div style={{ marginTop: 12, fontSize: 12, color: "#94a3b8", lineHeight: 1.5 }}>
         {status === "AUTHORIZED" && (
           <span>
-            🔒 <strong>Funds held under PayPal authorization.</strong> Funds remain held until {expiryDisplay}. The merchant is authorized to ship, but funds cannot be captured until you verify delivery. (Reauthorization is supported via PayPal API if transit exceeds 29 days).
+            🔒 <strong>Funds held under PayPal authorization.</strong> Funds remain held until {expiryDisplay}. Authorization valid up to 29 days; funds guaranteed ~3 days (honor period); reauthorize if delivery is later. Funds cannot be captured until you verify delivery.
           </span>
         )}
         {status === "CAPTURED" && (

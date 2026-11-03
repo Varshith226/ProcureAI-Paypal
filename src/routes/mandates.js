@@ -178,6 +178,18 @@ function createMandatesRouter() {
     if (!result.valid) {
       return res.status(400).json(result);
     }
+
+    try {
+      const { broadcastEvent } = require("../sseService");
+      broadcastEvent("MANDATE_APPROVED", {
+        mandateId: result.mandateId,
+        planVersion: result.planVersion,
+        approverId: result.approverId,
+        consumedAt: result.consumedAt,
+        token: req.params.token,
+      });
+    } catch (_) {}
+
     res.json(result);
   });
 

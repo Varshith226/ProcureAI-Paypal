@@ -4,4 +4,23 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/three')) {
+            return 'three-scene';
+          }
+          if (id.includes('node_modules/ag-grid-community') || id.includes('node_modules/ag-grid-react')) {
+            return 'ag-grid';
+          }
+          if (id.includes('node_modules/antd') || id.includes('node_modules/@ant-design')) {
+            return 'antd-vendor';
+          }
+        },
+      },
+    },
+  },
 })
+

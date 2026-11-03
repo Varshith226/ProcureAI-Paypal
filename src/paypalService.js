@@ -59,6 +59,17 @@ async function getFxRate() {
           timestamp: data.time_last_update_utc || new Date().toISOString(),
           fetchedAt: new Date().toISOString(),
         };
+        try {
+          const { saveCachedFx } = require("./db");
+          saveCachedFx({
+            base: "USD",
+            target: "INR",
+            inrPerUsd,
+            usdPerInr,
+            source: "open.er-api.com",
+            fetchedAt: cachedFxRate.timestamp,
+          });
+        } catch (_) {}
         fxRateExpiresAt = now + 60 * 60 * 1000; // 1 hour cache
         return cachedFxRate;
       }
@@ -67,23 +78,27 @@ async function getFxRate() {
     // Network failure or timeout; use fallback
   }
 
-  // Fallback to benchmark rate with explicit direction
-  const fallbackInrPerUsd = 94.93;
-  cachedFxRate = {
-    base: "USD",
-    target: "INR",
-    direction: "USD_TO_INR",
-    inrPerUsd: fallbackInrPerUsd,
-    usdPerInr: Number((1 / fallbackInrPerUsd).toFixed(6)),
-    rate: Number((1 / fallbackInrPerUsd).toFixed(6)),
-    inrToUsd: Number((1 / fallbackInrPerUsd).toFixed(6)),
-    displayRate: `${fallbackInrPerUsd.toFixed(2)} INR per USD`,
-    source: "open.er-api.com (cached)",
+  // Fallback to the last successfully fetched rate cached in the DB with its timestamp
+  try {
+    const { getDbCachedFx } = require("./db");
+    const dbCached = getDbCachedFx();
+    if (dbCached) {
+      cachedFxRate = {
+        ...dbCached,
+        source: "Fallback rate (cached)",
+      };
+      fxRateExpiresAt = now + 15 * 60 * 1000;
+      return cachedFxRate;
+    }
+  } catch (_) {}
+
+  // Only if no rate was ever fetched, return unavailable object
+  return {
+    unavailable: true,
+    error: "Live exchange rate unavailable and no cached rate found.",
+    source: "unavailable",
     timestamp: new Date().toISOString(),
-    fetchedAt: new Date().toISOString(),
   };
-  fxRateExpiresAt = now + 15 * 60 * 1000;
-  return cachedFxRate;
 }
 
 function getCredentials() {

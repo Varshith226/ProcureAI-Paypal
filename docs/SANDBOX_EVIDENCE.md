@@ -2,8 +2,28 @@
 Generated and verified against PayPal Sandbox environment.
 
 **Sandbox Base URL:** `https://api-m.sandbox.paypal.com`  
-**Client ID:** `AV96...w2Vz`  
+**Client ID:** `AW6thF1LFp0ovrRYKsdx5Wa-1h6l7CPDwTVPd9Cjl5WmJYgpVv-7hejkWtmFYdZgZXto9GrvSQE64oGU`  
 **Auth Strategy:** OAuth2 Client Credentials (`/v1/oauth2/token`)
+
+---
+
+## 0. Evidence Summary Table (Honesty & Ground Truth)
+
+| Operation | Real PayPal ID | Status | Proof / Evidence Description |
+|:---|:---|:---|:---|
+| **OAuth2 Token** | `Bearer A21A...` | **LIVE VERIFIED** | Real OAuth2 token issued by PayPal Sandbox |
+| **Order Creation (Authorize)** | `9KX89008SB555684J` | **LIVE VERIFIED** | Intent `AUTHORIZE` with itemized breakdown |
+| **Payer Consent Check** | `debug_id: 4020a1eb9773b` | **LIVE VERIFIED** | PayPal returned 422 `ORDER_NOT_APPROVED` when attempting capture before buyer login |
+| **Buyer Approval** | `PAYER-ID-PENDING` | **AWAITING BUYER SIGN-IN** | Requires manual login with `sb-buyer@personal.example.com` on `sandbox.paypal.com` |
+| **Authorization Hold** | `AUTH-PENDING` | **SIMULATED FALLBACK** | Simulated in test runner; live requires manual buyer login token |
+| **100% Delivery Capture** | `CAP-PENDING` | **SIMULATED FALLBACK** | Ready to capture live once buyer approval token is completed |
+| **90% SLA Partial Capture** | `PARTIAL-CAP-PENDING` | **SIMULATED FALLBACK** | Uses PayPal `final_capture: true` to release 10% SLA delay credit |
+| **Authorization Void** | `VOID-PENDING` | **SIMULATED FALLBACK** | `POST /v2/payments/authorizations/{id}/void` releases hold |
+| **Invoicing v2** | `INV2-BT4R-JNPH-WD74-9F6R` | **LIVE VERIFIED** | Real draft invoice created via `/v2/invoicing/invoices` |
+| **Supplier Payouts** | `debug_id: 3bead79fa037e` | **SIMULATION (403 PAYOUT_NOT_AVAILABLE)** | PayPal Sandbox returns 403 for Indian test accounts |
+
+> [!IMPORTANT]
+> **Strict Truth Policy:** No flow is marked "Verified" without a concrete PayPal API ID and debug_id. Any flow executed without an interactive buyer sign-in session is labeled **SIMULATION** in both the UI and documentation.
 
 ---
 

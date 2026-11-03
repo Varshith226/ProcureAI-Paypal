@@ -139,7 +139,6 @@ plansStore.set("plan_demo_1", {
     }
   }
 });
-const INR_TO_USD_RATE = Number((1 / 94.93).toFixed(6)); // Authoritative FX benchmark rate (1 USD ≈ 94.93 INR)
 
 // Production static file hosting for Render / single-service deployments
 const clientDistPath = path.join(__dirname, "client", "dist");
@@ -254,7 +253,7 @@ app.post("/api/plans/:planId/approve", async (req, res) => {
 });
 
 // Simulate a retailer catalog price change after user approval (Triggers Safety Boundary)
-app.post("/api/plans/:planId/simulate-price-change", (req, res) => {
+app.post("/api/plans/:planId/simulate-price-change", async (req, res) => {
   const { planId } = req.params;
   const { deltaINR = 2500 } = req.body;
   const plan = plansStore.get(planId);
@@ -263,15 +262,28 @@ app.post("/api/plans/:planId/simulate-price-change", (req, res) => {
     return res.status(404).json({ error: "Plan not found" });
   }
 
+  const fx = await getFxRate();
+  if (fx.unavailable) {
+    return res.status(503).json({ error: "EXCHANGE_RATE_UNAVAILABLE", message: "Exchange rate unavailable." });
+  }
+
   plan.version += 1;
   plan.status = "STALE_REAPPROVAL_REQUIRED";
   plan.pendingTotalINR = (plan.lockedTotalINR || 0) + deltaINR;
-  plan.pendingTotalUSD = (plan.pendingTotalINR * INR_TO_USD_RATE).toFixed(2);
+  plan.pendingTotalUSD = convertInrToUsd(plan.pendingTotalINR, fx.inrPerUsd).toFixed(2);
 
   plansStore.set(planId, plan);
   res.json({
     message: "Retailer price change detected! Plan invalidated until user re-approves new total.",
     plan,
+  });
+});
+
+// Expose public PayPal client ID for client-side SDK initialization
+app.get("/api/paypal/client-id", (req, res) => {
+  res.json({
+    clientId: process.env.PAYPAL_CLIENT_ID || "sb",
+    isSandbox: true,
   });
 });
 
@@ -384,7 +396,14 @@ app.post("/api/paypal/create-order", async (req, res) => {
         },
       ];
     } else if (items.length > 0) {
-      const reconciled = reconcileItemizedTotal(items, effectiveUSD, INR_TO_USD_RATE);
+      const fx = await getFxRate();
+      if (fx.unavailable) {
+        return res.status(503).json({
+          error: "EXCHANGE_RATE_UNAVAILABLE",
+          message: "Live exchange rate unavailable and no cached rate found. Checkout is temporarily blocked.",
+        });
+      }
+      const reconciled = reconcileItemizedTotal(items, effectiveUSD, fx.usdPerInr || (1 / fx.inrPerUsd));
       purchaseUnit.amount.value = reconciled.finalUSD;
       purchaseUnit.amount.breakdown = {
         item_total: {
@@ -533,8 +552,13 @@ app.post("/api/paypal/authorize-order", async (req, res) => {
       authorizedAtISO: new Date().toISOString(),
     });
   } catch (error) {
-    if (error.code === "ENOTFOUND" || error.code === "EAI_AGAIN" || error.message.includes("fetch failed")) {
-      const simulatedAuthId = `AUTH-SANDBOX-${Date.now().toString(36).toUpperCase()}`;
+    if (
+      error.code === "ENOTFOUND" ||
+      error.code === "EAI_AGAIN" ||
+      error.message?.includes("fetch failed") ||
+      (req.body.isSimulation && (error.message?.includes("ORDER_NOT_APPROVED") || error.status === 422 || error.details?.some?.(d => d.issue === "ORDER_NOT_APPROVED")))
+    ) {
+      const simulatedAuthId = `AUTH-SIM-${Date.now().toString(36).toUpperCase()}`;
       const expiresAt = new Date(Date.now() + 29 * 24 * 3600 * 1000).toISOString();
       if (planId && plansStore.has(planId)) {
         const plan = plansStore.get(planId);
@@ -545,6 +569,7 @@ app.post("/api/paypal/authorize-order", async (req, res) => {
       updateOrderStatus(orderID, "AUTHORIZED", {
         authorizationId: simulatedAuthId,
         authorizationExpiresAt: expiresAt,
+        isSimulation: true,
       });
       return res.json({
         orderID,
@@ -554,6 +579,7 @@ app.post("/api/paypal/authorize-order", async (req, res) => {
         amount: { currency_code: "USD", value: "373.88" },
         expirationTime: expiresAt,
         authorizedAtISO: new Date().toISOString(),
+        isSimulation: true,
       });
     }
     res.status(502).json({ error: error.message, details: error.details });

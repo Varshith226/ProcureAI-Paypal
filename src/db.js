@@ -128,6 +128,16 @@ function initDb(dbPath) {
       used_at TEXT,
       actor TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS fx_cache (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      base TEXT NOT NULL,
+      target TEXT NOT NULL,
+      inr_per_usd REAL NOT NULL,
+      usd_per_inr REAL NOT NULL,
+      source TEXT NOT NULL,
+      fetched_at TEXT NOT NULL
+    );
   `);
 
   dbInstance = db;
@@ -142,6 +152,14 @@ function initDb(dbPath) {
         environment: process.env.NODE_ENV || "development",
         message: "ProcureAI persistent cryptographic audit chain initialized",
       });
+    }
+    const fxRow = db.prepare("SELECT count(*) as count FROM fx_cache").get();
+    if (fxRow && fxRow.count === 0) {
+      const stmt = db.prepare(`
+        INSERT INTO fx_cache (id, base, target, inr_per_usd, usd_per_inr, source, fetched_at)
+        VALUES (1, 'USD', 'INR', 94.93, 0.010534, 'Fallback rate (cached)', ?)
+      `);
+      stmt.run(new Date().toISOString());
     }
   } catch (_) {}
 
@@ -234,6 +252,42 @@ function resetDemoData() {
   return true;
 }
 
+function saveCachedFx({ base, target, inrPerUsd, usdPerInr, source, fetchedAt }) {
+  const db = getDb();
+  const stmt = db.prepare(`
+    INSERT INTO fx_cache (id, base, target, inr_per_usd, usd_per_inr, source, fetched_at)
+    VALUES (1, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      base = excluded.base,
+      target = excluded.target,
+      inr_per_usd = excluded.inr_per_usd,
+      usd_per_inr = excluded.usd_per_inr,
+      source = excluded.source,
+      fetched_at = excluded.fetched_at
+  `);
+  stmt.run(base, target, inrPerUsd, usdPerInr, source, fetchedAt || new Date().toISOString());
+}
+
+function getDbCachedFx() {
+  const db = getDb();
+  const row = db.prepare("SELECT * FROM fx_cache WHERE id = 1").get();
+  if (!row) return null;
+  return {
+    base: row.base,
+    target: row.target,
+    direction: "USD_TO_INR",
+    inrPerUsd: row.inr_per_usd,
+    usdPerInr: row.usd_per_inr,
+    rate: row.usd_per_inr,
+    inrToUsd: row.usd_per_inr,
+    displayRate: `${row.inr_per_usd.toFixed(2)} INR per USD`,
+    source: "Fallback rate (cached)",
+    timestamp: row.fetched_at,
+    fetchedAt: row.fetched_at,
+    isCachedFallback: true,
+  };
+}
+
 module.exports = {
   initDb,
   getDb,
@@ -241,4 +295,6 @@ module.exports = {
   appendAuditLog,
   verifyAuditLogIntegrity,
   resetDemoData,
+  saveCachedFx,
+  getDbCachedFx,
 };

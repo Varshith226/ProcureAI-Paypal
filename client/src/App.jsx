@@ -73,16 +73,18 @@ import {
   confirmDelivery,
   voidOrder,
   validateApprovalTokenApi,
+  createApprovalTokenApi,
   createInvoice,
 } from "./api/paypalApi";
 
 // Upgraded UI Components
 import HeaderNav from "./components/HeaderNav";
 import ToolsDrawer from "./components/ToolsDrawer";
-import AuroraVaultCanvas from "./components/canvas/AuroraVaultCanvas";
 import Money from "./components/Money";
 import SignedMandateCard from "./components/SignedMandateCard";
 import EscrowFlowVisual from "./components/EscrowFlowVisual";
+
+const AuroraVaultCanvas = React.lazy(() => import("./components/canvas/AuroraVaultCanvas"));
 import BudgetCeilingMeter from "./components/BudgetCeilingMeter";
 import OrdersLedgerGrid from "./components/OrdersLedgerGrid";
 import NegotiationModal from "./components/NegotiationModal";
@@ -768,6 +770,14 @@ export default function App() {
   const [isSseConnected, setIsSseConnected] = useState(false);
   const [authorizingManual, setAuthorizingManual] = useState(false);
 
+  // Dual-Custody Approval & Real Order States
+  const [isWaitingCfoApproval, setIsWaitingCfoApproval] = useState(false);
+  const [cfoApproved, setCfoApproved] = useState(false);
+  const [cfoApprovalLink, setCfoApprovalLink] = useState("");
+  const [generatingToken, setGeneratingToken] = useState(false);
+  const [pendingRealOrderId, setPendingRealOrderId] = useState(null);
+  const [pendingApprovalUrl, setPendingApprovalUrl] = useState(null);
+
   // Telemetry log buffer
   const [telemetryLogs, setTelemetryLogs] = useState([
     {
@@ -859,6 +869,14 @@ export default function App() {
         if (lockedPlan && lockedPlan.orderID === data.order_id) {
           setLockedPlan((prev) => ({ ...prev, status: data.status }));
         }
+      });
+      sse.addEventListener("MANDATE_APPROVED", (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          logTelemetry("SSE: MANDATE_APPROVED", `Mandate ${data.mandateId} signed by ${data.approverId}`, "200 OK", 5, data);
+          setCfoApproved(true);
+          message.success("✓ Executive Dual-Custody Approval received via SSE! Checkout is now unlocked.");
+        } catch (_) {}
       });
     } catch (_) {}
     return () => {
@@ -1050,7 +1068,30 @@ export default function App() {
     }
   };
 
-  // Direct Sandbox Authorization Hold (1-Click Sandbox Fallback)
+  // Request Executive Dual-Custody Approval Token
+  const handleRequestCfoApproval = async () => {
+    if (!activeMandate) return;
+    setGeneratingToken(true);
+    try {
+      const res = await createApprovalTokenApi(activeMandate.mandateId, {
+        planVersion: activeMandate.planVersion || 1,
+        actor: "procurement_agent",
+      });
+      setActiveApprovalToken(res);
+      const link = `${window.location.origin}/?token=${res.token}`;
+      setCfoApprovalLink(link);
+      setIsWaitingCfoApproval(true);
+      setCfoApproved(false);
+      logTelemetry("POST /api/mandates/:id/token", `Created 1-use token for ${activeMandate.mandateId}`, "201 CREATED", 35, res);
+      message.success("Generated single-use CFO approval token! SSE listener active.");
+    } catch (err) {
+      message.error("Failed to generate approval token: " + err.message);
+    } finally {
+      setGeneratingToken(false);
+    }
+  };
+
+  // Direct Sandbox Authorization Hold (1-Click Sandbox Fast Simulation)
   const handleDirectAuthorize = async () => {
     if (!lockedPlan) return;
     setAuthorizingManual(true);
@@ -1063,6 +1104,7 @@ export default function App() {
         version: lockedPlan.version,
         intent: "AUTHORIZE",
         mandateId: activeMandate?.mandateId,
+        isSimulation: true,
       });
 
       const orderId = orderRes.orderID;
@@ -1071,6 +1113,7 @@ export default function App() {
         planId: lockedPlan?.planId,
         mandateId: activeMandate?.mandateId,
         version: lockedPlan?.version,
+        isSimulation: true,
       });
 
       const heldUSD = authRes.authorizedUSD || lockedPlan.lockedTotalUSD || (lockedPlan.lockedTotalINR / inrPerUsd).toFixed(2);
@@ -1084,6 +1127,7 @@ export default function App() {
         authorizationExpiresAt: authRes.authorizationExpiresAt || new Date(Date.now() + 29 * 24 * 3600 * 1000).toISOString(),
         paymentMethod: "PayPal Pay-on-Delivery Authorization Hold (Sandbox)",
         timestamp: new Date().toLocaleTimeString(),
+        isSimulation: true,
       });
 
       confetti({ particleCount: 60, spread: 55, origin: { y: 0.7 } });
@@ -1184,7 +1228,7 @@ export default function App() {
         body: JSON.stringify({
           captureID: receipt.captureID,
           amountUSD: Number(refundAmount),
-          reason: "ProcureAI 100% Sandbox Buyer Protection Guarantee",
+          reason: "ProcureAI Buyer Protection Refund via PayPal API",
         }),
       });
       const data = await res.json();
@@ -1290,11 +1334,13 @@ export default function App() {
       }}
     >
       {/* 3D AURORA VAULT BACKGROUND CANVAS */}
-      <AuroraVaultCanvas
-        sceneState={sceneState}
-        quality={bgQuality}
-        isDarkMode={isDarkMode}
-      />
+      <React.Suspense fallback={null}>
+        <AuroraVaultCanvas
+          sceneState={sceneState}
+          quality={bgQuality}
+          isDarkMode={isDarkMode}
+        />
+      </React.Suspense>
 
       {/* FOREGROUND APPLICATION CONTAINER */}
       <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -1471,6 +1517,7 @@ export default function App() {
                   {/* Primary Action Button */}
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <Button
+                      id="btn-generate-plans"
                       type="primary"
                       size="large"
                       icon={<ThunderboltOutlined />}
@@ -1821,6 +1868,7 @@ export default function App() {
 
                         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
                           <Button
+                            id="btn-approve-plan-b"
                             type="primary"
                             size="large"
                             icon={<CheckCircleOutlined />}
@@ -2079,6 +2127,81 @@ export default function App() {
                       isDarkMode={isDarkMode}
                     />
 
+                    {/* Executive Dual-Custody Spending Gate Card */}
+                    <Card
+                      style={{
+                        borderRadius: 14,
+                        marginBottom: 16,
+                        background: isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff",
+                        border: `1px solid ${
+                          cfoApproved
+                            ? "#10b981"
+                            : isWaitingCfoApproval
+                            ? "#f59e0b"
+                            : isDarkMode
+                            ? "rgba(255, 255, 255, 0.08)"
+                            : "#e2e8f0"
+                        }`,
+                      }}
+                      bodyStyle={{ padding: 16 }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+                        <Space align="center">
+                          <SafetyCertificateOutlined style={{ color: cfoApproved ? "#10b981" : isWaitingCfoApproval ? "#f59e0b" : "#0052FF", fontSize: 16 }} />
+                          <Text strong style={{ fontSize: 13 }}>Executive Dual-Custody Spending Gate</Text>
+                        </Space>
+                        {cfoApproved ? (
+                          <Tag color="green">✓ CFO SIGNED VIA SSE</Tag>
+                        ) : isWaitingCfoApproval ? (
+                          <Tag color="orange" icon={<ClockCircleOutlined />}>AWAITING CFO SIGNATURE</Tag>
+                        ) : (
+                          <Tag color="blue">GOVERNANCE READY</Tag>
+                        )}
+                      </div>
+
+                      <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 12 }}>
+                        {cfoApproved
+                          ? "Single-use approval token consumed. Executive signature verified via real-time SSE stream. PayPal hold checkout is fully authorized."
+                          : isWaitingCfoApproval
+                          ? "Expiring approval link generated. Checkout is held until signed by authorized executive authority."
+                          : "Require executive finance authorization before placing PayPal authorization hold."}
+                      </div>
+
+                      {!isWaitingCfoApproval && !cfoApproved && (
+                        <Button
+                          size="small"
+                          loading={generatingToken}
+                          onClick={handleRequestCfoApproval}
+                          style={{ borderRadius: 6, fontWeight: 600, fontSize: 12 }}
+                        >
+                          Request Executive Approval Link
+                        </Button>
+                      )}
+
+                      {isWaitingCfoApproval && !cfoApproved && (
+                        <Space wrap>
+                          <Button
+                            size="small"
+                            onClick={() => {
+                              navigator.clipboard?.writeText(cfoApprovalLink);
+                              message.success("Copied single-use approval token link!");
+                            }}
+                            style={{ borderRadius: 6, fontSize: 12 }}
+                          >
+                            Copy Link
+                          </Button>
+                          <Button
+                            size="small"
+                            type="primary"
+                            onClick={() => setApprovalModalOpen(true)}
+                            style={{ borderRadius: 6, fontSize: 12, background: "#f59e0b", borderColor: "#f59e0b", color: "#000", fontWeight: 700 }}
+                          >
+                            Simulate CFO Sign-off ↗
+                          </Button>
+                        </Space>
+                      )}
+                    </Card>
+
                     {/* PayPal Payment Terminal */}
                     <Card
                       title={
@@ -2099,13 +2222,31 @@ export default function App() {
                         type="info"
                         showIcon
                         icon={<SafetyCertificateOutlined style={{ color: "#0052FF" }} />}
-                        message={<span style={{ fontWeight: 700 }}>29-Day Authorization Hold (Zero Risk)</span>}
-                        description="Your card or balance is NOT debited today. PayPal places a 29-day authorization hold. Funds are captured only after you inspect and confirm delivery."
-                        style={{ marginBottom: 20, borderRadius: 10 }}
+                        message={<span style={{ fontWeight: 700 }}>Pay-on-Delivery Authorization Hold (Zero Risk)</span>}
+                        description="Your card or balance is NOT debited today. PayPal places an authorization hold (valid up to 29 days; funds guaranteed ~3 days (honor period); reauthorize if delivery is later). Funds are captured only after you inspect and confirm delivery."
+                        style={{ marginBottom: 16, borderRadius: 10 }}
                       />
 
-                      {/* Primary PayPal Checkout Button */}
+                      {/* Exchange Rate Safety Block */}
+                      {fxData?.unavailable && (
+                        <Alert
+                          type="error"
+                          showIcon
+                          message="Checkout Blocked: Exchange Rate Unavailable"
+                          description="Live exchange rate is unavailable and no cached rate was found. Currency conversion cannot proceed safely."
+                          style={{ marginBottom: 16, borderRadius: 10 }}
+                        />
+                      )}
+
+                      {/* Primary Real PayPal Checkout Flow */}
                       <div style={{ marginBottom: 16 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#94a3b8" }}>
+                            Official PayPal Sandbox Flow
+                          </span>
+                          <Tag color="blue">Primary Path</Tag>
+                        </div>
+
                         <PayPalScriptProvider
                           options={{
                             "client-id": PAYPAL_CLIENT_ID,
@@ -2114,7 +2255,8 @@ export default function App() {
                           }}
                         >
                           <PayPalButtons
-                            style={{ layout: "vertical", shape: "rect", borderRadius: 8, height: 46 }}
+                            disabled={Boolean(fxData?.unavailable || (isWaitingCfoApproval && !cfoApproved))}
+                            style={{ layout: "vertical", shape: "rect", borderRadius: 8, height: 44 }}
                             createOrder={async () => {
                               const res = await createOrder({
                                 planId: lockedPlan?.planId || "plan_demo_1",
@@ -2122,6 +2264,8 @@ export default function App() {
                                 intent: "AUTHORIZE",
                                 mandateId: activeMandate?.mandateId,
                               });
+                              setPendingRealOrderId(res.orderID);
+                              setPendingApprovalUrl(res.approvalUrl);
                               return res.orderID;
                             }}
                             onApprove={async (data) => {
@@ -2135,9 +2279,9 @@ export default function App() {
                                 orderID: data.orderID,
                                 authorizationID: authRes.authorizationID,
                                 status: "AUTHORIZED",
-                                capturedUSD: authRes.authorizedUSD,
+                                capturedUSD: authRes.authorizedUSD || authRes.amount?.value,
                                 capturedINR: lockedPlan?.lockedTotalINR,
-                                authorizationExpiresAt: authRes.authorizationExpiresAt,
+                                authorizationExpiresAt: authRes.authorizationExpiresAt || authRes.expirationTime,
                                 timestamp: new Date().toLocaleTimeString(),
                               });
                               confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
@@ -2146,45 +2290,117 @@ export default function App() {
                             }}
                             onError={(err) => {
                               console.warn("PayPal Buttons error:", err);
-                              message.info("Testing in Sandbox: Click 'Confirm & Authorize Hold' below to continue.");
+                              message.info("If popup blocked, click 'Open PayPal Sandbox Login in New Tab' below.");
                             }}
                           />
                         </PayPalScriptProvider>
+
+                        <Button
+                          block
+                          disabled={Boolean(fxData?.unavailable || (isWaitingCfoApproval && !cfoApproved))}
+                          onClick={async () => {
+                            try {
+                              const res = await createOrder({
+                                planId: lockedPlan?.planId || "plan_demo_1",
+                                version: lockedPlan?.version || 1,
+                                intent: "AUTHORIZE",
+                                mandateId: activeMandate?.mandateId,
+                              });
+                              if (res.approvalUrl) {
+                                window.open(res.approvalUrl, "_blank");
+                                setPendingRealOrderId(res.orderID);
+                                message.info("Opened PayPal Sandbox in new tab. Approve with buyer account, then click 'Confirm Approved Hold' below.");
+                              }
+                            } catch (e) {
+                              message.error("Failed to create PayPal order: " + e.message);
+                            }
+                          }}
+                          style={{ marginTop: 8, borderRadius: 8, fontSize: 12, fontWeight: 600 }}
+                        >
+                          Open PayPal Sandbox Login in New Tab ↗
+                        </Button>
+
+                        {pendingRealOrderId && (
+                          <Button
+                            type="dashed"
+                            block
+                            onClick={async () => {
+                              try {
+                                const authRes = await authorizeOrder({
+                                  orderID: pendingRealOrderId,
+                                  planId: lockedPlan?.planId || "plan_demo_1",
+                                  version: lockedPlan?.version || 1,
+                                  mandateId: activeMandate?.mandateId,
+                                });
+                                setReceipt({
+                                  orderID: pendingRealOrderId,
+                                  authorizationID: authRes.authorizationID,
+                                  status: "AUTHORIZED",
+                                  capturedUSD: authRes.authorizedUSD || authRes.amount?.value,
+                                  capturedINR: lockedPlan?.lockedTotalINR,
+                                  authorizationExpiresAt: authRes.authorizationExpiresAt || authRes.expirationTime,
+                                  timestamp: new Date().toLocaleTimeString(),
+                                });
+                                confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+                                message.success("Hold successfully placed on PayPal Sandbox!");
+                                setCurrentStep(3);
+                              } catch (e) {
+                                message.error("Order not yet approved on PayPal: " + e.message);
+                              }
+                            }}
+                            style={{ marginTop: 8, borderRadius: 8, borderColor: "#10b981", color: "#10b981", fontWeight: 700 }}
+                          >
+                            ✓ Confirm Approved Sandbox Hold ({pendingRealOrderId.slice(0, 14)}...) →
+                          </Button>
+                        )}
                       </div>
 
-                      {/* Direct 1-Click Sandbox Authorization Button */}
-                      <Button
-                        type="primary"
-                        block
-                        size="large"
-                        loading={authorizingManual}
-                        onClick={handleDirectAuthorize}
-                        style={{
-                          borderRadius: 10,
-                          fontWeight: 700,
-                          height: 44,
-                          background: "#0052FF",
-                          marginBottom: 12,
-                        }}
-                      >
-                        Confirm & Authorize Hold (1-Click Sandbox) →
-                      </Button>
+                      <Divider style={{ margin: "16px 0" }}>
+                        <span style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                          OR TEST RAPID SIMULATION
+                        </span>
+                      </Divider>
+
+                      {/* Secondary Simulation Mode Button */}
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#f59e0b" }}>
+                            Evaluation Simulator
+                          </span>
+                          <Tag color="orange">Simulation Mode</Tag>
+                        </div>
+                        <Button
+                          id="btn-fast-simulation-auth"
+                          type="primary"
+                          block
+                          size="large"
+                          loading={authorizingManual}
+                          disabled={Boolean(fxData?.unavailable || (isWaitingCfoApproval && !cfoApproved))}
+                          onClick={handleDirectAuthorize}
+                          style={{
+                            borderRadius: 10,
+                            fontWeight: 700,
+                            height: 44,
+                            background: isDarkMode ? "#1e293b" : "#f1f5f9",
+                            border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.12)" : "#cbd5e1"}`,
+                            color: isDarkMode ? "#f8fafc" : "#0f172a",
+                            marginBottom: 6,
+                          }}
+                        >
+                          ⚡ 1-Click Fast Simulation Hold →
+                        </Button>
+                        <div style={{ fontSize: 10, color: "#64748b", textAlign: "center", lineHeight: 1.4 }}>
+                          [SIMULATION ONLY — Bypasses buyer login on sandbox.paypal.com for rapid automated evaluation]
+                        </div>
+                      </div>
 
                       {/* Discreet Fallback Links */}
-                      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 6, fontSize: 12 }}>
-                        <a
-                          href="https://sandbox.paypal.com"
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ color: "#94a3b8", textDecoration: "underline" }}
-                        >
-                          Trouble with the PayPal popup? Open in full tab ↗
-                        </a>
+                      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 6, fontSize: 12, marginTop: 12 }}>
                         <Button
                           type="link"
                           size="small"
                           onClick={() => {
-                            navigator.clipboard?.writeText(`${window.location.origin}/?token=sample_demo_approval_token_12345`);
+                            navigator.clipboard?.writeText(cfoApprovalLink || `${window.location.origin}/?token=sample_demo_approval_token_12345`);
                             message.success("Copied 1-use executive approval token link to clipboard!");
                           }}
                           style={{ fontSize: 11, color: "#94a3b8" }}
@@ -2264,7 +2480,7 @@ export default function App() {
                         <Text strong style={{ fontSize: 15 }}>1. PayPal Authorization Hold Placed</Text>
                       </Space>
                       <div style={{ fontSize: 13, color: "#94a3b8", paddingLeft: 26 }}>
-                        ${receipt?.capturedUSD || toUSD(lockedPlan?.lockedTotalINR || 35492)} USD authorized on PayPal Sandbox. Funds remain held and protected for 29 days.
+                        ${receipt?.capturedUSD || toUSD(lockedPlan?.lockedTotalINR || 35492)} USD authorized on PayPal Sandbox. Funds authorized: authorization valid up to 29 days; funds guaranteed ~3 days (honor period); reauthorize if delivery is later.
                         <div style={{ marginTop: 4, fontFamily: "var(--font-mono)", fontSize: 11 }}>
                           Auth ID: {receipt?.authorizationID || "AUTH-SANDBOX-HELD"}
                         </div>
@@ -2306,6 +2522,7 @@ export default function App() {
 
                       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", paddingLeft: 26 }}>
                         <Button
+                          id="btn-confirm-delivery"
                           type="primary"
                           size="large"
                           icon={<CheckCircleOutlined />}
@@ -2384,12 +2601,13 @@ export default function App() {
                           </Button>
 
                           <Button
+                            id="btn-trigger-refund"
                             icon={<UndoOutlined />}
                             loading={refunding}
                             onClick={handleTriggerRefund}
                             style={{ borderRadius: 8, fontWeight: 600 }}
                           >
-                            100% Sandbox Refund Guarantee
+                            Refund via PayPal API
                           </Button>
                         </div>
                       </div>
