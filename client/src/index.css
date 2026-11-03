@@ -24,17 +24,22 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-#root {
+#root, .ant-layout {
   width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   min-height: 100vh;
   margin: 0;
   padding: 0;
@@ -191,16 +196,15 @@ h1, h2, h3, h4, h5, h6, .ant-typography-headline, .price-display {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-.animated-gradient-border {
+/* Clean Fintech Request Container */
+.fintech-card-border {
   position: relative;
   border-radius: 16px;
-  background: linear-gradient(60deg, #0052FF, #00D4FF, #7C3AED, #10b981, #0052FF);
-  background-size: 300% 300%;
-  animation: gradient-border-flow 6s ease infinite;
-  padding: 2px;
+  border: 1px solid rgba(0, 82, 255, 0.25);
+  box-shadow: 0 4px 20px -4px rgba(0, 82, 255, 0.08);
 }
-.animated-gradient-inner {
-  border-radius: 14px;
+.fintech-card-inner {
+  border-radius: 15px;
   height: 100%;
   width: 100%;
 }

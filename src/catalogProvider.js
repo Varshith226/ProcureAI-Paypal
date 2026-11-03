@@ -20,7 +20,7 @@ const { isValidRupeeAmount } = require("./money");
  * lastCheckedISO with real values, and set provenance.sourceLookup.
  */
 
-const DATA_ORIGINS = ["SYNTHETIC_DEMO", "CATALOG_UNCHECKED", "SOURCE_VERIFIED"];
+const DATA_ORIGINS = ["SYNTHETIC_DEMO", "CATALOG_UNCHECKED", "SOURCE_VERIFIED", "LIVE_RETAILER", "SAMPLE_CATALOG"];
 const SOURCE_LOOKUP = ["NOT_CHECKED", "FOUND", "NOT_FOUND", "UNAVAILABLE"];
 
 class CatalogUnavailableError extends Error {

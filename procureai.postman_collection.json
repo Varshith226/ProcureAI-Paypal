@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "c76a9172-8f92-4e5b-b9f1-d9a2444c8fa9",
-    "name": "ProcureAI — Agentic Commerce & PayPal API Suite",
-    "description": "Comprehensive Postman collection for ProcureAI: Agentic Procurement, Deterministic Constraint Verification, Multi-Strategy Optimization, Safety Boundary Lock, and PayPal Sandbox Checkout & SLA Refunds.",
+    "name": "ProcureAI — Agentic Commerce & PayPal Authorize-Capture API Suite",
+    "description": "Comprehensive Postman collection for ProcureAI: Agentic Procurement, Ed25519 Cryptographic Spending Mandates, Single-Use Approval Tokens, Two-Agent LLM Negotiation, and PayPal Authorize-then-Capture Pay-on-Delivery Lifecycle.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -17,23 +17,40 @@
       "type": "string"
     },
     {
-      "key": "captureId",
-      "value": "SAMPLE_CAPTURE_ID",
+      "key": "mandateId",
+      "value": "mandate_sample_01",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "SAMPLE_ORDER_ID",
       "type": "string"
     }
   ],
   "item": [
     {
-      "name": "AI Intent & Clarification",
+      "name": "1. AI Intent & 2-Agent Negotiation",
       "item": [
         {
-          "name": "Extract Requirements Brief (Gemini 2.5)",
+          "name": "Extract Procurement Request (Gemini 2.5 Flash)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Contains structured requirements', function () { const data = pm.response.json(); pm.expect(data).to.have.property('status'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"messages\": [\n    \"I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.\"\n  ]\n}"
+              "raw": "{\n  \"messages\": [\n    \"Set up 5 workstations for our design studio under 3 lakh in 7 days with 144Hz monitors, mechanical keyboards, ergonomic mice and headsets.\"\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/ai/parse",
@@ -43,152 +60,121 @@
           }
         },
         {
-          "name": "Get AI Contract",
+          "name": "Run Two-Agent Autonomous Negotiation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns rounds and rebate', function () { const data = pm.response.json(); pm.expect(data).to.have.property('finalDiscountINR'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
-            "method": "GET",
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"plan_workstations_demo\",\n  \"currentTotalINR\": 60000,\n  \"targetDiscountINR\": 3000,\n  \"items\": [\n    { \"productId\": \"MON-002\", \"name\": \"Acer Nitro 165Hz\", \"quantity\": 1, \"unitPriceINR\": 10149 }\n  ]\n}"
+            },
             "url": {
-              "raw": "{{baseUrl}}/api/ai/contract",
+              "raw": "{{baseUrl}}/api/ai/negotiate",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "ai", "contract"]
+              "path": ["api", "ai", "negotiate"]
             }
           }
         },
         {
-          "name": "Get AI Provider Status",
+          "name": "Multimodal / WhatsApp Quote Intake",
           "request": {
-            "method": "GET",
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rawText\": \"WhatsApp Quote from Hardware Trader: Total: INR 75,000 for 5 monitors (75Hz) and 5 keyboards. Delivery 10 days. 100% upfront.\",\n  \"budgetINR\": 60000\n}"
+            },
             "url": {
-              "raw": "{{baseUrl}}/api/ai/status",
+              "raw": "{{baseUrl}}/api/ai/compare-quote",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "ai", "status"]
+              "path": ["api", "ai", "compare-quote"]
             }
           }
         }
       ]
     },
     {
-      "name": "Procurement Engine & Verification",
+      "name": "2. Cryptographic Spending Mandate & Tokens",
       "item": [
         {
-          "name": "Generate Procurement Plan (Deterministic Optimizer)",
+          "name": "Create Ed25519 Signed Spending Mandate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Returns Ed25519 signature', function () { const data = pm.response.json(); pm.expect(data).to.have.property('signature'); pm.environment.set('mandateId', data.mandateId); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"requestId\": \"req_postman_test\",\n  \"rawQuery\": \"60k coding and gaming setup\",\n  \"budgetINR\": 60000,\n  \"maxDeliveryDays\": 7,\n  \"requiredCategories\": [\n    { \"category\": \"monitor\", \"quantity\": 1 },\n    { \"category\": \"keyboard\", \"quantity\": 1 },\n    { \"category\": \"mouse\", \"quantity\": 1 },\n    { \"category\": \"headphones\", \"quantity\": 1 }\n  ],\n  \"hardConstraints\": {\n    \"monitor\": { \"minRefreshRateHz\": 144 }\n  }\n}"
+              "raw": "{\n  \"planId\": \"plan_workstations_demo\",\n  \"planVersion\": 1,\n  \"maxTotalINR\": 60000,\n  \"maxTotalUSD\": \"714.00\",\n  \"fxRate\": 0.0119,\n  \"priceDriftTolerancePct\": 2.0,\n  \"allowedMerchants\": [\"*\"]\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/procurement/plan",
+              "raw": "{{baseUrl}}/api/mandates",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "procurement", "plan"]
+              "path": ["api", "mandates"]
             }
           }
         },
         {
-          "name": "List Hardware Catalog",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/procurement/catalog",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "procurement", "catalog"]
-            }
-          }
-        },
-        {
-          "name": "Get Procurement Contract Schema",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/procurement/contract",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "procurement", "contract"]
-            }
-          }
-        },
-        {
-          "name": "Revalidate Plan Against Live Catalog",
+          "name": "Verify Mandate Cryptographic Signature",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"strategyKey\": \"BEST_VALUE\"\n}"
-            },
+            "body": { "mode": "raw", "raw": "{}" },
             "url": {
-              "raw": "{{baseUrl}}/api/procurement/plans/{{planId}}/revalidate",
+              "raw": "{{baseUrl}}/api/mandates/{{mandateId}}/verify",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "procurement", "plans", "{{planId}}", "revalidate"]
+              "path": ["api", "mandates", "{{mandateId}}", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Generate Single-Use Expiring Approval Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"expiresInMinutes\": 60\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/api/mandates/{{mandateId}}/token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mandates", "{{mandateId}}", "token"]
             }
           }
         }
       ]
     },
     {
-      "name": "Safety Lock & Retailer Overrides",
+      "name": "3. PayPal Pay-on-Delivery (Authorize & Capture)",
       "item": [
         {
-          "name": "Approve & Lock Strategy (with AI Negotiated Rebate)",
+          "name": "Create PayPal Order (Intent: AUTHORIZE)",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"strategyKey\": \"BEST_VALUE\",\n  \"version\": 1,\n  \"rebateINR\": 1850,\n  \"strategyData\": {\n    \"strategyKey\": \"BEST_VALUE\",\n    \"items\": [\n      {\n        \"productId\": \"MON-002\",\n        \"name\": \"AOC 24G2SP 24\\\" 165Hz IPS\",\n        \"category\": \"monitor\",\n        \"unitPriceINR\": 10149,\n        \"shippingINR\": 0,\n        \"quantity\": 1\n      }\n    ]\n  }\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/plans/{{planId}}/approve",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "plans", "{{planId}}", "approve"]
-            }
-          }
-        },
-        {
-          "name": "Simulate Price Spike (Invalidates Safety Lock)",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"deltaINR\": 2500\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/plans/{{planId}}/simulate-price-change",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "plans", "{{planId}}", "simulate-price-change"]
-            }
-          }
-        },
-        {
-          "name": "AG Grid Live Catalog Override",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"productId\": \"MON-002\",\n  \"deltaINR\": 1000\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/procurement/demo/catalog-overrides",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "procurement", "demo", "catalog-overrides"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "PayPal Sandbox v2 Orders & SLA Protection",
-      "item": [
-        {
-          "name": "Create PayPal Order (Full or Co-Pay Itemized)",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": \"{{planId}}\",\n  \"version\": 1\n}"
+              "raw": "{\n  \"planId\": \"{{planId}}\",\n  \"version\": 1,\n  \"intent\": \"AUTHORIZE\",\n  \"mandateId\": \"{{mandateId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/paypal/create-order",
@@ -198,34 +184,133 @@
           }
         },
         {
-          "name": "Capture PayPal Order",
+          "name": "Authorize PayPal Order (Funds Held in Authorization Hold)",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"orderID\": \"SAMPLE_ORDER_ID\",\n  \"planId\": \"{{planId}}\"\n}"
+              "raw": "{\n  \"orderID\": \"{{orderId}}\",\n  \"planId\": \"{{planId}}\",\n  \"mandateId\": \"{{mandateId}}\",\n  \"version\": 1\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/paypal/capture-order",
+              "raw": "{{baseUrl}}/api/paypal/authorize-order",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "paypal", "capture-order"]
+              "path": ["api", "paypal", "authorize-order"]
             }
           }
         },
         {
-          "name": "Post-Capture SLA Delay Refund (10% or Full)",
+          "name": "Confirm Delivery (Capture Authorization & Trigger Payout)",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"captureID\": \"{{captureId}}\",\n  \"amountUSD\": 22.49,\n  \"reason\": \"ProcureAI SLA Delay Protection 10% Guarantee Credit\"\n}"
+              "raw": "{\n  \"slaPenaltyPct\": 0\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/paypal/refund-capture",
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/confirm-delivery",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "paypal", "refund-capture"]
+              "path": ["api", "orders", "{{orderId}}", "confirm-delivery"]
+            }
+          }
+        },
+        {
+          "name": "SLA Slippage Delivery (90% Capture, 10% Penalty Void)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slaPenaltyPct\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/confirm-delivery",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}", "confirm-delivery"]
+            }
+          }
+        },
+        {
+          "name": "Void Authorization (Full Release on Cancellation)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/void",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}", "void"]
+            }
+          }
+        },
+        {
+          "name": "Create PayPal Itemized Invoice v2",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"buyerEmail\": \"sb-buyer@business.example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/create-invoice",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}", "create-invoice"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Webhooks, Persistence & Audit Trail",
+      "item": [
+        {
+          "name": "Simulate PayPal Webhook Dispatch",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventType\": \"PAYMENT.AUTHORIZATION.CREATED\",\n  \"orderId\": \"{{orderId}}\",\n  \"amountUSD\": \"714.00\",\n  \"summary\": \"Postman simulated authorization hold event\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/paypal/webhook/simulate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "paypal", "webhook", "simulate"]
+            }
+          }
+        },
+        {
+          "name": "Fetch Cryptographic Audit Log & Hash Integrity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Audit integrity is VALID', function () { const data = pm.response.json(); pm.expect(data.integrity.valid).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/audit-log",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audit-log"]
+            }
+          }
+        },
+        {
+          "name": "Get Live FX Rate",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/fx-rate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fx-rate"]
             }
           }
         }
@@ -233,4 +318,3 @@
     }
   ]
 }
-

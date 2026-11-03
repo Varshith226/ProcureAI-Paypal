@@ -6,18 +6,31 @@ services:
     plan: starter
     buildCommand: npm install && cd client && npm install && npm run build && cd ..
     startCommand: node server.js
-    healthCheckPath: /
+    healthCheckPath: /api/health
+    disk:
+      name: procureai-data
+      mountPath: /data
+      sizeGB: 1
     envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3000
+      - key: DATABASE_PATH
+        value: /data/procureai.db
       - key: PAYPAL_BASE_URL
         value: https://api-m.sandbox.paypal.com
       - key: PAYPAL_CLIENT_ID
         sync: false
       - key: PAYPAL_CLIENT_SECRET
         sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
       - key: GEMINI_API_KEY
         sync: false
+      - key: CHANNEL3_API_KEY
+        sync: false
+
 

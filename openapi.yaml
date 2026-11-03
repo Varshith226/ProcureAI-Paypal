@@ -1,0 +1,481 @@
+openapi: 3.1.0
+info:
+  title: ProcureAI API
+  description: >
+    Agentic Commerce & PayPal Authorize-Capture API Suite.
+    Autonomous B2B procurement with natural-language parsing, two-agent LLM negotiation,
+    Ed25519 cryptographic spending mandates, single-use expiring approval tokens,
+    and PayPal authorize-then-capture pay-on-delivery lifecycle with cryptographic audit logging.
+  version: 1.0.0
+  contact:
+    name: ProcureAI Engineering Team
+servers:
+  - url: http://localhost:3000
+    description: Local Development Server
+  - url: https://paypal-ai-hackathon.onrender.com
+    description: Production Render Deployment
+
+paths:
+  /api/health:
+    get:
+      summary: Health check endpoint
+      description: Returns service uptime and server timestamp.
+      responses:
+        "200":
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  uptime:
+                    type: number
+                  timestamp:
+                    type: string
+
+  /api/demo/reset:
+    post:
+      summary: Reset demo state for judging walkthrough
+      description: Clears stored orders and approval tokens in SQLite and appends a clean DEMO_RESET audit log block.
+      responses:
+        "200":
+          description: Demo state successfully reset.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Demo state reset to clean initial state.
+
+  /api/fx-rate:
+    get:
+      summary: Live INR/USD foreign exchange rate
+      description: Fetches current exchange rate from open exchange API with caching and fallback.
+      responses:
+        "200":
+          description: Active foreign exchange rate.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rate:
+                    type: number
+                    example: 0.0119
+                  source:
+                    type: string
+                    example: open.er-api.com
+                  cached:
+                    type: boolean
+
+  /api/ai/parse:
+    post:
+      summary: Parse procurement request using Gemini
+      description: Extracts structured categories, quantities, budgets, delivery timelines, and specs from free-form text.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - messages
+              properties:
+                messages:
+                  type: array
+                  items:
+                    type: string
+                  example: ["Set up 5 workstations for our design studio under 3 lakh in 7 days with 144Hz monitors."]
+      responses:
+        "200":
+          description: Structured procurement requirements or clarification request.
+
+  /api/ai/negotiate:
+    post:
+      summary: Autonomous two-agent LLM negotiation
+      description: Buyer agent and Vendor agent negotiate multi-round bulk discounts while strictly enforcing the vendor's private margin floor.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - planId
+                - currentTotalINR
+                - items
+              properties:
+                planId:
+                  type: string
+                currentTotalINR:
+                  type: number
+                targetDiscountINR:
+                  type: number
+                items:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        "200":
+          description: Negotiation rounds, final discounted price, and rebate breakdown.
+
+  /api/ai/compare-quote:
+    post:
+      summary: Multimodal / WhatsApp Quote Intake
+      description: Ingests external offline quote text or image OCR and calculates savings vs deterministic verified plan.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rawText
+              properties:
+                rawText:
+                  type: string
+                budgetINR:
+                  type: number
+      responses:
+        "200":
+          description: Extracted quote items, comparison vs ProcureAI plan, and savings analysis.
+
+  /api/procurement/plan:
+    post:
+      summary: Generate deterministic verified procurement plans
+      description: Generates 3 Pareto-optimal baskets (Best Value, Fastest Delivery, Performance) with hard spec verification.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - budgetINR
+                - maxDeliveryDays
+                - requiredCategories
+              properties:
+                budgetINR:
+                  type: number
+                maxDeliveryDays:
+                  type: integer
+                requiredCategories:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        "200":
+          description: Generated plans and rejection explanations.
+
+  /api/procurement/revalidate:
+    post:
+      summary: Revalidate plan against current catalog pricing & stock
+      description: Verifies prices, delivery dates, and inventory immediately before checkout.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - planId
+                - strategyKey
+              properties:
+                planId:
+                  type: string
+                strategyKey:
+                  type: string
+      responses:
+        "200":
+          description: Revalidation status (VALID, CHANGED, or INVALID).
+
+  /api/mandates:
+    post:
+      summary: Create Ed25519 cryptographic spending mandate
+      description: Signs a canonical procurement plan with a cryptographic spending ceiling and merchant rules.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - planId
+                - maxTotalINR
+                - maxTotalUSD
+              properties:
+                planId:
+                  type: string
+                planVersion:
+                  type: integer
+                  default: 1
+                maxTotalINR:
+                  type: number
+                maxTotalUSD:
+                  type: string
+                priceDriftTolerancePct:
+                  type: number
+                  default: 2.0
+      responses:
+        "201":
+          description: Mandate created and signed with Ed25519 signature.
+
+  /api/mandates/{id}/verify:
+    post:
+      summary: Verify Ed25519 signature of spending mandate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Verification result and fingerprint.
+
+  /api/mandates/{id}/token:
+    post:
+      summary: Issue single-use expiring approval token
+      description: Creates a cryptographically random, time-bounded token tied to the mandate and plan version for remote CFO approval.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expiresInMinutes:
+                  type: integer
+                  default: 60
+      responses:
+        "200":
+          description: Single-use approval token.
+
+  /api/mandates/token/{token}:
+    get:
+      summary: Validate single-use approval token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Token validity and associated mandate details.
+
+  /api/mandates/token/{token}/approve:
+    post:
+      summary: Consume approval token and approve mandate
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approverId:
+                  type: string
+      responses:
+        "200":
+          description: Approval recorded and token marked consumed.
+
+  /api/paypal/create-order:
+    post:
+      summary: Create PayPal Order with AUTHORIZE intent
+      description: Creates a sandbox order enforcing the cryptographic mandate spending ceiling.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - planId
+                - mandateId
+              properties:
+                planId:
+                  type: string
+                version:
+                  type: integer
+                mandateId:
+                  type: string
+                intent:
+                  type: string
+                  default: AUTHORIZE
+      responses:
+        "201":
+          description: Order created with approval redirect link.
+
+  /api/paypal/authorize-order:
+    post:
+      summary: Authorize PayPal Order (Hold Funds)
+      description: Authorizes the order after buyer approval, establishing a 29-day authorization hold.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orderID
+                - mandateId
+              properties:
+                orderID:
+                  type: string
+                planId:
+                  type: string
+                mandateId:
+                  type: string
+      responses:
+        "200":
+          description: Order authorized and funds held.
+
+  /api/orders/{id}/confirm-delivery:
+    post:
+      summary: Confirm delivery and capture authorization
+      description: Triggers capture of authorized funds with optional SLA penalty reduction, followed by automated vendor payout.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slaPenaltyPct:
+                  type: number
+                  default: 0
+      responses:
+        "200":
+          description: Authorization captured and vendor payout dispatched.
+
+  /api/orders/{id}/void:
+    post:
+      summary: Void authorization
+      description: Releases held funds back to buyer upon order cancellation or unresolvable SLA breach.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Authorization voided and funds released.
+
+  /api/orders/{id}/create-invoice:
+    post:
+      summary: Create PayPal itemized invoice v2
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                buyerEmail:
+                  type: string
+      responses:
+        "200":
+          description: PayPal invoice draft generated.
+
+  /api/orders:
+    get:
+      summary: List all procurement orders
+      responses:
+        "200":
+          description: List of stored orders.
+
+  /api/orders/{id}:
+    get:
+      summary: Get order details by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Order details.
+
+  /api/paypal/webhook:
+    post:
+      summary: PayPal Webhook ingestion
+      description: Verifies PayPal cryptographic signature and updates order lifecycle asynchronously.
+      responses:
+        "200":
+          description: Webhook acknowledged.
+
+  /api/paypal/webhook/simulate:
+    post:
+      summary: Simulate PayPal Webhook dispatch
+      description: Dispatches simulated PayPal webhook events for demo and offline test verification.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - eventType
+                - orderId
+              properties:
+                eventType:
+                  type: string
+                orderId:
+                  type: string
+                amountUSD:
+                  type: string
+      responses:
+        "200":
+          description: Simulated event processed and broadcast via SSE.
+
+  /api/events:
+    get:
+      summary: Server-Sent Events (SSE) real-time stream
+      description: Streams real-time order status, webhook events, and timeline updates to frontend.
+      responses:
+        "200":
+          description: SSE event stream.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /api/audit-log:
+    get:
+      summary: Cryptographic Audit Trail
+      description: Returns tamper-evident SHA-256 hash-chained procurement audit events with verification status.
+      responses:
+        "200":
+          description: Audit log with cryptographic integrity verdict.
+

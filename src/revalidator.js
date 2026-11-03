@@ -54,7 +54,7 @@ async function revalidateStrategy({ plan, request }, strategyKey, catalogProvide
     const v = verifyProduct(product, {
       categoryQuantity: quantityByCategory[item.category] ?? item.quantity,
       maxDeliveryDays: request.maxDeliveryDays,
-      constraints: request.hardConstraints[item.category] || {},
+      constraints: (request.hardConstraints && request.hardConstraints[item.category]) || {},
     });
     for (const c of v.checks.filter((c) => c.mandatory && c.status !== CHECK.PASS)) {
       problems.push({ productId: item.productId, check: c.checkId, detail: `${item.name}: ${c.detail}` });

@@ -22,6 +22,60 @@ function createAIRouter({ service = createAIService() } = {}) {
     legacyPlanEndpoint: "/api/ai/plan (separate optional v1 integration, outside parsing readiness)",
     note: "READY means the user's purchasing requirements are clear. It does not depend on products, catalogs, currencies or optimizer capabilities. request contains the complete general JSON; requirements preserves partial data while clarifying. No payment actions are performed.",
   }));
+
+  const { negotiateVendorDiscount } = require("../negotiationService");
+  const { runProcurementAgent, parseAndCompareQuote } = require("../agentService");
+
+  // Autonomous 2-Agent Negotiation: Buyer Agent vs Merchant Quote Engine
+  router.post("/negotiate", async (req, res) => {
+    try {
+      const { planId, items, currentTotalINR, targetDiscountINR, maxRounds } = req.body;
+      if (!currentTotalINR) {
+        return res.status(400).json({ error: "currentTotalINR is required" });
+      }
+      const result = await negotiateVendorDiscount({
+        planId,
+        items,
+        currentTotalINR,
+        targetDiscountINR,
+        maxRounds,
+      });
+      res.json(result);
+    } catch (err) {
+      console.error("[ai-negotiate] error:", err);
+      res.status(500).json({ error: "NEGOTIATION_FAILED", message: err.message });
+    }
+  });
+
+  // Tool-Calling Autonomous Procurement Agent Loop
+  router.post("/agent/run", async (req, res) => {
+    try {
+      const { prompt, budgetINR, maxDeliveryDays, minRefreshRateHz } = req.body;
+      const trace = await runProcurementAgent({
+        prompt,
+        budgetINR,
+        maxDeliveryDays,
+        minRefreshRateHz,
+      });
+      res.json(trace);
+    } catch (err) {
+      console.error("[ai-agent] error:", err);
+      res.status(500).json({ error: "AGENT_EXECUTION_FAILED", message: err.message });
+    }
+  });
+
+  // Multimodal Quote Intake & Competitive Advantage Analysis
+  router.post("/compare-quote", async (req, res) => {
+    try {
+      const { rawText, budgetINR } = req.body;
+      const analysis = await parseAndCompareQuote({ rawText, budgetINR });
+      res.json(analysis);
+    } catch (err) {
+      console.error("[ai-compare-quote] error:", err);
+      res.status(500).json({ error: "QUOTE_COMPARISON_FAILED", message: err.message });
+    }
+  });
+
   for (const action of ["parse", "plan"]) {
     router.post(`/${action}`, async (req, res) => {
       try {

@@ -1,0 +1,244 @@
+"use strict";
+
+const fs = require("node:fs");
+const path = require("node:path");
+const crypto = require("node:crypto");
+const { DatabaseSync } = require("node:sqlite");
+
+let dbInstance = null;
+
+function initDb(dbPath) {
+  if (dbInstance) return dbInstance;
+
+  let resolvedPath = dbPath || process.env.DATABASE_PATH || path.join(__dirname, "..", "procureai.db");
+  
+  if (resolvedPath !== ":memory:") {
+    try {
+      const dir = path.dirname(resolvedPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+    } catch (_) {
+      // Fallback to local app directory if specified mount directory (/data) is unavailable
+      resolvedPath = path.join(__dirname, "..", "procureai.db");
+    }
+  }
+
+  let db;
+  try {
+    db = new DatabaseSync(resolvedPath);
+  } catch (_) {
+    resolvedPath = path.join(__dirname, "..", "procureai.db");
+    db = new DatabaseSync(resolvedPath);
+  }
+
+  // Initialize schema with generous timeout
+  db.exec(`
+    PRAGMA busy_timeout = 10000;
+    PRAGMA journal_mode = WAL;
+    PRAGMA synchronous = NORMAL;
+    
+    CREATE TABLE IF NOT EXISTS orders (
+      order_id TEXT PRIMARY KEY,
+      plan_id TEXT,
+      mandate_id TEXT,
+      status TEXT NOT NULL,
+      intent TEXT NOT NULL DEFAULT 'AUTHORIZE',
+      total_inr REAL,
+      total_usd TEXT,
+      authorization_id TEXT,
+      authorization_expires_at TEXT,
+      capture_id TEXT,
+      void_id TEXT,
+      invoice_id TEXT,
+      payout_batch_id TEXT,
+      is_split_pay INTEGER DEFAULT 0,
+      split_share_usd TEXT,
+      split_count INTEGER DEFAULT 1,
+      metadata TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS mandates (
+      mandate_id TEXT PRIMARY KEY,
+      plan_id TEXT NOT NULL,
+      plan_version INTEGER NOT NULL,
+      buyer_id TEXT,
+      approver_id TEXT,
+      max_total_inr REAL NOT NULL,
+      max_total_usd TEXT NOT NULL,
+      fx_rate REAL NOT NULL,
+      fx_timestamp TEXT NOT NULL,
+      price_drift_tolerance_pct REAL NOT NULL,
+      payload_json TEXT NOT NULL,
+      signature TEXT NOT NULL,
+      public_key TEXT,
+      expires_at TEXT NOT NULL,
+      nonce TEXT NOT NULL UNIQUE,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS order_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_id TEXT NOT NULL,
+      event_type TEXT NOT NULL,
+      payload_json TEXT,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS webhook_events (
+      event_id TEXT PRIMARY KEY,
+      event_type TEXT NOT NULL,
+      summary TEXT,
+      payload_json TEXT NOT NULL,
+      is_simulation INTEGER DEFAULT 0,
+      processed_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS negotiations (
+      id TEXT PRIMARY KEY,
+      plan_id TEXT NOT NULL,
+      rounds_json TEXT NOT NULL,
+      final_discount_inr REAL NOT NULL,
+      accepted INTEGER NOT NULL,
+      mode TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS audit_log (
+      sequence_no INTEGER PRIMARY KEY AUTOINCREMENT,
+      prev_hash TEXT NOT NULL,
+      current_hash TEXT NOT NULL,
+      action TEXT NOT NULL,
+      entity_type TEXT NOT NULL,
+      entity_id TEXT NOT NULL,
+      actor TEXT NOT NULL,
+      metadata_json TEXT,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS approval_tokens (
+      token TEXT PRIMARY KEY,
+      mandate_id TEXT NOT NULL,
+      plan_version INTEGER NOT NULL,
+      plan_id TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      used_at TEXT,
+      actor TEXT
+    );
+  `);
+
+  dbInstance = db;
+
+  // Auto-seed genesis audit log block on cold boot if empty
+  try {
+    const row = db.prepare("SELECT count(*) as count FROM audit_log").get();
+    if (row && row.count === 0) {
+      appendAuditLog("SYSTEM_BOOT", "system", "genesis", "system", {
+        version: "2.5.0",
+        engine: "node:sqlite",
+        environment: process.env.NODE_ENV || "development",
+        message: "ProcureAI persistent cryptographic audit chain initialized",
+      });
+    }
+  } catch (_) {}
+
+  return dbInstance;
+}
+
+function getDb() {
+  if (!dbInstance) {
+    return initDb();
+  }
+  return dbInstance;
+}
+
+function closeDb() {
+  if (dbInstance) {
+    try {
+      dbInstance.close();
+    } catch (_) {}
+    dbInstance = null;
+  }
+}
+
+/**
+ * Append an entry to the cryptographic audit log hash chain.
+ * Each entry commits to the hash of the preceding entry.
+ */
+function appendAuditLog(action, entityType, entityId, actor = "system", metadata = {}) {
+  const db = getDb();
+  
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    // Get latest entry
+    const lastRow = db.prepare("SELECT sequence_no, current_hash FROM audit_log ORDER BY sequence_no DESC LIMIT 1").get();
+    
+    const prevHash = lastRow ? lastRow.current_hash : "0000000000000000000000000000000000000000000000000000000000000000";
+    const now = new Date().toISOString();
+    const metadataStr = JSON.stringify(metadata || {});
+    
+    const payloadToHash = `${prevHash}|${action}|${entityType}|${entityId}|${actor}|${now}|${metadataStr}`;
+    const currentHash = crypto.createHash("sha256").update(payloadToHash).digest("hex");
+    
+    const stmt = db.prepare(`
+      INSERT INTO audit_log (prev_hash, current_hash, action, entity_type, entity_id, actor, metadata_json, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    stmt.run(prevHash, currentHash, action, entityType, entityId, actor, metadataStr, now);
+    db.exec("COMMIT");
+    
+    return { prevHash, currentHash, action, entityType, entityId, createdAt: now };
+  } catch (err) {
+    try {
+      db.exec("ROLLBACK");
+    } catch (_) {}
+    throw err;
+  }
+}
+
+/**
+ * Verify cryptographic integrity of the entire audit chain.
+ */
+function verifyAuditLogIntegrity() {
+  const db = getDb();
+  const rows = db.prepare("SELECT * FROM audit_log ORDER BY sequence_no ASC").all();
+  
+  let expectedPrevHash = "0000000000000000000000000000000000000000000000000000000000000000";
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (row.prev_hash !== expectedPrevHash) {
+      return { valid: false, brokenSequence: row.sequence_no, reason: "prev_hash mismatch" };
+    }
+    const payloadToHash = `${row.prev_hash}|${row.action}|${row.entity_type}|${row.entity_id}|${row.actor}|${row.created_at}|${row.metadata_json}`;
+    const computedHash = crypto.createHash("sha256").update(payloadToHash).digest("hex");
+    if (computedHash !== row.current_hash) {
+      return { valid: false, brokenSequence: row.sequence_no, reason: "current_hash mismatch" };
+    }
+    expectedPrevHash = row.current_hash;
+  }
+  return { valid: true, count: rows.length };
+}
+
+/**
+ * Resets dynamic orders and approval tokens for a clean demo recording state.
+ * Appends a DEMO_RESET audit log entry to preserve hash chain continuity.
+ */
+function resetDemoData() {
+  const db = getDb();
+  db.exec("DELETE FROM approval_tokens;");
+  db.exec("DELETE FROM orders;");
+  appendAuditLog("DEMO_RESET", "system", "demo_system", "system", { resetAt: new Date().toISOString() });
+  return true;
+}
+
+module.exports = {
+  initDb,
+  getDb,
+  closeDb,
+  appendAuditLog,
+  verifyAuditLogIntegrity,
+  resetDemoData,
+};
