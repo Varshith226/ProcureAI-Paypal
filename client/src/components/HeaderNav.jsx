@@ -136,13 +136,13 @@ export default function HeaderNav({
                 background: isActive
                   ? "#0052FF"
                   : isDone
-                  ? isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)"
-                  : "transparent",
+                    ? isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)"
+                    : "transparent",
                 color: isActive
                   ? "#ffffff"
                   : isDone
-                  ? isDarkMode ? "#e2e8f0" : "#1e293b"
-                  : "#94a3b8",
+                    ? isDarkMode ? "#e2e8f0" : "#1e293b"
+                    : "#94a3b8",
                 padding: "3px 10px",
                 borderRadius: 100,
                 fontSize: 11,

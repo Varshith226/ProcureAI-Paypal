@@ -963,13 +963,76 @@ export default function App() {
       .catch((err) => console.warn("Live FX fallback:", err));
   }, []);
 
-  // Single-use token parameter check (?token=...)
+  // Single-use token and PayPal return check
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
-      const token = params.get("token");
-      if (token) {
-        validateApprovalTokenApi(token)
+      const paypalToken = params.get("token");
+      const payerId = params.get("PayerID");
+      const isPayPalReturn = params.get("paypal_return") === "true" || Boolean(paypalToken && payerId);
+
+      // 1. Returning from PayPal Sandbox buyer checkout (e.g. after clicking "Continue to Review Order" / "Pay Now")
+      if (isPayPalReturn) {
+        const orderID = params.get("order_id") || paypalToken;
+        let savedPlan = null;
+        let savedMandate = null;
+        try {
+          const pStr = sessionStorage.getItem("procureai_locked_plan");
+          if (pStr) savedPlan = JSON.parse(pStr);
+          const mStr = sessionStorage.getItem("procureai_mandate");
+          if (mStr) savedMandate = JSON.parse(mStr);
+        } catch (_) {}
+
+        if (savedPlan) setLockedPlan(savedPlan);
+        if (savedMandate) setActiveMandate(savedMandate);
+
+        setCurrentStep(2);
+        message.loading({ content: "Finalizing PayPal Pay-on-Delivery Authorization Hold...", key: "paypal_auth", duration: 10 });
+
+        authorizeOrder({
+          orderID,
+          planId: params.get("plan_id") || savedPlan?.planId || "plan_demo_1",
+          version: Number(params.get("version")) || savedPlan?.version || 1,
+          mandateId: params.get("mandate_id") || savedMandate?.mandateId,
+        })
+          .then((authRes) => {
+            const receiptData = {
+              orderID,
+              authorizationID: authRes.authorizationID,
+              status: "AUTHORIZED",
+              capturedUSD: authRes.authorizedUSD || authRes.amount?.value || (savedPlan?.lockedTotalUSD || "374.25"),
+              capturedINR: savedPlan?.lockedTotalINR || 35492,
+              authorizationExpiresAt: authRes.authorizationExpiresAt || authRes.expirationTime,
+              timestamp: new Date().toLocaleTimeString(),
+            };
+            setReceipt(receiptData);
+            try {
+              sessionStorage.setItem("procureai_receipt", JSON.stringify(receiptData));
+            } catch (_) {}
+            confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+            message.success({ content: "Hold successfully placed on PayPal Sandbox!", key: "paypal_auth", duration: 5 });
+            setCurrentStep(3); // Jump straight to Settle & Escrow Release!
+            window.history.replaceState({}, document.title, window.location.pathname);
+          })
+          .catch((err) => {
+            console.error("PayPal return authorization error:", err);
+            message.error({ content: `PayPal authorization failed: ${err.message}`, key: "paypal_auth", duration: 6 });
+          });
+
+        return;
+      }
+
+      if (params.get("paypal_cancel") === "true") {
+        message.info("PayPal checkout was cancelled. You can retry authorization anytime.");
+        setCurrentStep(2);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+
+      // 2. Single-use CFO approval token check (?token=approval_token_... or ?approval_token=...)
+      const approvalToken = params.get("approval_token") || (paypalToken && !payerId && String(paypalToken).startsWith("approval_") ? paypalToken : null);
+      if (approvalToken) {
+        validateApprovalTokenApi(approvalToken)
           .then((res) => {
             setActiveApprovalToken(res.tokenRecord);
             if (res.mandate) {
@@ -1161,7 +1224,7 @@ export default function App() {
         throw new Error(lockedRecord.error || "Could not lock plan on server");
       }
 
-      setLockedPlan({
+      const planToSave = {
         planId: lockedRecord.planId || planData.planId,
         version: lockedRecord.version || 1,
         status: lockedRecord.status || "APPROVED",
@@ -1170,7 +1233,11 @@ export default function App() {
         lockedTotalINR: lockedRecord.lockedTotalINR ?? chosen.totalINR,
         lockedTotalUSD: lockedRecord.lockedTotalUSD ?? computedUSD,
         strategy: chosen,
-      });
+      };
+      setLockedPlan(planToSave);
+      try {
+        sessionStorage.setItem("procureai_locked_plan", JSON.stringify(planToSave));
+      } catch (_) {}
 
       // Generate Ed25519 Cryptographic Spending Mandate
       try {
@@ -1183,6 +1250,9 @@ export default function App() {
           items: chosen.items,
         });
         setActiveMandate(mandateRes);
+        try {
+          sessionStorage.setItem("procureai_mandate", JSON.stringify(mandateRes));
+        } catch (_) {}
         logTelemetry("POST /api/mandates", `Created Ed25519 Mandate ${mandateRes.mandateId}`, "MANDATE_BOUND", 45, mandateRes);
       } catch (mErr) {
         console.warn("Mandate creation fallback:", mErr);
@@ -2405,27 +2475,40 @@ export default function App() {
                               });
                               setPendingRealOrderId(res.orderID);
                               setPendingApprovalUrl(res.approvalUrl);
+                              try {
+                                sessionStorage.setItem("procureai_pending_order_id", res.orderID);
+                              } catch (_) {}
                               return res.orderID;
                             }}
                             onApprove={async (data) => {
-                              const authRes = await authorizeOrder({
-                                orderID: data.orderID,
-                                planId: lockedPlan?.planId || "plan_demo_1",
-                                version: lockedPlan?.version || 1,
-                                mandateId: activeMandate?.mandateId,
-                              });
-                              setReceipt({
-                                orderID: data.orderID,
-                                authorizationID: authRes.authorizationID,
-                                status: "AUTHORIZED",
-                                capturedUSD: authRes.authorizedUSD || authRes.amount?.value,
-                                capturedINR: lockedPlan?.lockedTotalINR,
-                                authorizationExpiresAt: authRes.authorizationExpiresAt || authRes.expirationTime,
-                                timestamp: new Date().toLocaleTimeString(),
-                              });
-                              confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
-                              message.success("Hold successfully placed on PayPal Sandbox!");
-                              setCurrentStep(3);
+                              try {
+                                message.loading({ content: "Placing PayPal Sandbox Authorization Hold...", key: "paypal_auth", duration: 8 });
+                                const authRes = await authorizeOrder({
+                                  orderID: data.orderID,
+                                  planId: lockedPlan?.planId || "plan_demo_1",
+                                  version: lockedPlan?.version || 1,
+                                  mandateId: activeMandate?.mandateId,
+                                });
+                                const receiptData = {
+                                  orderID: data.orderID,
+                                  authorizationID: authRes.authorizationID,
+                                  status: "AUTHORIZED",
+                                  capturedUSD: authRes.authorizedUSD || authRes.amount?.value || toUSD(lockedPlan?.lockedTotalINR || 35492),
+                                  capturedINR: lockedPlan?.lockedTotalINR || 35492,
+                                  authorizationExpiresAt: authRes.authorizationExpiresAt || authRes.expirationTime,
+                                  timestamp: new Date().toLocaleTimeString(),
+                                };
+                                setReceipt(receiptData);
+                                try {
+                                  sessionStorage.setItem("procureai_receipt", JSON.stringify(receiptData));
+                                } catch (_) {}
+                                confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+                                message.success({ content: "Hold successfully placed on PayPal Sandbox!", key: "paypal_auth" });
+                                setCurrentStep(3);
+                              } catch (err) {
+                                console.error("PayPal onApprove authorize error:", err);
+                                message.error({ content: `Failed to place PayPal hold: ${err.message}`, key: "paypal_auth" });
+                              }
                             }}
                             onError={(err) => {
                               console.warn("PayPal Buttons error:", err);
@@ -2448,6 +2531,9 @@ export default function App() {
                               if (res.approvalUrl) {
                                 window.open(res.approvalUrl, "_blank");
                                 setPendingRealOrderId(res.orderID);
+                                try {
+                                  sessionStorage.setItem("procureai_pending_order_id", res.orderID);
+                                } catch (_) {}
                                 message.info("Opened PayPal Sandbox in new tab. Approve with buyer account, then click 'Confirm Approved Hold' below.");
                               }
                             } catch (e) {

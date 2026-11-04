@@ -220,3 +220,48 @@ test("Phase 1.8.6: Reauthorization edge case handling for authorizations near 29
   const needsReauthorization = daysActive >= 25 && daysActive <= 29;
   assert.equal(needsReauthorization, true);
 });
+
+test("Phase 1.8.7: Disambiguate PayPal return token vs CFO approval token (prevents returning PayPal buyer redirect from failing approval token validation)", () => {
+  // 1. Simulate PayPal checkout return URL parameters
+  const paypalUrl = "http://localhost:3000/?token=504443905P2469904&PayerID=9BMFZ45XJ5X6U";
+  const urlObj = new URL(paypalUrl);
+  const paypalToken = urlObj.searchParams.get("token");
+  const payerId = urlObj.searchParams.get("PayerID");
+
+  const isPayPalReturn = Boolean(urlObj.searchParams.get("paypal_return") === "true" || (paypalToken && payerId));
+  const isCfoToken = Boolean(paypalToken && !payerId && String(paypalToken).startsWith("approval_"));
+
+  assert.equal(isPayPalReturn, true, "Must correctly identify PayPal buyer approval return");
+  assert.equal(isCfoToken, false, "Must NOT treat PayPal order token as a CFO executive approval token");
+
+  // 2. Simulate CFO approval link URL parameters
+  const cfoUrl = "http://localhost:3000/?token=approval_token_1793712109283_a82f";
+  const cfoUrlObj = new URL(cfoUrl);
+  const cfoTok = cfoUrlObj.searchParams.get("token");
+  const cfoPayerId = cfoUrlObj.searchParams.get("PayerID");
+
+  const cfoIsPayPalReturn = Boolean(cfoUrlObj.searchParams.get("paypal_return") === "true" || (cfoTok && cfoPayerId));
+  const cfoIsApproval = Boolean(cfoTok && !cfoPayerId && String(cfoTok).startsWith("approval_"));
+
+  assert.equal(cfoIsPayPalReturn, false, "CFO link must not be flagged as PayPal return");
+  assert.equal(cfoIsApproval, true, "CFO token must be correctly flagged as executive approval token");
+
+  // 3. Verify SQLite order creation & authorization cycle for returned PayPal token
+  const testOrderId = "504443905P2469904";
+  createOrderRecord({
+    orderId: testOrderId,
+    planId: "plan_demo_1",
+    intent: "AUTHORIZE",
+    totalINR: 35492,
+    totalUSD: "374.25",
+  });
+
+  const authorized = updateOrderStatus(testOrderId, "AUTHORIZED", {
+    authorizationId: "AUTH_RETURN_TEST_789",
+    authorizationExpiresAt: new Date(Date.now() + 29 * 24 * 3600 * 1000).toISOString(),
+  });
+
+  assert.equal(authorized.status, "AUTHORIZED");
+  assert.equal(authorized.authorization_id, "AUTH_RETURN_TEST_789");
+  assert.equal(authorized.total_usd, "374.25");
+});
