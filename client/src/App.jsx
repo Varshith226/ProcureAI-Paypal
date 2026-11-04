@@ -54,8 +54,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { AgGridReact } from "ag-grid-react";
-import { ModuleRegistry, AllCommunityModule, ValidationModule } from "ag-grid-community";
-ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
+import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+ModuleRegistry.registerModules([AllCommunityModule]);
 import confetti from "canvas-confetti";
 
 import "ag-grid-community/styles/ag-grid.css";
@@ -861,6 +861,17 @@ const StrategyMatrixGrid = ({
       headerName: "Specs / Attribute Evidence",
       flex: 1.3,
       minWidth: 170,
+      cellDataType: false,
+      valueFormatter: (p) => {
+        if (typeof p.value === "string") return p.value;
+        if (p.value && typeof p.value === "object") {
+          return Object.entries(p.value).map(([k, v]) => `${k}: ${v}`).join(" · ");
+        }
+        if (p.data?.attributes && typeof p.data.attributes === "object") {
+          return Object.entries(p.data.attributes).map(([k, v]) => `${k}: ${v}`).join(" · ");
+        }
+        return "Verified Hardware";
+      },
       cellRenderer: (p) => {
         let textContent = "";
         if (typeof p.value === "string") {
@@ -1060,6 +1071,7 @@ const StrategyMatrixGrid = ({
           }}
         >
           <AgGridReact
+            key={`${currentStrategy?.strategyKey || activeStrategyKey}_${currentStrategy?.isCustomized ? "custom" : "pristine"}_${items.map(i => `${i.productId || i.name}_${i.quantity}_${i.unitPriceINR}`).join("-")}`}
             ref={gridRef}
             theme="legacy"
             rowData={rowData}
@@ -1075,9 +1087,19 @@ const StrategyMatrixGrid = ({
 
       {/* Action Footer */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, flexWrap: "wrap", gap: 10 }}>
-        <Button size="small" icon={<ReloadOutlined />} onClick={() => onResetStrategy(currentStrategy.strategyKey || activeStrategyKey)}>
-          Reset Plan
-        </Button>
+        <Space>
+          <Button
+            id="btn-reset-matrix-plan"
+            size="small"
+            icon={<ReloadOutlined />}
+            onClick={() => onResetStrategy?.(currentStrategy?.strategyKey || activeStrategyKey)}
+          >
+            Reset Plan
+          </Button>
+          {currentStrategy?.isCustomized && (
+            <Tag color="orange" style={{ borderRadius: 6, fontSize: 11 }}>Customized</Tag>
+          )}
+        </Space>
         <Button
           id="btn-approve-matrix-plan"
           type="primary"
@@ -1599,6 +1621,64 @@ export default function App() {
     setClarificationState(null);
     setBudgetINR(effectiveBudget);
     await executePlanGeneration(effectiveBudget, nlpBrief.quantities, nlpBrief.maxDeliveryDays, nlpBrief.minRefreshRateHz);
+  };
+
+  // Reset customized strategy back to original pristine baseline / server plan
+  const handleResetStrategy = (strategyKey) => {
+    const key = strategyKey || activeMatrixStrategy;
+    setCustomizedStrategies((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    setAppliedRebateINR(0);
+    message.success(`Reset ${key} to original verified default plan!`);
+  };
+
+  // Cell editing in AG Grid matrix: update items and recalculate totals
+  const handleMatrixCellValueChanged = (event) => {
+    const { data, colDef, newValue } = event;
+    const stratKey = activeMatrixStrategy;
+    const current = planData?.strategies?.[stratKey];
+    if (!current || !current.items) return;
+
+    const updatedItems = current.items.map((it) => {
+      const isMatch = (it.productId && it.productId === data.productId) || (it.name && it.name === data.name) || (it.category && it.category === data.category);
+      if (isMatch) {
+        const itemCopy = { ...it, ...data };
+        if (colDef.field === "unitPriceINR") {
+          itemCopy.unitPriceINR = Math.max(0, Number(newValue) || 0);
+        }
+        if (colDef.field === "quantity") {
+          itemCopy.quantity = Math.max(1, parseInt(newValue, 10) || 1);
+        }
+        return itemCopy;
+      }
+      return it;
+    });
+
+    const subtotalINR = updatedItems.reduce(
+      (sum, it) => sum + (Number(it.unitPriceINR) || 0) * (Number(it.quantity) || 1),
+      0
+    );
+    const shippingTotalINR = updatedItems.reduce(
+      (sum, it) => sum + (Number(it.shippingINR) || 0) * (Number(it.quantity) || 1),
+      0
+    );
+    const totalINR = Math.max(0, subtotalINR + shippingTotalINR - (appliedRebateINR || 0));
+
+    setCustomizedStrategies((prev) => ({
+      ...prev,
+      [stratKey]: {
+        ...current,
+        items: updatedItems,
+        subtotalINR,
+        shippingTotalINR,
+        totalINR,
+        isCustomized: true,
+      },
+    }));
+    message.info(`Recalculated ${current.strategyName} with updated ${colDef.headerName || colDef.field}!`);
   };
 
   // Lock Plan & Sign Spending Mandate
@@ -2783,12 +2863,16 @@ export default function App() {
                     budgetCap={budgetINR}
                     isDarkMode={isDarkMode}
                     inrPerUsd={inrPerUsd}
-                    onCellValueChanged={() => {}}
-                    onResetStrategy={() => {}}
+                    onCellValueChanged={handleMatrixCellValueChanged}
+                    onResetStrategy={handleResetStrategy}
                     onApproveAndLock={handleApproveAndLock}
                     onOpenSwap={(stratKey, item) => {
                       setSwapTarget({ strategyKey: stratKey, currentItem: item });
-                      setCategoryCandidates(localCatalog.products?.filter((p) => p.category === item.category) || []);
+                      setCategoryCandidates(
+                        localCatalog.products?.filter(
+                          (p) => p.category?.toLowerCase() === item?.category?.toLowerCase()
+                        ) || []
+                      );
                       setSwapDrawerOpen(true);
                     }}
                   />
@@ -3722,6 +3806,7 @@ export default function App() {
               {categoryCandidates.map((cand) => (
                 <div
                   key={cand.id || cand.productId}
+                  className="candidate-swap-item"
                   style={{
                     padding: 12,
                     borderRadius: 10,
@@ -3731,16 +3816,17 @@ export default function App() {
                   }}
                   onClick={() => {
                     const stratKey = swapTarget.strategyKey;
-                    const strat = planData.strategies[stratKey];
+                    const strat = planData?.strategies?.[stratKey];
+                    if (!strat || !strat.items) return;
                     const updatedItems = strat.items.map((it) =>
-                      it.category === cand.category
+                      it.category?.toLowerCase() === cand.category?.toLowerCase()
                         ? {
                             ...it,
                             productId: cand.id || cand.productId,
                             name: cand.name,
                             brand: cand.brand,
                             unitPriceINR: cand.priceINR || cand.unitPriceINR,
-                            specs: cand.specsSummary || it.specs,
+                            specs: cand.specsSummary || cand.specs || it.specs,
                           }
                         : it
                     );

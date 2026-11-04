@@ -61,6 +61,17 @@ export default function PlanMatrixGrid({
       headerName: "Specs / Verification",
       field: "specs",
       width: 180,
+      cellDataType: false,
+      valueFormatter: (p) => {
+        if (typeof p.value === "string") return p.value;
+        if (p.value && typeof p.value === "object") {
+          return Object.entries(p.value).map(([k, v]) => `${k}: ${v}`).join(" · ");
+        }
+        if (p.data?.verification?.checksPassed?.length) {
+          return p.data.verification.checksPassed.join(" · ");
+        }
+        return "Verified";
+      },
       cellRenderer: (p) => {
         let text = "Verified";
         if (typeof p.value === "string") {

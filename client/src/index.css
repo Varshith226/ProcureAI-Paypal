@@ -397,6 +397,7 @@ h1, h2, h3, h4, h5, h6, .ant-typography-headline, .price-display {
 .ag-theme-quartz-dark,
 .ag-theme-quartz-dark.ag-theme-quartz,
 div.ag-theme-quartz-dark {
+  --ag-auto-height-max-body-height: 2000px !important;
   --ag-active-color: #38bdf8 !important;
   --ag-background-color: #0b1329 !important;
   --ag-data-background-color: #0b1329 !important;
@@ -515,6 +516,7 @@ div.ag-theme-quartz-dark {
 }
 
 .ag-theme-quartz {
+  --ag-auto-height-max-body-height: 2000px !important;
   --ag-active-color: #0052ff !important;
   --ag-background-color: #ffffff !important;
   --ag-foreground-color: #0f172a !important;

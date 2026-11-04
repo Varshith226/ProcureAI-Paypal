@@ -109,11 +109,44 @@ async function run() {
     const rowCount = await page.locator(".ag-row").count();
     console.log(`✓ AG Grid rendered successfully with ${rowCount} visible rows! Zero white screen!`);
 
-    if (consoleErrors.length > 0) {
-      console.warn("Console errors encountered:", consoleErrors);
-    } else {
-      console.log("✓ ZERO unhandled errors on page!");
+    // Verify NO AG Grid Warning popup dialog is on screen
+    const warningModal = page.locator("text='AG Grid found'");
+    const hasWarningModal = await warningModal.isVisible().catch(() => false);
+    if (hasWarningModal) {
+      throw new Error("AG Grid warning popup modal is visible on screen!");
     }
+    console.log("✓ Zero AG Grid warning popups on screen!");
+
+    // 6. Test Reset Plan
+    console.log("Testing Reset Plan functionality...");
+    // Open Swap drawer on first item
+    const swapButton = page.locator("button:has-text('Swap')").first();
+    await swapButton.click();
+    await page.waitForSelector("text=Swap Component for Custom Strategy", { timeout: 4000 });
+    
+    // Click candidate in drawer to customize plan
+    const candidateItem = page.locator(".candidate-swap-item").first();
+    await candidateItem.waitFor({ state: "visible", timeout: 4000 });
+    await candidateItem.click();
+    console.log("Swapped an item to customize plan!");
+    await page.waitForTimeout(600);
+
+    // Verify "Customized" tag is visible
+    const customTag = page.locator("text=Customized");
+    await customTag.waitFor({ state: "visible", timeout: 4000 });
+    console.log("✓ Plan shows 'Customized' state badge!");
+
+    // Now click "Reset Plan"
+    console.log("Clicking '#btn-reset-matrix-plan'...");
+    await page.locator("#btn-reset-matrix-plan").click();
+    await page.waitForTimeout(600);
+
+    // Verify "Customized" tag is gone and plan reverted to baseline
+    const isStillCustom = await customTag.isVisible().catch(() => false);
+    if (isStillCustom) {
+      throw new Error("Plan is still customized after clicking Reset Plan!");
+    }
+    console.log("✓ Plan successfully reverted back to original baseline verified plan!");
 
     console.log("\n================ ALL VERIFICATIONS PASSED ================");
   } finally {

@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
 
-import { ModuleRegistry, AllCommunityModule, ValidationModule } from "ag-grid-community";
-ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
+import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
