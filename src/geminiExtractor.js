@@ -4,14 +4,14 @@ const { AIServiceError } = require("./aiErrors");
 const { setTimeout: delay } = require("node:timers/promises");
 const { GEMINI_EXTRACTION_SCHEMA, SYSTEM_INSTRUCTION } = require("./requestExtraction");
 
-const DEFAULT_MODEL = "gemini-3.5-flash-lite";
+const DEFAULT_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash";
 const RETRY_DELAYS_MS = [2000, 4000, 8000];
 
 function createGeminiExtractor({
   apiKey = process.env.GEMINI_API_KEY,
   model = process.env.GEMINI_MODEL || DEFAULT_MODEL,
   fetchImpl = globalThis.fetch,
-  timeoutMs = 30000,
+  timeoutMs = 15000,
   waitImpl = (ms, signal) => delay(ms, undefined, { signal }),
 } = {}) {
   return async function extract(messages, context = {}) {
@@ -35,7 +35,7 @@ function createGeminiExtractor({
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
           contents: [{ role: "user", parts: [{ text: JSON.stringify({ userMessages: messages, ...context }) }] }],
-          generationConfig: { responseMimeType: "application/json", responseJsonSchema: GEMINI_EXTRACTION_SCHEMA, maxOutputTokens: 8192 },
+          generationConfig: { responseMimeType: "application/json", responseJsonSchema: GEMINI_EXTRACTION_SCHEMA, maxOutputTokens: 2048 },
         }),
       };
       let response;

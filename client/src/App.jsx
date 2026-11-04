@@ -1685,62 +1685,66 @@ export default function App() {
     const effQuantities = activeQuantities || quantities;
 
     let generatedPlan = null;
-    // 1. Try real server plan endpoint /api/ai/plan
+    // 1. Generate via fast deterministic procurement plan (<15ms, verified & saved in PlanStore)
     try {
-      const planRes = await fetch(`${API_BASE}/api/ai/plan`, {
+      const activeCats = Object.entries(effQuantities)
+        .filter(([_, q]) => q > 0)
+        .map(([category, quantity]) => ({ category, quantity }));
+
+      const procReq = {
+        requestId: `req_${Date.now()}`,
+        rawQuery: prompt.trim(),
+        budgetINR: effBudget,
+        maxDeliveryDays: effDelivery,
+        requiredCategories: activeCats.length > 0 ? activeCats : [
+          { category: "monitor", quantity: 1 },
+          { category: "keyboard", quantity: 1 },
+          { category: "mouse", quantity: 1 },
+          { category: "headphones", quantity: 1 },
+        ],
+        hardConstraints: {
+          ...(activeCats.some((c) => c.category === "monitor") && effRefreshHz
+            ? { monitor: { minRefreshRateHz: effRefreshHz } }
+            : {}),
+          ...(activeCats.some((c) => c.category === "laptop")
+            ? { laptop: { minRamGB: 16 } }
+            : {}),
+        },
+      };
+      const procRes = await fetch(`${API_BASE}/api/procurement/plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [prompt.trim(), `My budget is INR ${effBudget}`] }),
+        body: JSON.stringify(procReq),
       });
-      if (planRes.ok) {
-        const aiPlanData = await planRes.json();
-        if (aiPlanData.plan && aiPlanData.status === "PLANNED") {
-          generatedPlan = aiPlanData.plan;
-          logTelemetry("POST /api/ai/plan", `Server Plan Generated: ${generatedPlan.planId}`, "200 OK", Date.now() - startTime, aiPlanData);
-        }
+      if (procRes.ok) {
+        generatedPlan = await procRes.json();
+        logTelemetry("POST /api/procurement/plan", `Deterministic Plan: ${generatedPlan.planId}`, "200 OK", Date.now() - startTime, generatedPlan);
       }
-    } catch (e) {
-      console.warn("AI plan endpoint fallback:", e);
+    } catch (procErr) {
+      console.warn("Deterministic plan failed, trying AI plan endpoint:", procErr);
     }
 
-    // 2. Fallback to /api/procurement/plan
+    // 2. Fallback to /api/ai/plan if procurement plan was not generated
     if (!generatedPlan) {
       try {
-        const activeCats = Object.entries(effQuantities)
-          .filter(([_, q]) => q > 0)
-          .map(([category, quantity]) => ({ category, quantity }));
-
-        const procReq = {
-          requestId: `req_${Date.now()}`,
-          rawQuery: prompt.trim(),
-          budgetINR: effBudget,
-          maxDeliveryDays: effDelivery,
-          requiredCategories: activeCats.length > 0 ? activeCats : [
-            { category: "monitor", quantity: 1 },
-            { category: "keyboard", quantity: 1 },
-            { category: "mouse", quantity: 1 },
-            { category: "headphones", quantity: 1 },
-          ],
-          hardConstraints: {
-            ...(activeCats.some((c) => c.category === "monitor") && effRefreshHz
-              ? { monitor: { minRefreshRateHz: effRefreshHz } }
-              : {}),
-            ...(activeCats.some((c) => c.category === "laptop")
-              ? { laptop: { minRamGB: 16 } }
-              : {}),
-          },
-        };
-        const procRes = await fetch(`${API_BASE}/api/procurement/plan`, {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const planRes = await fetch(`${API_BASE}/api/ai/plan`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(procReq),
+          body: JSON.stringify({ messages: [prompt.trim(), `My budget is INR ${effBudget}`] }),
+          signal: controller.signal,
         });
-        if (procRes.ok) {
-          generatedPlan = await procRes.json();
-          logTelemetry("POST /api/procurement/plan", `Deterministic Plan: ${generatedPlan.planId}`, "200 OK", Date.now() - startTime, generatedPlan);
+        clearTimeout(timeoutId);
+        if (planRes.ok) {
+          const aiPlanData = await planRes.json();
+          if (aiPlanData.plan && aiPlanData.status === "PLANNED") {
+            generatedPlan = aiPlanData.plan;
+            logTelemetry("POST /api/ai/plan", `Server Plan Generated: ${generatedPlan.planId}`, "200 OK", Date.now() - startTime, aiPlanData);
+          }
         }
-      } catch (procErr) {
-        console.warn("Deterministic plan fallback:", procErr);
+      } catch (e) {
+        console.warn("AI plan endpoint fallback:", e);
       }
     }
 
@@ -1796,24 +1800,43 @@ export default function App() {
       setMaxDeliveryDays(nlpBrief.maxDeliveryDays);
     }
 
-    // 2. Check backend /api/ai/parse as well
+    // 2. Check backend /api/ai/parse with timeout guard
     let backendBudget = null;
-    try {
-      const response = await fetch(`${API_BASE}/api/ai/parse`, {
+    const hasBudgetKeyword = /\b(budget|inr|rs|rupees?|₹|\$|\d+k\b)/i.test(prompt);
+
+    if (nlpBrief.budget || hasBudgetKeyword) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5s timeout guard
+        const response = await fetch(`${API_BASE}/api/ai/parse`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: [prompt.trim()] }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (response.ok) {
+          const data = await response.json().catch(() => ({}));
+          logTelemetry("POST /api/ai/parse", `Extracted requirements (Status: ${data.status})`, "200 OK", Date.now() - startTime, data);
+          const req = data.request || data.requirements;
+          if (req?.budget?.amount && req.budget.amount > 0) {
+            backendBudget = req.budget.amount;
+          }
+        }
+      } catch (parseErr) {
+        console.warn("Backend parse call fallback/timeout:", parseErr.message);
+      }
+    } else {
+      // Prompt explicitly omitted budget keywords; fire telemetry parse in background without blocking UI
+      fetch(`${API_BASE}/api/ai/parse`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [prompt.trim()] }),
+      }).then(r => r.json()).then(data => {
+        logTelemetry("POST /api/ai/parse", `Extracted requirements (Status: ${data?.status})`, "200 OK", Date.now() - startTime, data);
+      }).catch(err => {
+        console.warn("Background parse error:", err.message);
       });
-      if (response.ok) {
-        const data = await response.json().catch(() => ({}));
-        logTelemetry("POST /api/ai/parse", `Extracted requirements (Status: ${data.status})`, "200 OK", Date.now() - startTime, data);
-        const req = data.request || data.requirements;
-        if (req?.budget?.amount && req.budget.amount > 0) {
-          backendBudget = req.budget.amount;
-        }
-      }
-    } catch (parseErr) {
-      console.warn("Backend parse call fallback:", parseErr);
     }
 
     // 3. Check if budget was omitted in prompt:
