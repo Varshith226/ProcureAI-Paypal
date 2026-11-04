@@ -204,6 +204,7 @@ export default function OrdersLedgerGrid({
         >
           <AgGridReact
             ref={gridRef}
+            theme="legacy"
             rowData={orders}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}

@@ -61,25 +61,35 @@ export default function PlanMatrixGrid({
       headerName: "Specs / Verification",
       field: "specs",
       width: 180,
-      cellRenderer: (p) => (
-        <Text type="secondary" style={{ fontSize: 11 }}>
-          {typeof p.value === "string" ? p.value : p.data?.verification?.checksPassed?.join(" · ") || "Verified"}
-        </Text>
-      ),
+      cellRenderer: (p) => {
+        let text = "Verified";
+        if (typeof p.value === "string") {
+          text = p.value;
+        } else if (p.value && typeof p.value === "object") {
+          text = Object.entries(p.value).map(([k, v]) => `${k}: ${v}`).join(" · ");
+        } else if (p.data?.verification?.checksPassed?.length) {
+          text = p.data.verification.checksPassed.join(" · ");
+        }
+        return (
+          <Text type="secondary" style={{ fontSize: 11 }}>
+            {text}
+          </Text>
+        );
+      },
     },
     {
       headerName: "Qty",
       field: "quantity",
       width: 90,
-      editable: (p) => !p.node.isRowPinned(),
+      editable: (p) => !p.node?.isRowPinned?.(),
       cellEditor: "agNumberCellEditor",
       cellEditorParams: { min: 1, max: 20, precision: 0 },
       onCellValueChanged: (params) => {
         if (onQuantityChange) {
-          onQuantityChange(params.data.productId, Number(params.newValue) || 1);
+          onQuantityChange(params.data?.productId, Number(params.newValue) || 1);
         }
       },
-      cellStyle: (p) => p.node.isRowPinned() ? { fontWeight: 800 } : { background: isDarkMode ? "rgba(0,82,255,0.08)" : "#eff6ff", fontWeight: 700 },
+      cellStyle: (p) => p.node?.isRowPinned?.() ? { fontWeight: 800 } : { background: isDarkMode ? "rgba(0,82,255,0.08)" : "#eff6ff", fontWeight: 700 },
     },
     {
       headerName: "Unit Price",
@@ -122,6 +132,7 @@ export default function PlanMatrixGrid({
       >
         <AgGridReact
           ref={gridRef}
+          theme="legacy"
           rowData={rowData}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}

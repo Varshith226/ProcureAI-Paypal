@@ -54,6 +54,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { AgGridReact } from "ag-grid-react";
+import { ModuleRegistry, AllCommunityModule, ValidationModule } from "ag-grid-community";
+ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
 import confetti from "canvas-confetti";
 
 import "ag-grid-community/styles/ag-grid.css";
@@ -102,6 +104,248 @@ const { TextArea } = Input;
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "sb";
+
+// ==========================================
+// PRODUCT CATEGORY ICON COMPONENT
+// ==========================================
+const CATEGORY_GRADIENTS = {
+  monitor:    ["#1a6fdb", "#22d3ee"],
+  keyboard:   ["#7c3aed", "#a78bfa"],
+  mouse:      ["#059669", "#34d399"],
+  headphones: ["#b45309", "#fbbf24"],
+  headset:    ["#b45309", "#fbbf24"],
+  laptop:     ["#0f766e", "#2dd4bf"],
+  default:    ["#1e40af", "#6366f1"],
+};
+
+const CATEGORY_SVGS = {
+  monitor: (
+    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="5" width="28" height="19" rx="3" fill="url(#mon-g)" />
+      <rect x="6" y="7" width="24" height="15" rx="2" fill="#05070F" opacity="0.7" />
+      <rect x="15" y="24" width="6" height="4" rx="1" fill="url(#mon-g)" />
+      <rect x="11" y="27" width="14" height="2" rx="1" fill="url(#mon-g)" />
+      <defs>
+        <linearGradient id="mon-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#1a6fdb"/><stop offset="1" stopColor="#22d3ee"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  keyboard: (
+    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="10" width="30" height="18" rx="3" fill="url(#kb-g)" />
+      <rect x="6" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="12" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="18" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="24" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="6" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="12" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="18" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="24" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="9" y="23" width="18" height="3" rx="1.5" fill="#fff" opacity="0.4"/>
+      <defs>
+        <linearGradient id="kb-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#7c3aed"/><stop offset="1" stopColor="#a78bfa"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  mouse: (
+    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="18" cy="21" rx="9" ry="12" fill="url(#ms-g)" />
+      <rect x="17" y="10" width="2" height="6" rx="1" fill="#fff" opacity="0.4"/>
+      <line x1="18" y1="21" x2="18" y2="21" stroke="#fff" strokeWidth="6" strokeLinecap="round" opacity="0.15"/>
+      <path d="M9 18 Q9 10 18 10 Q27 10 27 18" fill="#fff" opacity="0.1"/>
+      <rect x="17" y="14" width="2" height="8" rx="1" fill="#fff" opacity="0.3"/>
+      <defs>
+        <linearGradient id="ms-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#059669"/><stop offset="1" stopColor="#34d399"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  headphones: (
+    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 20 C7 11 29 11 29 20" stroke="url(#hp-g)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+      <rect x="5" y="20" width="6" height="9" rx="3" fill="url(#hp-g)"/>
+      <rect x="25" y="20" width="6" height="9" rx="3" fill="url(#hp-g)"/>
+      <defs>
+        <linearGradient id="hp-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#b45309"/><stop offset="1" stopColor="#fbbf24"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  laptop: (
+    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="8" width="26" height="18" rx="2" fill="url(#lp-g)"/>
+      <rect x="7" y="10" width="22" height="14" rx="1" fill="#05070F" opacity="0.7"/>
+      <rect x="2" y="26" width="32" height="3" rx="1.5" fill="url(#lp-g)"/>
+      <rect x="13" y="29" width="10" height="1.5" rx="0.75" fill="#fff" opacity="0.3"/>
+      <defs>
+        <linearGradient id="lp-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#0f766e"/><stop offset="1" stopColor="#2dd4bf"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+};
+
+function ProductIcon({ category, size = 36 }) {
+  const cat = (category || "").toLowerCase();
+  const svgKey = cat === "headset" ? "headphones" : cat;
+  const svg = CATEGORY_SVGS[svgKey] || CATEGORY_SVGS.monitor;
+  const [from, to] = CATEGORY_GRADIENTS[svgKey] || CATEGORY_GRADIENTS.default;
+  return (
+    <div style={{
+      width: size, height: size,
+      borderRadius: 8,
+      background: `linear-gradient(135deg, ${from}22, ${to}33)`,
+      border: `1px solid ${from}44`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      flexShrink: 0,
+      backdropFilter: "blur(4px)",
+    }}>
+      {React.cloneElement(svg, { width: size * 0.72, height: size * 0.72 })}
+    </div>
+  );
+}
+
+// ==========================================
+// DETERMINISTIC NATURAL LANGUAGE BRIEF PARSER
+// ==========================================
+function parseProcurementPrompt(text) {
+  if (!text || typeof text !== "string") {
+    return {
+      budget: null,
+      quantities: {},
+      alreadyOwned: [],
+      unspecifiedQtyCategories: [],
+      minRefreshRateHz: null,
+      maxDeliveryDays: 7,
+      needsClarification: true,
+      missingFields: ["budgetINR"],
+    };
+  }
+  const norm = text.toLowerCase();
+  const categories = ["monitor", "keyboard", "mouse", "headphones", "headset", "laptop"];
+
+  // 1. Budget extraction
+  let budget = null;
+  const budgetExplicit = text.match(/(?:budget|under|cap|within|max|around|upto|up to|spending)\s*(?:of|is|:)?\s*(?:₹|rs\.?|inr)?\s*([0-9,]+)\s*(k|lakh|lac)?/i);
+  const budgetCurrency = text.match(/(?:₹|rs\.?|inr)\s*([0-9,]+)\s*(k|lakh|lac)?/i);
+  const budgetK = text.match(/\b([0-9]+)\s*k\b/i);
+
+  if (budgetExplicit) {
+    let num = parseFloat(budgetExplicit[1].replace(/,/g, ""));
+    const unit = (budgetExplicit[2] || "").toLowerCase();
+    if (unit === "k") num *= 1000;
+    if (unit === "lakh" || unit === "lac") num *= 100000;
+    budget = num;
+  } else if (budgetCurrency) {
+    let num = parseFloat(budgetCurrency[1].replace(/,/g, ""));
+    const unit = (budgetCurrency[2] || "").toLowerCase();
+    if (unit === "k") num *= 1000;
+    if (unit === "lakh" || unit === "lac") num *= 100000;
+    budget = num;
+  } else if (budgetK) {
+    budget = parseFloat(budgetK[1]) * 1000;
+  }
+
+  // 2. Already owned detection
+  const owned = new Set();
+  const ownedClauses = norm.match(/(?:already own|already have|own|have|got)\s+[^.,;]+/gi) || [];
+  for (const clause of ownedClauses) {
+    for (const cat of categories) {
+      if (new RegExp(`\\b${cat}s?\\b`).test(clause)) {
+        owned.add(cat === "headset" ? "headphones" : cat);
+      }
+    }
+  }
+
+  // 3. Requested items & quantities
+  // Natural language quantity rules:
+  // "a" / "an" = 1
+  // "couple", "a couple of", "a couple" = 2
+  // "few", "a few" = 3
+  // "several" = 4
+  // word counts ("one", "two", "three"...)
+  // explicit digits ("5 laptops" -> 5)
+  // bare list items default to 1; plural bare ("laptops") flagged as unspecified
+  const quantities = {};
+  const unspecifiedQtyCategories = [];
+
+  for (const cat of categories) {
+    const canonicalCat = cat === "headset" ? "headphones" : cat;
+    if (owned.has(canonicalCat)) continue;
+
+    if (new RegExp(`\\b${cat}s?\\b`).test(norm)) {
+      const countPattern = new RegExp(
+        `\\b(a couple of|couple of|a couple|couple|a few|few|several|one|two|three|four|five|six|seven|eight|nine|ten|an|a|\\d+)\\s+(?:(?!and|with|plus|or)[a-z0-9-]+\\s+){0,3}\\b${cat}s?\\b`,
+        "i"
+      );
+      const countMatch = norm.match(countPattern);
+      if (countMatch && countMatch[1]) {
+        const word = countMatch[1].trim().toLowerCase();
+        let qty = 1;
+        if (word.includes("couple")) qty = 2;
+        else if (word.includes("few")) qty = 3;
+        else if (word === "several") qty = 4;
+        else if (word === "a" || word === "an" || word === "one") qty = 1;
+        else {
+          const numWords = { two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+          if (numWords[word]) qty = numWords[word];
+          else {
+            const n = parseInt(word, 10);
+            if (!isNaN(n) && n > 0) qty = n;
+          }
+        }
+        quantities[canonicalCat] = qty;
+      } else {
+        const isPlural = new RegExp(`\\b${cat}s\\b`, "i").test(norm);
+        if (isPlural && canonicalCat !== "headphones" && !norm.includes(`a ${cat}`)) {
+          unspecifiedQtyCategories.push(canonicalCat);
+          quantities[canonicalCat] = 1;
+        } else {
+          quantities[canonicalCat] = 1;
+        }
+      }
+    }
+  }
+
+  // 4. Refresh rate
+  let minRefreshRateHz = null;
+  const hzMatch = norm.match(/(\d+)\s*hz/);
+  if (hzMatch) minRefreshRateHz = parseInt(hzMatch[1], 10);
+
+  // 5. Max delivery days
+  let maxDeliveryDays = 7;
+  if (norm.includes("within a week") || norm.includes("one week") || norm.includes("1 week")) maxDeliveryDays = 7;
+  else if (norm.includes("two weeks") || norm.includes("2 weeks")) maxDeliveryDays = 14;
+  else if (norm.includes("tomorrow") || norm.includes("next day")) maxDeliveryDays = 1;
+  else {
+    const daysMatch = norm.match(/(\d+)\s*(?:day|days)/);
+    if (daysMatch) maxDeliveryDays = parseInt(daysMatch[1], 10);
+  }
+
+  const needsClarification = budget === null || Object.keys(quantities).length === 0 || unspecifiedQtyCategories.length > 0;
+  const missingFields = [];
+  if (budget === null) missingFields.push("budgetINR");
+  if (Object.keys(quantities).length === 0) missingFields.push("items");
+  if (unspecifiedQtyCategories.length > 0) missingFields.push("quantities");
+
+  return {
+    budget,
+    quantities,
+    alreadyOwned: Array.from(owned),
+    unspecifiedQtyCategories,
+    minRefreshRateHz,
+    maxDeliveryDays,
+    needsClarification,
+    missingFields,
+  };
+}
 
 // Canonical verified strategies baseline
 const BASE_CATALOG_STRATEGIES = {
@@ -580,7 +824,7 @@ const StrategyMatrixGrid = ({
       headerName: "Category",
       width: 135,
       cellRenderer: (p) =>
-        p.node.isRowPinned() ? (
+        p.node?.isRowPinned?.() ? (
           <Tag color="gold" style={{ fontWeight: 800, borderRadius: 6 }}>TOTAL</Tag>
         ) : (
           <Tag
@@ -597,7 +841,7 @@ const StrategyMatrixGrid = ({
       flex: 1.8,
       minWidth: 220,
       cellRenderer: (p) =>
-        p.node.isRowPinned() ? (
+        p.node?.isRowPinned?.() ? (
           <strong style={{ color: "#38bdf8", letterSpacing: 0.5 }}>{p.value}</strong>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 8, height: "100%" }}>
@@ -605,7 +849,7 @@ const StrategyMatrixGrid = ({
             <div>
               <div style={{ fontWeight: 600, lineHeight: 1.3, fontSize: 12 }}>{p.value}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                <Text type="secondary" style={{ fontSize: 10 }}>{p.data.brand || "Demo Brand"}</Text>
+                <Text type="secondary" style={{ fontSize: 10 }}>{p.data?.brand || "Demo Brand"}</Text>
                 <Tag color="green" style={{ fontSize: 10, padding: "0 4px", lineHeight: "16px" }}>✓ In Stock</Tag>
               </div>
             </div>
@@ -617,28 +861,44 @@ const StrategyMatrixGrid = ({
       headerName: "Specs / Attribute Evidence",
       flex: 1.3,
       minWidth: 170,
-      cellRenderer: (p) =>
-        p.node.isRowPinned() ? (
+      cellRenderer: (p) => {
+        let textContent = "";
+        if (typeof p.value === "string") {
+          textContent = p.value;
+        } else if (p.value && typeof p.value === "object") {
+          textContent = Object.entries(p.value)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(" · ");
+        } else if (p.data?.attributes && typeof p.data.attributes === "object") {
+          textContent = Object.entries(p.data.attributes)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(" · ");
+        } else {
+          textContent = "Verified Hardware";
+        }
+
+        return p.node?.isRowPinned?.() ? (
           <Text strong style={{ color: planTotalINR <= budgetCap ? "#10b981" : "#ef4444" }}>
-            {p.value}
+            {textContent}
           </Text>
         ) : (
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: isDarkMode ? "#94a3b8" : "#475569" }}>
-            {p.value}
+            {textContent}
           </span>
-        ),
+        );
+      },
     },
     {
       field: "unitPriceINR",
       headerName: "Unit Price (INR) ✎",
       width: 165,
-      editable: (p) => !p.node.isRowPinned(),
+      editable: (p) => !p.node?.isRowPinned?.(),
       cellEditor: "agNumberCellEditor",
-      cellStyle: (p) => (p.node.isRowPinned() ? {} : { cursor: "pointer", background: isDarkMode ? "rgba(0,82,255,0.06)" : "rgba(0,82,255,0.03)" }),
+      cellStyle: (p) => (p.node?.isRowPinned?.() ? {} : { cursor: "pointer", background: isDarkMode ? "rgba(0,82,255,0.06)" : "rgba(0,82,255,0.03)" }),
       cellRenderer: (p) => (
         <Space>
           <strong style={{ fontFamily: "var(--font-mono)" }}>₹{Number(p.value || 0).toLocaleString("en-IN")}</strong>
-          {!p.node.isRowPinned() && (
+          {!p.node?.isRowPinned?.() && (
             <Tag color="blue" style={{ fontSize: 10, padding: "0 4px", cursor: "pointer" }}>Edit</Tag>
           )}
         </Space>
@@ -648,9 +908,9 @@ const StrategyMatrixGrid = ({
       field: "quantity",
       headerName: "Qty ✎",
       width: 95,
-      editable: (p) => !p.node.isRowPinned(),
+      editable: (p) => !p.node?.isRowPinned?.(),
       cellEditor: "agNumberCellEditor",
-      cellStyle: (p) => (p.node.isRowPinned() ? {} : { cursor: "pointer" }),
+      cellStyle: (p) => (p.node?.isRowPinned?.() ? {} : { cursor: "pointer" }),
       cellRenderer: (p) => <strong>{p.value || 1}</strong>,
     },
     {
@@ -678,12 +938,12 @@ const StrategyMatrixGrid = ({
       headerName: "Swap Item",
       width: 110,
       cellRenderer: (p) => {
-        if (p.node.isRowPinned()) return null;
+        if (p.node?.isRowPinned?.()) return null;
         return (
           <Button
             size="small"
             icon={<SwapOutlined />}
-            onClick={() => onOpenSwap(currentStrategy.strategyKey || activeStrategyKey, p.data)}
+            onClick={() => onOpenSwap?.(currentStrategy?.strategyKey || activeStrategyKey, p.data)}
             style={{ borderRadius: 6, fontSize: 11 }}
           >
             Swap
@@ -801,6 +1061,7 @@ const StrategyMatrixGrid = ({
         >
           <AgGridReact
             ref={gridRef}
+            theme="legacy"
             rowData={rowData}
             columnDefs={columnDefs}
             pinnedBottomRowData={pinnedBottomRowData}
@@ -837,113 +1098,6 @@ const StrategyMatrixGrid = ({
 };
 
 // ==========================================
-// PRODUCT CATEGORY ICON COMPONENT
-// ==========================================
-const CATEGORY_GRADIENTS = {
-  monitor:    ["#1a6fdb", "#22d3ee"],
-  keyboard:   ["#7c3aed", "#a78bfa"],
-  mouse:      ["#059669", "#34d399"],
-  headphones: ["#b45309", "#fbbf24"],
-  headset:    ["#b45309", "#fbbf24"],
-  laptop:     ["#0f766e", "#2dd4bf"],
-  default:    ["#1e40af", "#6366f1"],
-};
-
-const CATEGORY_SVGS = {
-  monitor: (
-    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="4" y="5" width="28" height="19" rx="3" fill="url(#mon-g)" />
-      <rect x="6" y="7" width="24" height="15" rx="2" fill="#05070F" opacity="0.7" />
-      <rect x="15" y="24" width="6" height="4" rx="1" fill="url(#mon-g)" />
-      <rect x="11" y="27" width="14" height="2" rx="1" fill="url(#mon-g)" />
-      <defs>
-        <linearGradient id="mon-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#1a6fdb"/><stop offset="1" stopColor="#22d3ee"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  ),
-  keyboard: (
-    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="10" width="30" height="18" rx="3" fill="url(#kb-g)" />
-      <rect x="6" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
-      <rect x="12" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
-      <rect x="18" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
-      <rect x="24" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
-      <rect x="6" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
-      <rect x="12" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
-      <rect x="18" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
-      <rect x="24" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
-      <rect x="9" y="23" width="18" height="3" rx="1.5" fill="#fff" opacity="0.4"/>
-      <defs>
-        <linearGradient id="kb-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#7c3aed"/><stop offset="1" stopColor="#a78bfa"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  ),
-  mouse: (
-    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx="18" cy="21" rx="9" ry="12" fill="url(#ms-g)" />
-      <rect x="17" y="10" width="2" height="6" rx="1" fill="#fff" opacity="0.4"/>
-      <line x1="18" y1="21" x2="18" y2="21" stroke="#fff" strokeWidth="6" strokeLinecap="round" opacity="0.15"/>
-      <path d="M9 18 Q9 10 18 10 Q27 10 27 18" fill="#fff" opacity="0.1"/>
-      <rect x="17" y="14" width="2" height="8" rx="1" fill="#fff" opacity="0.3"/>
-      <defs>
-        <linearGradient id="ms-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#059669"/><stop offset="1" stopColor="#34d399"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  ),
-  headphones: (
-    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M7 20 C7 11 29 11 29 20" stroke="url(#hp-g)" strokeWidth="3" fill="none" strokeLinecap="round"/>
-      <rect x="5" y="20" width="6" height="9" rx="3" fill="url(#hp-g)"/>
-      <rect x="25" y="20" width="6" height="9" rx="3" fill="url(#hp-g)"/>
-      <defs>
-        <linearGradient id="hp-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#b45309"/><stop offset="1" stopColor="#fbbf24"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  ),
-  laptop: (
-    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="5" y="8" width="26" height="18" rx="2" fill="url(#lp-g)"/>
-      <rect x="7" y="10" width="22" height="14" rx="1" fill="#05070F" opacity="0.7"/>
-      <rect x="2" y="26" width="32" height="3" rx="1.5" fill="url(#lp-g)"/>
-      <rect x="13" y="29" width="10" height="1.5" rx="0.75" fill="#fff" opacity="0.3"/>
-      <defs>
-        <linearGradient id="lp-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#0f766e"/><stop offset="1" stopColor="#2dd4bf"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  ),
-};
-
-function ProductIcon({ category, size = 36 }) {
-  const cat = (category || "").toLowerCase();
-  const svgKey = cat === "headset" ? "headphones" : cat;
-  const svg = CATEGORY_SVGS[svgKey] || CATEGORY_SVGS.monitor;
-  const [from, to] = CATEGORY_GRADIENTS[svgKey] || CATEGORY_GRADIENTS.default;
-  return (
-    <div style={{
-      width: size, height: size,
-      borderRadius: 8,
-      background: `linear-gradient(135deg, ${from}22, ${to}33)`,
-      border: `1px solid ${from}44`,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      flexShrink: 0,
-      backdropFilter: "blur(4px)",
-    }}>
-      {React.cloneElement(svg, { width: size * 0.72, height: size * 0.72 })}
-    </div>
-  );
-}
-
-// ==========================================
 // MAIN COMPONENT: ProcureAI Application
 // ==========================================
 export default function App() {
@@ -965,6 +1119,7 @@ export default function App() {
     headphones: 1,
   });
   const [showConstraintsEditor, setShowConstraintsEditor] = useState(false);
+  const [clarificationState, setClarificationState] = useState(null);
 
   // Optimization & Mandate state
   const [step2ViewMode, setStep2ViewMode] = useState("cards"); // "cards" | "grid" | "radar"
@@ -1271,7 +1426,99 @@ export default function App() {
     return "idle";
   }, [priceSpikeAlert, isParsing, receipt, lockedPlan, currentStep]);
 
-  // AI Extraction & Parsing
+  // Execution of plan generation once budget & constraints are resolved
+  const executePlanGeneration = async (budget, activeQuantities, deliveryDays, refreshHz) => {
+    setIsParsing(true);
+    setErrorMsg(null);
+    const startTime = Date.now();
+    const effBudget = budget || budgetINR || 60000;
+    const effDelivery = deliveryDays || maxDeliveryDays || 7;
+    const effRefreshHz = refreshHz || minRefreshRateHz || 144;
+    const effQuantities = activeQuantities || quantities;
+
+    let generatedPlan = null;
+    // 1. Try real server plan endpoint /api/ai/plan
+    try {
+      const planRes = await fetch(`${API_BASE}/api/ai/plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [prompt.trim(), `My budget is INR ${effBudget}`] }),
+      });
+      if (planRes.ok) {
+        const aiPlanData = await planRes.json();
+        if (aiPlanData.plan && aiPlanData.status === "PLANNED") {
+          generatedPlan = aiPlanData.plan;
+          logTelemetry("POST /api/ai/plan", `Server Plan Generated: ${generatedPlan.planId}`, "200 OK", Date.now() - startTime, aiPlanData);
+        }
+      }
+    } catch (e) {
+      console.warn("AI plan endpoint fallback:", e);
+    }
+
+    // 2. Fallback to /api/procurement/plan
+    if (!generatedPlan) {
+      try {
+        const activeCats = Object.entries(effQuantities)
+          .filter(([_, q]) => q > 0)
+          .map(([category, quantity]) => ({ category, quantity }));
+
+        const procReq = {
+          requestId: `req_${Date.now()}`,
+          rawQuery: prompt.trim(),
+          budgetINR: effBudget,
+          maxDeliveryDays: effDelivery,
+          requiredCategories: activeCats.length > 0 ? activeCats : [
+            { category: "monitor", quantity: 1 },
+            { category: "keyboard", quantity: 1 },
+            { category: "mouse", quantity: 1 },
+            { category: "headphones", quantity: 1 },
+          ],
+          hardConstraints: {
+            ...(activeCats.some((c) => c.category === "monitor") && effRefreshHz
+              ? { monitor: { minRefreshRateHz: effRefreshHz } }
+              : {}),
+            ...(activeCats.some((c) => c.category === "laptop")
+              ? { laptop: { minRamGB: 16 } }
+              : {}),
+          },
+        };
+        const procRes = await fetch(`${API_BASE}/api/procurement/plan`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(procReq),
+        });
+        if (procRes.ok) {
+          generatedPlan = await procRes.json();
+          logTelemetry("POST /api/procurement/plan", `Deterministic Plan: ${generatedPlan.planId}`, "200 OK", Date.now() - startTime, generatedPlan);
+        }
+      } catch (procErr) {
+        console.warn("Deterministic plan fallback:", procErr);
+      }
+    }
+
+    if (generatedPlan) {
+      setServerPlan(generatedPlan);
+    }
+    setIsParsing(false);
+    message.success("Verified server plan generated & registered in PlanStore!");
+    setCurrentStep(1); // Advance to Plans screen
+  };
+
+  // Confirm Clarification handler: updates budget/quantities and generates plan
+  const handleConfirmClarification = async (chosenBudget, updatedQuantities) => {
+    const budget = Number(chosenBudget) || 60000;
+    setBudgetINR(budget);
+    const effQty = updatedQuantities || clarificationState?.detectedQuantities || quantities;
+    if (updatedQuantities) {
+      setQuantities(updatedQuantities);
+    }
+    const days = clarificationState?.maxDeliveryDays || maxDeliveryDays;
+    const hz = clarificationState?.minRefreshRateHz || minRefreshRateHz;
+    setClarificationState(null);
+    await executePlanGeneration(budget, effQty, days, hz);
+  };
+
+  // AI Extraction & Parsing with Natural Language & Clarification
   const handleParseRequest = async () => {
     if (!prompt.trim()) {
       message.error("Please enter a procurement request first.");
@@ -1282,172 +1529,76 @@ export default function App() {
     setErrorMsg(null);
     const startTime = Date.now();
 
+    // 1. Natural Language extraction using deterministic rules:
+    // "a"/"an" = 1, "couple" = 2, "few" = 3; "already own" = 0/excluded
+    const nlpBrief = parseProcurementPrompt(prompt.trim());
+
+    if (Object.keys(nlpBrief.quantities).length > 0) {
+      setQuantities(nlpBrief.quantities);
+    }
+    if (nlpBrief.minRefreshRateHz) {
+      setMinRefreshRateHz(nlpBrief.minRefreshRateHz);
+    }
+    if (nlpBrief.maxDeliveryDays) {
+      setMaxDeliveryDays(nlpBrief.maxDeliveryDays);
+    }
+
+    // 2. Check backend /api/ai/parse as well
+    let backendBudget = null;
     try {
       const response = await fetch(`${API_BASE}/api/ai/parse`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [prompt.trim()] }),
       });
-
-      const data = await response.json().catch(() => ({}));
-      const latency = Date.now() - startTime;
-
-      if (!response.ok) {
-        logTelemetry("POST /api/ai/parse", `Failed with HTTP ${response.status}`, "ERROR", latency, data);
-        throw new Error(data.message || `AI extraction failed (HTTP ${response.status})`);
-      }
-
-      logTelemetry("POST /api/ai/parse", `Extracted requirements (Status: ${data.status})`, "200 OK", latency, data);
-
-      const req = data.request || data.requirements;
-      let effectiveBudget = budgetINR || 60000;
-      let effectiveDelivery = maxDeliveryDays || 7;
-
-      if (req) {
-        if (req.budget?.amount && req.budget.amount > 0) {
-          effectiveBudget = req.budget.amount;
-          setBudgetINR(req.budget.amount);
-        }
-        if (req.delivery?.maxDays && req.delivery.maxDays > 0) {
-          effectiveDelivery = req.delivery.maxDays;
-          setMaxDeliveryDays(req.delivery.maxDays);
-        }
-        if (req.hardConstraints?.refreshRateHz) {
-          setMinRefreshRateHz(req.hardConstraints.refreshRateHz.min || 144);
-        }
-        if (req.items && Array.isArray(req.items) && req.items.length > 0) {
-          const newQty = {};
-          for (const it of req.items) {
-            if (it.category) newQty[it.category] = it.quantity || 1;
-          }
-          setQuantities(newQty);
+      if (response.ok) {
+        const data = await response.json().catch(() => ({}));
+        logTelemetry("POST /api/ai/parse", `Extracted requirements (Status: ${data.status})`, "200 OK", Date.now() - startTime, data);
+        const req = data.request || data.requirements;
+        if (req?.budget?.amount && req.budget.amount > 0) {
+          backendBudget = req.budget.amount;
         }
       }
-
-      // Wire real plan generation to /api/ai/plan with fallback to /api/procurement/plan
-      let generatedPlan = null;
-      try {
-        const planRes = await fetch(`${API_BASE}/api/ai/plan`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: [prompt.trim()] }),
-        });
-        if (planRes.ok) {
-          const aiPlanData = await planRes.json();
-          if (aiPlanData.plan && aiPlanData.status === "PLANNED") {
-            generatedPlan = aiPlanData.plan;
-            logTelemetry("POST /api/ai/plan", `Server Plan Generated: ${generatedPlan.planId}`, "200 OK", Date.now() - startTime, aiPlanData);
-          }
-        }
-      } catch (e) {
-        console.warn("AI plan endpoint fallback:", e);
-      }
-
-      if (!generatedPlan) {
-        try {
-          const activeCats = req?.items && Array.isArray(req.items) && req.items.length > 0
-            ? req.items.map((i) => ({ category: i.category, quantity: i.quantity || 1 }))
-            : Object.entries(quantities)
-                .filter(([_, q]) => q > 0)
-                .map(([category, quantity]) => ({ category, quantity }));
-
-          const procReq = {
-            requestId: `req_${Date.now()}`,
-            rawQuery: prompt.trim(),
-            budgetINR: effectiveBudget,
-            maxDeliveryDays: effectiveDelivery,
-            requiredCategories: activeCats.length > 0 ? activeCats : [
-              { category: "monitor", quantity: 1 },
-              { category: "keyboard", quantity: 1 },
-              { category: "mouse", quantity: 1 },
-              { category: "headphones", quantity: 1 },
-            ],
-            hardConstraints: {
-              ...(activeCats.some((c) => c.category === "monitor") && minRefreshRateHz
-                ? { monitor: { minRefreshRateHz } }
-                : {}),
-              ...(activeCats.some((c) => c.category === "laptop")
-                ? { laptop: { minRamGB: 16 } }
-                : {}),
-            },
-          };
-          const procRes = await fetch(`${API_BASE}/api/procurement/plan`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(procReq),
-          });
-          if (procRes.ok) {
-            generatedPlan = await procRes.json();
-            logTelemetry("POST /api/procurement/plan", `Deterministic Plan: ${generatedPlan.planId}`, "200 OK", Date.now() - startTime, generatedPlan);
-          }
-        } catch (procErr) {
-          console.warn("Deterministic plan fallback:", procErr);
-        }
-      }
-
-      if (generatedPlan) {
-        setServerPlan(generatedPlan);
-      }
-
-      message.success("Verified server plan generated & registered in PlanStore!");
-      setCurrentStep(1); // Advance to Plans screen
-    } catch (err) {
-      console.warn("Parse fallback:", err);
-      // Fallback: regex search for budget in prompt so demo works even offline
-      let fallbackBudget = budgetINR || 60000;
-      const budgetMatch = prompt.match(/[₹RsINR\s]*([0-9,]+)/i);
-      if (budgetMatch && budgetMatch[1]) {
-        const val = parseInt(budgetMatch[1].replace(/,/g, ""), 10);
-        if (val > 1000) {
-          fallbackBudget = val;
-          setBudgetINR(val);
-        }
-      }
-
-      let reqCats = [
-        { category: "monitor", quantity: 1 },
-        { category: "keyboard", quantity: 1 },
-        { category: "mouse", quantity: 1 },
-        { category: "headphones", quantity: 1 },
-      ];
-      if (/laptop/i.test(prompt)) {
-        const laptopMatch = prompt.match(/(\d+)\s*laptop/i);
-        const lQty = laptopMatch ? parseInt(laptopMatch[1], 10) : 5;
-        reqCats = [{ category: "laptop", quantity: lQty }];
-        setQuantities({ laptop: lQty });
-      }
-
-      try {
-        const procRes = await fetch(`${API_BASE}/api/procurement/plan`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            requestId: `req_fallback_${Date.now()}`,
-            rawQuery: prompt.trim(),
-            budgetINR: fallbackBudget,
-            maxDeliveryDays: maxDeliveryDays || 10,
-            requiredCategories: reqCats,
-            hardConstraints: {
-              ...(reqCats.some((c) => c.category === "monitor") && minRefreshRateHz
-                ? { monitor: { minRefreshRateHz } }
-                : {}),
-              ...(reqCats.some((c) => c.category === "laptop")
-                ? { laptop: { minRamGB: 16 } }
-                : {}),
-            },
-          }),
-        });
-        if (procRes.ok) {
-          const fallbackPlan = await procRes.json();
-          setServerPlan(fallbackPlan);
-        }
-      } catch (_) {}
-
-      message.info("Requirements loaded and verified with deterministic rules!");
-      setCurrentStep(1);
-    } finally {
-      setIsParsing(false);
+    } catch (parseErr) {
+      console.warn("Backend parse call fallback:", parseErr);
     }
+
+    // 3. Check if budget was omitted in prompt:
+    const effectiveBudget = nlpBrief.budget || backendBudget;
+
+    if (!effectiveBudget) {
+      // The user did NOT provide a budget! DO NOT default to 60k!
+      // Ask clarification question back to user.
+      setIsParsing(false);
+      logTelemetry(
+        "POST /api/ai/parse",
+        "Agent Clarification: Budget omitted by user",
+        "NEEDS_CLARIFICATION",
+        Date.now() - startTime,
+        { missingField: "budgetINR", detectedQuantities: nlpBrief.quantities, alreadyOwned: nlpBrief.alreadyOwned }
+      );
+
+      setClarificationState({
+        active: true,
+        field: "budgetINR",
+        question: "What is your total target budget cap for this workstation setup?",
+        detectedQuantities: nlpBrief.quantities,
+        alreadyOwned: nlpBrief.alreadyOwned,
+        unspecifiedQtyCategories: nlpBrief.unspecifiedQtyCategories,
+        selectedBudget: 60000,
+        customBudget: "",
+        minRefreshRateHz: nlpBrief.minRefreshRateHz,
+        maxDeliveryDays: nlpBrief.maxDeliveryDays,
+      });
+
+      message.info("ProcureAI Agent requires clarification: What is your target spending budget?");
+      return;
+    }
+
+    // If budget was explicitly mentioned, proceed directly
+    setClarificationState(null);
+    setBudgetINR(effectiveBudget);
+    await executePlanGeneration(effectiveBudget, nlpBrief.quantities, nlpBrief.maxDeliveryDays, nlpBrief.minRefreshRateHz);
   };
 
   // Lock Plan & Sign Spending Mandate
@@ -1986,6 +2137,200 @@ export default function App() {
                       💻 5 Laptops Fleet (OEM Volume Tier)
                     </Tag>
                   </div>
+
+                  {/* AGENT CLARIFICATION CARD */}
+                  <AnimatePresence>
+                    {clarificationState?.active && (
+                      <motion.div
+                        id="agent-clarification-card"
+                        initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                        transition={{ duration: 0.25 }}
+                        style={{
+                          marginBottom: 20,
+                          borderRadius: 16,
+                          padding: 20,
+                          background: isDarkMode ? "linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95))" : "linear-gradient(135deg, #f0f7ff, #ffffff)",
+                          border: "1.5px solid #0284c7",
+                          boxShadow: "0 10px 30px -5px rgba(2, 132, 199, 0.25)",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                          <Space align="center">
+                            <span style={{ fontSize: 24 }}>🤖</span>
+                            <div>
+                              <div style={{ fontWeight: 800, fontSize: 15, color: isDarkMode ? "#38bdf8" : "#0369a1", display: "flex", alignItems: "center", gap: 8 }}>
+                                ProcureAI Agent Needs Clarification
+                                <Tag color="warning" style={{ borderRadius: 100, fontWeight: 700, fontSize: 11 }}>
+                                  Status: NEEDS_CLARIFICATION
+                                </Tag>
+                              </div>
+                              <div style={{ fontSize: 13, color: isDarkMode ? "#cbd5e1" : "#475569", marginTop: 2 }}>
+                                {clarificationState.question}
+                              </div>
+                            </div>
+                          </Space>
+                          <Button
+                            size="small"
+                            type="text"
+                            onClick={() => setClarificationState(null)}
+                            style={{ color: "#94a3b8" }}
+                          >
+                            Dismiss ✕
+                          </Button>
+                        </div>
+
+                        {/* Extracted Context Badges */}
+                        <div style={{ padding: "10px 14px", borderRadius: 10, background: isDarkMode ? "rgba(2, 6, 23, 0.4)" : "#e2e8f044", marginBottom: 16 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 6 }}>
+                            Parsed Workstation Scope & Natural Language Evidence:
+                          </div>
+                          <Space wrap size={[6, 6]}>
+                            {Object.entries(clarificationState.detectedQuantities || {}).map(([cat, qty]) => (
+                              <Tag key={cat} color="blue" style={{ borderRadius: 6, fontWeight: 600, padding: "2px 8px" }}>
+                                ✓ {qty}x {cat.toUpperCase()}{cat === "monitor" && clarificationState.minRefreshRateHz ? ` (${clarificationState.minRefreshRateHz}Hz)` : ""}
+                              </Tag>
+                            ))}
+                            {(clarificationState.alreadyOwned || []).map((cat) => (
+                              <Tag key={cat} color="default" style={{ borderRadius: 6, opacity: 0.75, padding: "2px 8px" }}>
+                                🚫 {cat.toUpperCase()} (Already Owned · Excluded)
+                              </Tag>
+                            ))}
+                            {clarificationState.maxDeliveryDays && (
+                              <Tag color="cyan" style={{ borderRadius: 6, fontWeight: 600, padding: "2px 8px" }}>
+                                ⚡ Delivery &lt;= {clarificationState.maxDeliveryDays}d
+                              </Tag>
+                            )}
+                          </Space>
+                        </div>
+
+                        {/* Unspecified quantity helper if any category had no count */}
+                        {clarificationState.unspecifiedQtyCategories && clarificationState.unspecifiedQtyCategories.length > 0 && (
+                          <div style={{ marginBottom: 16, padding: "10px 14px", borderRadius: 10, background: isDarkMode ? "rgba(245, 158, 11, 0.08)" : "#fef3c7", border: "1px solid rgba(245, 158, 11, 0.2)" }}>
+                            <Text strong style={{ fontSize: 12, color: isDarkMode ? "#fbbf24" : "#b45309" }}>
+                              Unspecified Quantity Detected:
+                            </Text>
+                            {clarificationState.unspecifiedQtyCategories.map((cat) => (
+                              <div key={cat} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6, flexWrap: "wrap" }}>
+                                <span style={{ fontSize: 12 }}>How many <strong>{cat}s</strong> do you need?</span>
+                                <Space size={6}>
+                                  {[
+                                    { label: "1 unit (\"a\")", qty: 1 },
+                                    { label: "2 units (\"couple\")", qty: 2 },
+                                    { label: "3 units (\"few\")", qty: 3 },
+                                    { label: "5 units (\"fleet\")", qty: 5 },
+                                  ].map((opt) => (
+                                    <Button
+                                      key={opt.qty}
+                                      size="small"
+                                      type={clarificationState.detectedQuantities[cat] === opt.qty ? "primary" : "default"}
+                                      onClick={() => {
+                                        setClarificationState((prev) => ({
+                                          ...prev,
+                                          detectedQuantities: { ...prev.detectedQuantities, [cat]: opt.qty },
+                                        }));
+                                      }}
+                                      style={{ borderRadius: 6, fontSize: 11 }}
+                                    >
+                                      {opt.label}
+                                    </Button>
+                                  ))}
+                                </Space>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Target Spending Budget Selector */}
+                        <div style={{ marginBottom: 14 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, color: isDarkMode ? "#e2e8f0" : "#1e293b" }}>
+                            Select Target Budget Cap:
+                          </div>
+                          <Row gutter={[10, 10]}>
+                            {[
+                              { amount: 45000, label: "₹45,000", tag: "Value Rig", desc: "Solid 1080p, budget peripherals" },
+                              { amount: 60000, label: "₹60,000", tag: "Balanced Pro", desc: "144Hz IPS + Mechanical + Studio Audio" },
+                              { amount: 80000, label: "₹80,000", tag: "Performance Gaming & Dev", desc: "High FPS, Low Latency, 240Hz" },
+                              { amount: 120000, label: "₹1,20,000", tag: "Flagship Enthusiast", desc: "Top tier, wireless lossless, 1440p" },
+                            ].map((tier) => {
+                              const isSelected = (clarificationState.selectedBudget === tier.amount) && !clarificationState.customBudget;
+                              return (
+                                <Col xs={12} sm={6} key={tier.amount}>
+                                  <div
+                                    onClick={() => {
+                                      setClarificationState((prev) => ({
+                                        ...prev,
+                                        selectedBudget: tier.amount,
+                                        customBudget: "",
+                                      }));
+                                    }}
+                                    style={{
+                                      padding: "10px 12px",
+                                      borderRadius: 10,
+                                      cursor: "pointer",
+                                      textAlign: "center",
+                                      border: `1.5px solid ${isSelected ? "#0052FF" : isDarkMode ? "rgba(255,255,255,0.08)" : "#cbd5e1"}`,
+                                      background: isSelected
+                                        ? isDarkMode ? "rgba(0, 82, 255, 0.2)" : "#eff6ff"
+                                        : isDarkMode ? "rgba(255,255,255,0.02)" : "#ffffff",
+                                      transition: "all 0.15s ease",
+                                    }}
+                                  >
+                                    <div style={{ fontWeight: 800, fontSize: 15, color: isSelected ? "#38bdf8" : undefined }}>
+                                      {tier.label}
+                                    </div>
+                                    <Tag color={isSelected ? "blue" : "default"} style={{ margin: "4px 0 2px 0", fontSize: 10, borderRadius: 4 }}>
+                                      {tier.tag}
+                                    </Tag>
+                                    <div style={{ fontSize: 10, color: "#94a3b8", lineHeight: 1.2 }}>{tier.desc}</div>
+                                  </div>
+                                </Col>
+                              );
+                            })}
+                          </Row>
+                        </div>
+
+                        {/* Custom Budget or Confirmation */}
+                        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 14 }}>
+                          <InputNumber
+                            prefix="₹"
+                            placeholder="Or enter custom budget (e.g. 50000)"
+                            value={clarificationState.customBudget || undefined}
+                            onChange={(val) => {
+                              setClarificationState((prev) => ({
+                                ...prev,
+                                customBudget: val || "",
+                                selectedBudget: val || prev.selectedBudget,
+                              }));
+                            }}
+                            style={{ width: 230, borderRadius: 8, fontWeight: 700 }}
+                          />
+                          <Button
+                            id="btn-confirm-clarification"
+                            type="primary"
+                            icon={<CheckCircleOutlined />}
+                            loading={isParsing}
+                            onClick={() => {
+                              const finalBudget = clarificationState.customBudget
+                                ? Number(clarificationState.customBudget)
+                                : clarificationState.selectedBudget;
+                              handleConfirmClarification(finalBudget, clarificationState.detectedQuantities);
+                            }}
+                            style={{
+                              borderRadius: 8,
+                              fontWeight: 700,
+                              background: "#0052FF",
+                              padding: "0 22px",
+                              height: 38,
+                            }}
+                          >
+                            Confirm Budget & Generate Plans →
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Primary Action Button */}
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
@@ -3336,6 +3681,7 @@ export default function App() {
             style={{ height: 420, width: "100%", borderRadius: 10, overflow: "hidden" }}
           >
             <AgGridReact
+              theme="legacy"
               rowData={localCatalog.products || []}
               columnDefs={[
                 { field: "category", width: 120, cellRenderer: (p) => <Tag color="blue">{p.value}</Tag> },
