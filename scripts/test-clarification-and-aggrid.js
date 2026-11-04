@@ -229,6 +229,65 @@ async function run() {
     const hasCardRebateTag = await page.locator("text=Rebate Applied").first().isVisible().catch(() => false);
     console.log(`✓ Cards view displays rebate tag: ${hasCardRebateTag}`);
 
+    // 9. Test Over-Budget Guardrail (Lock Button Disabled) & Auto-Rebalance Transparency
+    console.log("Testing Over-Budget Guardrail & Auto-Rebalance algorithm...");
+    await page.locator("button:has-text('AG Grid Matrix')").click();
+    await page.waitForTimeout(600);
+
+    // Swap monitor to 4K Veltrix Pulse 32U (₹39,999) to intentionally exceed budgetCap of ₹60,000
+    const matrixSwapBtn = page.locator("button:has-text('Swap')").first();
+    await matrixSwapBtn.click();
+    await page.waitForSelector("text=Swap Component for Custom Strategy", { timeout: 4000 });
+
+    const expensive4kMonitor = page.locator(".candidate-swap-item:has-text('Veltrix Pulse 32U')");
+    await expensive4kMonitor.waitFor({ state: "visible", timeout: 4000 });
+    await expensive4kMonitor.click();
+    await page.waitForTimeout(800);
+    console.log("Swapped to 4K 144Hz monitor (₹39,999) to test budget ceiling guardrail.");
+
+    // Check if over-budget alert appeared
+    const overBudgetAlert = page.locator("#matrix-over-budget-alert");
+    await overBudgetAlert.waitFor({ state: "visible", timeout: 6000 });
+    console.log("✓ Over-budget alert is VISIBLE with deficit calculation!");
+
+    // Verify lock button is disabled
+    const lockBtn = page.locator("#btn-approve-matrix-plan");
+    const isDisabled = await lockBtn.isDisabled();
+    if (!isDisabled) {
+      throw new Error("Lock button must be disabled when plan is over budget!");
+    }
+    console.log("✓ Lock button is strictly DISABLED while over budget!");
+
+    // Verify Auto-Rebalance button is visible
+    const rebalanceBtn = page.locator("#btn-auto-rebalance-matrix");
+    await rebalanceBtn.waitFor({ state: "visible", timeout: 4000 });
+    console.log("✓ Found '#btn-auto-rebalance-matrix' button!");
+
+    // Click Auto-Rebalance
+    console.log("Clicking '#btn-auto-rebalance-matrix' to execute deterministic downgrade...");
+    await rebalanceBtn.click();
+    await page.waitForTimeout(800);
+
+    // Verify Transparency Report Modal appeared
+    const reportModal = page.locator("#rebalance-report-modal-content");
+    await reportModal.waitFor({ state: "visible", timeout: 5000 });
+    console.log("✓ AI Budget Auto-Rebalance Transparency Report Modal is VISIBLE!");
+
+    const diffRows = await page.locator(".rebalance-diff-row").count();
+    console.log(`✓ Transparency Report details ${diffRows} component adjustment(s) from old spec to new spec!`);
+
+    // Dismiss report modal
+    await page.locator("#btn-dismiss-rebalance-report").click();
+    await page.waitForTimeout(600);
+
+    // Verify Lock button is now ENABLED again!
+    const isNowDisabled = await lockBtn.isDisabled();
+    if (isNowDisabled) {
+      throw new Error("Lock button should be enabled after successful auto-rebalance!");
+    }
+    console.log("✓ Lock button is now re-ENABLED and ready for spending mandate signing!");
+    console.log("✓ Over-budget deficit resolved and basket fits within budget cap!");
+
     console.log("\n================ ALL VERIFICATIONS PASSED ================");
   } finally {
     await browser.close();

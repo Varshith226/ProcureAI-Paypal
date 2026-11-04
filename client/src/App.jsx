@@ -51,6 +51,7 @@ import {
   CheckOutlined,
   TableOutlined,
   ArrowLeftOutlined,
+  ArrowRightOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
@@ -66,6 +67,7 @@ import "./App.css";
 import "./index.css";
 
 import localCatalog from "./catalog.json";
+import { rebalanceBasket } from "./utils/rebalancer";
 import {
   fetchFxRate,
   fetchAuditLog,
@@ -774,6 +776,7 @@ const StrategyMatrixGrid = ({
   inrPerUsd = 94.93,
   onCellValueChanged,
   onResetStrategy,
+  onAutoRebalance,
   onApproveAndLock,
   onOpenSwap,
 }) => {
@@ -782,6 +785,8 @@ const StrategyMatrixGrid = ({
   const currentStrategy = (strategies && activeStrategyKey && strategies[activeStrategyKey]) || strategy || {};
   const items = currentStrategy.items || [];
   const planTotalINR = currentStrategy.totalINR || 0;
+  const isOverBudget = planTotalINR > budgetCap;
+  const deficitINR = Math.max(0, planTotalINR - budgetCap);
   const planTotalUSD = (planTotalINR / (inrPerUsd || 94.93)).toFixed(2);
   const savingsINR = budgetCap - planTotalINR;
   const savingsPct = budgetCap > 0 ? Math.max(0, Math.round((savingsINR / budgetCap) * 100)) : 0;
@@ -1118,6 +1123,42 @@ const StrategyMatrixGrid = ({
         </div>
       </div>
 
+      {/* Over-budget alert banner */}
+      {isOverBudget && (
+        <Alert
+          id="matrix-over-budget-alert"
+          type="error"
+          showIcon
+          style={{ marginTop: 14, borderRadius: 10 }}
+          message={
+            <span style={{ fontWeight: 800 }}>
+              Budget Cap Exceeded by ₹{deficitINR.toLocaleString("en-IN")} — Spending Mandate Locked
+            </span>
+          }
+          description={
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 4 }}>
+              <span>
+                Basket total (₹{planTotalINR.toLocaleString("en-IN")}) exceeds the authorized ₹{budgetCap.toLocaleString("en-IN")} cap. Cryptographic mandate lock is disabled until deficit is resolved.
+              </span>
+              <Button
+                id="btn-auto-rebalance-matrix"
+                type="primary"
+                icon={<ThunderboltOutlined />}
+                onClick={() => onAutoRebalance?.(currentStrategy?.strategyKey || activeStrategyKey)}
+                style={{
+                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  borderColor: "#10b981",
+                  fontWeight: 700,
+                  borderRadius: 8,
+                }}
+              >
+                ⚡ Auto-Rebalance to Fit ₹{budgetCap.toLocaleString("en-IN")}
+              </Button>
+            </div>
+          }
+        />
+      )}
+
       {/* Action Footer */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, flexWrap: "wrap", gap: 10 }}>
         <Space>
@@ -1133,20 +1174,54 @@ const StrategyMatrixGrid = ({
             <Tag color="orange" style={{ borderRadius: 6, fontSize: 11 }}>Customized</Tag>
           )}
         </Space>
-        <Button
-          id="btn-approve-matrix-plan"
-          type="primary"
-          icon={<CheckCircleOutlined />}
-          onClick={() => onApproveAndLock(currentStrategy.strategyKey || activeStrategyKey)}
-          style={{
-            background: "#0052FF",
-            fontWeight: 700,
-            borderRadius: 8,
-            boxShadow: "0 4px 14px rgba(0, 82, 255, 0.4)",
-          }}
-        >
-          Lock {currentStrategy.strategyName || "This Basket"} & Proceed →
-        </Button>
+
+        <Space>
+          {isOverBudget && (
+            <Button
+              id="btn-auto-rebalance-footer"
+              type="primary"
+              icon={<ThunderboltOutlined />}
+              onClick={() => onAutoRebalance?.(currentStrategy?.strategyKey || activeStrategyKey)}
+              style={{
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                borderColor: "#10b981",
+                fontWeight: 700,
+                borderRadius: 8,
+                boxShadow: "0 4px 14px rgba(16, 185, 129, 0.4)",
+              }}
+            >
+              ⚡ Auto-Rebalance Basket
+            </Button>
+          )}
+
+          <Tooltip
+            title={
+              isOverBudget
+                ? `Cannot lock mandate: Basket exceeds authorized budget cap by ₹${deficitINR.toLocaleString("en-IN")}. Click Auto-Rebalance to fit budget.`
+                : ""
+            }
+          >
+            <span>
+              <Button
+                id="btn-approve-matrix-plan"
+                type="primary"
+                disabled={isOverBudget}
+                icon={<CheckCircleOutlined />}
+                onClick={() => onApproveAndLock(currentStrategy.strategyKey || activeStrategyKey)}
+                style={{
+                  background: isOverBudget ? undefined : "#0052FF",
+                  fontWeight: 700,
+                  borderRadius: 8,
+                  boxShadow: isOverBudget ? "none" : "0 4px 14px rgba(0, 82, 255, 0.4)",
+                }}
+              >
+                {isOverBudget
+                  ? `Budget Exceeded (₹${planTotalINR.toLocaleString("en-IN")} > ₹${budgetCap.toLocaleString("en-IN")})`
+                  : `Lock ${currentStrategy.strategyName || "This Basket"} & Proceed →`}
+              </Button>
+            </span>
+          </Tooltip>
+        </Space>
       </div>
     </Card>
   );
@@ -1222,6 +1297,7 @@ export default function App() {
   const [customizedStrategies, setCustomizedStrategies] = useState({});
   const [serverPlan, setServerPlan] = useState(null);
   const [appliedRebateINR, setAppliedRebateINR] = useState(0);
+  const [rebalanceReport, setRebalanceReport] = useState(null);
 
   // Parsing & Loading States
   const [isParsing, setIsParsing] = useState(false);
@@ -1311,6 +1387,47 @@ export default function App() {
     message.success({
       content: `✓ Applied -₹${numRebate.toLocaleString("en-IN")} vendor rebate! Basket updated from ₹${origTotal.toLocaleString("en-IN")} to ₹${newTotal.toLocaleString("en-IN")}.`,
       duration: 4,
+    });
+  };
+
+  // Autonomous Budget Rebalance handler: optimizes component selection to strictly fit within budget cap
+  const handleAutoRebalanceStrategy = (stratKey) => {
+    const targetKey = stratKey || activeMatrixStrategy || "BEST_VALUE";
+    const current = planData?.strategies?.[targetKey];
+    if (!current || !current.items) return;
+
+    const result = rebalanceBasket({
+      items: current.items,
+      budgetCap: budgetINR || 60000,
+      minRefreshRateHz: minRefreshRateHz || 144,
+      maxDeliveryDays: maxDeliveryDays || 7,
+      catalogProducts: localCatalog.products || [],
+    });
+
+    if (!result.needed) {
+      message.info("Basket is already within the authorized budget cap.");
+      return;
+    }
+
+    // Apply the rebalanced items into customizedStrategies
+    setCustomizedStrategies((prev) => ({
+      ...prev,
+      [targetKey]: {
+        ...current,
+        items: result.rebalancedItems,
+        subtotalINR: result.subtotalINR,
+        shippingTotalINR: result.shippingTotalINR,
+        originalTotalINR: result.totalINR,
+        totalINR: Math.max(0, result.totalINR - (appliedRebateINR || 0)),
+        leftoverBudgetINR: result.headroomINR,
+        isCustomized: true,
+      },
+    }));
+
+    setRebalanceReport(result);
+    message.success({
+      content: `✓ Auto-Rebalanced! Saved ₹${result.totalSavedINR.toLocaleString("en-IN")}. Basket fits budget (₹${result.totalINR.toLocaleString("en-IN")}).`,
+      duration: 5,
     });
   };
 
@@ -2908,10 +3025,43 @@ export default function App() {
                         </div>
 
                         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+                          {planData.strategies?.BEST_VALUE?.totalINR > budgetINR && (
+                            <div style={{ marginBottom: 4 }}>
+                              <Alert
+                                type="error"
+                                showIcon
+                                style={{ borderRadius: 10, padding: "8px 12px", marginBottom: 8 }}
+                                message={
+                                  <span style={{ fontWeight: 800, fontSize: 13 }}>
+                                    Budget Cap Exceeded by ₹{(planData.strategies.BEST_VALUE.totalINR - budgetINR).toLocaleString("en-IN")}
+                                  </span>
+                                }
+                                description="Mandate lock is disabled until deficit is resolved."
+                              />
+                              <Button
+                                id="btn-auto-rebalance-card-b"
+                                block
+                                type="primary"
+                                icon={<ThunderboltOutlined />}
+                                onClick={() => handleAutoRebalanceStrategy("BEST_VALUE")}
+                                style={{
+                                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                  borderColor: "#10b981",
+                                  fontWeight: 700,
+                                  borderRadius: 10,
+                                  height: 40,
+                                }}
+                              >
+                                ⚡ Auto-Rebalance Plan B to Fit ₹{budgetINR.toLocaleString("en-IN")}
+                              </Button>
+                            </div>
+                          )}
+
                           <Button
                             id="btn-approve-plan-b"
                             type="primary"
                             size="large"
+                            disabled={planData.strategies?.BEST_VALUE?.totalINR > budgetINR}
                             icon={<CheckCircleOutlined />}
                             onClick={() => handleApproveAndLock("BEST_VALUE")}
                             style={{
@@ -2919,11 +3069,13 @@ export default function App() {
                               fontWeight: 800,
                               fontSize: 15,
                               height: 48,
-                              background: "#0052FF",
-                              boxShadow: "0 4px 20px rgba(0, 82, 255, 0.4)",
+                              background: planData.strategies?.BEST_VALUE?.totalINR > budgetINR ? undefined : "#0052FF",
+                              boxShadow: planData.strategies?.BEST_VALUE?.totalINR > budgetINR ? "none" : "0 4px 20px rgba(0, 82, 255, 0.4)",
                             }}
                           >
-                            Approve Plan B & Issue Mandate →
+                            {planData.strategies?.BEST_VALUE?.totalINR > budgetINR
+                              ? `Budget Exceeded (₹${planData.strategies.BEST_VALUE.totalINR.toLocaleString("en-IN")} > ₹${budgetINR.toLocaleString("en-IN")})`
+                              : "Approve Plan B & Issue Mandate →"}
                           </Button>
 
                           <Button
@@ -3010,6 +3162,7 @@ export default function App() {
                     inrPerUsd={inrPerUsd}
                     onCellValueChanged={handleMatrixCellValueChanged}
                     onResetStrategy={handleResetStrategy}
+                    onAutoRebalance={handleAutoRebalanceStrategy}
                     onApproveAndLock={handleApproveAndLock}
                     onOpenSwap={(stratKey, item) => {
                       setSwapTarget({ strategyKey: stratKey, currentItem: item });
@@ -4001,6 +4154,88 @@ export default function App() {
           </div>
         )}
       </Drawer>
+
+      {/* 9. AI Budget Auto-Rebalance Transparency Report Modal */}
+      <Modal
+        title={
+          <Space>
+            <ThunderboltOutlined style={{ color: "#10b981", fontSize: 18 }} />
+            <Text strong style={{ fontSize: 16 }}>
+              AI Budget Auto-Rebalance Transparency Report
+            </Text>
+          </Space>
+        }
+        open={Boolean(rebalanceReport)}
+        onCancel={() => setRebalanceReport(null)}
+        footer={[
+          <Button
+            key="close"
+            id="btn-dismiss-rebalance-report"
+            type="primary"
+            onClick={() => setRebalanceReport(null)}
+            style={{ background: "#0052FF", borderRadius: 8, fontWeight: 700 }}
+          >
+            Got It, Proceed With Rebalanced Plan →
+          </Button>,
+        ]}
+        width={680}
+      >
+        {rebalanceReport && (
+          <div id="rebalance-report-modal-content">
+            <Alert
+              type="success"
+              showIcon
+              style={{ marginBottom: 16, borderRadius: 10 }}
+              message={
+                <span style={{ fontWeight: 800 }}>
+                  Basket Successfully Optimized to ₹{rebalanceReport.totalINR.toLocaleString("en-IN")}
+                </span>
+              }
+              description={
+                <div>
+                  Saved <strong>₹{rebalanceReport.totalSavedINR.toLocaleString("en-IN")}</strong> to fit strictly within your ₹{budgetINR.toLocaleString("en-IN")} spending envelope (Headroom: ₹{rebalanceReport.headroomINR.toLocaleString("en-IN")}).
+                </div>
+              }
+            />
+
+            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: "#94a3b8", textTransform: "uppercase" }}>
+              Component Adjustments & Downgrades (Lowest Priority First):
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {rebalanceReport.changes.map((ch, idx) => (
+                <div
+                  key={idx}
+                  className="rebalance-diff-row"
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 10,
+                    background: isDarkMode ? "rgba(255, 255, 255, 0.03)" : "#f8fafc",
+                    border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.08)" : "#e2e8f0"}`,
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                    <Tag color="cyan" style={{ textTransform: "uppercase", fontWeight: 700 }}>{ch.category}</Tag>
+                    <Tag color="green" style={{ fontWeight: 700 }}>Saved ₹{ch.savedINR.toLocaleString("en-IN")}</Tag>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, flexWrap: "wrap" }}>
+                    <span style={{ color: "#ef4444", textDecoration: "line-through" }}>
+                      {ch.from.name} (₹{ch.from.unitPriceINR.toLocaleString("en-IN")}{ch.from.quantity > 1 ? ` x${ch.from.quantity}` : ""})
+                    </span>
+                    <ArrowRightOutlined style={{ color: "#10b981", fontSize: 12 }} />
+                    <span style={{ color: "#10b981", fontWeight: 700 }}>
+                      {ch.to.name} (₹{ch.to.unitPriceINR.toLocaleString("en-IN")}{ch.to.quantity > 1 ? ` x${ch.to.quantity}` : ""})
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>
+                    {ch.detail}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
     </ConfigProvider>
   );
