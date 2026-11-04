@@ -38,6 +38,7 @@ const {
   enforceMandate,
   getMandateById,
 } = require("./src/mandateService");
+const { getApprovedStrategy, revalidateForCheckout } = require("./src/checkoutGuard");
 const { verifyAuditLogIntegrity, resetDemoData } = require("./src/db");
 
 const app = express();
@@ -197,22 +198,27 @@ app.post("/api/plans/register", (req, res) => {
   res.json(plansStore.get(plan.planId));
 });
 
-// Approve & lock a specific strategy before PayPal checkout (supports AI negotiated rebates)
+// Approve & lock a specific strategy before PayPal checkout (supports server-verified pricing & AI negotiated rebates)
 app.post("/api/plans/:planId/approve", async (req, res) => {
   const { planId } = req.params;
   const { strategyKey, version, strategyData, rebateINR, negotiationData } = req.body;
 
+  // Retrieve server-trusted strategy if plan was generated on backend
+  const serverStrategy = getApprovedStrategy(planId, strategyKey);
+
   let plan = plansStore.get(planId);
   if (!plan) {
-    if (!strategyData) {
+    if (!serverStrategy && !strategyData) {
       return res.status(404).json({ error: "Plan not found" });
     }
-    // Allow frontend mock/initial plans to register & lock seamlessly
-    plan = { planId, version: version || 1, strategies: { [strategyKey]: strategyData } };
+    const chosenStrategy = serverStrategy || strategyData;
+    plan = { planId, version: version || 1, strategies: { [strategyKey]: chosenStrategy } };
   } else {
-    // If strategyData is passed, update or add the strategy
-    if (strategyData) {
-      plan.strategies = plan.strategies || {};
+    plan.strategies = plan.strategies || {};
+    if (serverStrategy) {
+      // Enforce server-side authoritative items & unit prices
+      plan.strategies[strategyKey] = serverStrategy;
+    } else if (strategyData) {
       plan.strategies[strategyKey] = strategyData;
     }
     // Synchronize version when approved
@@ -220,14 +226,15 @@ app.post("/api/plans/:planId/approve", async (req, res) => {
       plan.version = version;
     }
   }
-  if (!plan || !plan.strategies?.[strategyKey]) {
+
+  const chosen = serverStrategy || plan?.strategies?.[strategyKey] || strategyData;
+  if (!chosen || !chosen.items) {
     return res.status(404).json({ error: "Plan or strategy not found" });
   }
 
-  const chosen = plan.strategies[strategyKey];
   // Calculate authoritative INR total on server from itemized quantities * unitPriceINR
   const rawINR = chosen.items.reduce(
-    (sum, item) => sum + item.unitPriceINR * (item.quantity || 1) + (item.shippingINR || 0),
+    (sum, item) => sum + (Number(item.unitPriceINR) || 0) * (Number(item.quantity) || 1) + (Number(item.shippingINR) || 0),
     0
   );
   const appliedRebate = Math.max(0, Number(rebateINR) || 0);
@@ -246,6 +253,15 @@ app.post("/api/plans/:planId/approve", async (req, res) => {
     rebateINR: appliedRebate,
     negotiationData: negotiationData || null,
     lockedAtISO: new Date().toISOString(),
+    strategies: {
+      ...(plan.strategies || {}),
+      [strategyKey]: {
+        ...chosen,
+        totalINR: calculatedINR,
+        rawINR,
+        rebateINR: appliedRebate,
+      },
+    },
   };
 
   plansStore.set(planId, lockedRecord);
@@ -323,6 +339,16 @@ app.post("/api/paypal/create-order", async (req, res) => {
     if (version && plan.version !== version) {
       return res.status(409).json({
         error: `Plan version mismatch (server has v${plan.version}, client sent v${version}). Re-approval required.`,
+      });
+    }
+
+    // Safety Boundary: Server-side revalidation of approved plan against live catalog before order creation
+    const revalCheck = await revalidateForCheckout(plan.planId, plan.approvedStrategyKey || "BEST_VALUE");
+    if (revalCheck && !revalCheck.canProceedToCheckout) {
+      return res.status(409).json({
+        error: "CHECKOUT_REVALIDATION_FAILED",
+        message: revalCheck.summary || "Component price or availability changed since approval. Re-approval required.",
+        revalidation: revalCheck,
       });
     }
 

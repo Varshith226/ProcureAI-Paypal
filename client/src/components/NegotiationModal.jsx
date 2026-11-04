@@ -220,11 +220,44 @@ export default function NegotiationModal({
                     <strong>₹{result.finalTotalINR.toLocaleString("en-IN")} (${result.finalTotalUSD} USD)</strong>.
                   </Text>
                   <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>
-                    Server Margin Guard: Vendor floor price ₹{result.marginMetrics?.vendorFloorPriceINR?.toLocaleString("en-IN")} preserved ({result.marginMetrics?.discountPct}% net concession).
+                    Server Margin Guard: {result.marginMetrics?.tierName || "B2B Volume Tier"} · Vendor floor price ₹{result.marginMetrics?.vendorFloorPriceINR?.toLocaleString("en-IN")} preserved ({result.marginMetrics?.discountPct}% net concession).
                   </div>
                 </div>
               }
             />
+
+            {/* Merchant Hardware Upgrade Offers */}
+            {result.upgradeSuggestions && result.upgradeSuggestions.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span>💡 Merchant Hardware Upgrade Offers</span>
+                  <Tag color="cyan" style={{ fontSize: 10, borderRadius: 4 }}>Optional Add-Ons</Tag>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {result.upgradeSuggestions.slice(0, 4).map((upg) => (
+                    <div
+                      key={upg.id}
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        background: isDarkMode ? "rgba(255, 255, 255, 0.03)" : "#f1f5f9",
+                        border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.08)" : "#e2e8f0"}`,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 6 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700 }}>{upg.title}</span>
+                        <Tag color="blue" style={{ fontSize: 10, padding: "0 4px", flexShrink: 0 }}>
+                          +₹{upg.priceDeltaINR.toLocaleString("en-IN")}
+                        </Tag>
+                      </div>
+                      <p style={{ fontSize: 11, color: isDarkMode ? "#94a3b8" : "#64748b", margin: "4px 0 0 0", lineHeight: 1.3 }}>
+                        {upg.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>

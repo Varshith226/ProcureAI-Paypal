@@ -1002,6 +1002,7 @@ export default function App() {
   const [swapTarget, setSwapTarget] = useState(null);
   const [categoryCandidates, setCategoryCandidates] = useState([]);
   const [customizedStrategies, setCustomizedStrategies] = useState({});
+  const [serverPlan, setServerPlan] = useState(null);
   const [appliedRebateINR, setAppliedRebateINR] = useState(0);
 
   // Parsing & Loading States
@@ -1224,6 +1225,25 @@ export default function App() {
 
   const planData = useMemo(() => {
     const currentCap = budgetINR || 60000;
+    if (serverPlan && serverPlan.strategies) {
+      const merged = { ...computedStrategies };
+      for (const [key, strat] of Object.entries(serverPlan.strategies)) {
+        if (!strat) continue;
+        const custom = customizedStrategies[key];
+        const base = custom || strat;
+        const totalWithRebate = Math.max(0, (base.totalINR || 0) - (appliedRebateINR || 0));
+        merged[key] = {
+          ...base,
+          totalINR: totalWithRebate,
+          originalTotalINR: base.totalINR,
+        };
+      }
+      return {
+        ...serverPlan,
+        budgetINR: serverPlan.budgetINR || currentCap,
+        strategies: merged,
+      };
+    }
     return {
       planId: "plan_demo_1",
       budgetINR: currentCap,
@@ -1238,7 +1258,7 @@ export default function App() {
       },
       strategies: computedStrategies,
     };
-  }, [budgetINR, maxDeliveryDays, quantities, computedStrategies]);
+  }, [serverPlan, budgetINR, maxDeliveryDays, quantities, computedStrategies, customizedStrategies, appliedRebateINR]);
 
   // Scene state for dynamic 3D Aurora background
   const sceneState = useMemo(() => {
@@ -1280,28 +1300,149 @@ export default function App() {
       logTelemetry("POST /api/ai/parse", `Extracted requirements (Status: ${data.status})`, "200 OK", latency, data);
 
       const req = data.request || data.requirements;
+      let effectiveBudget = budgetINR || 60000;
+      let effectiveDelivery = maxDeliveryDays || 7;
+
       if (req) {
         if (req.budget?.amount && req.budget.amount > 0) {
+          effectiveBudget = req.budget.amount;
           setBudgetINR(req.budget.amount);
         }
         if (req.delivery?.maxDays && req.delivery.maxDays > 0) {
+          effectiveDelivery = req.delivery.maxDays;
           setMaxDeliveryDays(req.delivery.maxDays);
         }
         if (req.hardConstraints?.refreshRateHz) {
           setMinRefreshRateHz(req.hardConstraints.refreshRateHz.min || 144);
         }
+        if (req.items && Array.isArray(req.items) && req.items.length > 0) {
+          const newQty = {};
+          for (const it of req.items) {
+            if (it.category) newQty[it.category] = it.quantity || 1;
+          }
+          setQuantities(newQty);
+        }
       }
 
-      message.success("AI parsed requirements verified against catalog bounds!");
+      // Wire real plan generation to /api/ai/plan with fallback to /api/procurement/plan
+      let generatedPlan = null;
+      try {
+        const planRes = await fetch(`${API_BASE}/api/ai/plan`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: [prompt.trim()] }),
+        });
+        if (planRes.ok) {
+          const aiPlanData = await planRes.json();
+          if (aiPlanData.plan && aiPlanData.status === "PLANNED") {
+            generatedPlan = aiPlanData.plan;
+            logTelemetry("POST /api/ai/plan", `Server Plan Generated: ${generatedPlan.planId}`, "200 OK", Date.now() - startTime, aiPlanData);
+          }
+        }
+      } catch (e) {
+        console.warn("AI plan endpoint fallback:", e);
+      }
+
+      if (!generatedPlan) {
+        try {
+          const activeCats = req?.items && Array.isArray(req.items) && req.items.length > 0
+            ? req.items.map((i) => ({ category: i.category, quantity: i.quantity || 1 }))
+            : Object.entries(quantities)
+                .filter(([_, q]) => q > 0)
+                .map(([category, quantity]) => ({ category, quantity }));
+
+          const procReq = {
+            requestId: `req_${Date.now()}`,
+            rawQuery: prompt.trim(),
+            budgetINR: effectiveBudget,
+            maxDeliveryDays: effectiveDelivery,
+            requiredCategories: activeCats.length > 0 ? activeCats : [
+              { category: "monitor", quantity: 1 },
+              { category: "keyboard", quantity: 1 },
+              { category: "mouse", quantity: 1 },
+              { category: "headphones", quantity: 1 },
+            ],
+            hardConstraints: {
+              ...(activeCats.some((c) => c.category === "monitor") && minRefreshRateHz
+                ? { monitor: { minRefreshRateHz } }
+                : {}),
+              ...(activeCats.some((c) => c.category === "laptop")
+                ? { laptop: { minRamGB: 16 } }
+                : {}),
+            },
+          };
+          const procRes = await fetch(`${API_BASE}/api/procurement/plan`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(procReq),
+          });
+          if (procRes.ok) {
+            generatedPlan = await procRes.json();
+            logTelemetry("POST /api/procurement/plan", `Deterministic Plan: ${generatedPlan.planId}`, "200 OK", Date.now() - startTime, generatedPlan);
+          }
+        } catch (procErr) {
+          console.warn("Deterministic plan fallback:", procErr);
+        }
+      }
+
+      if (generatedPlan) {
+        setServerPlan(generatedPlan);
+      }
+
+      message.success("Verified server plan generated & registered in PlanStore!");
       setCurrentStep(1); // Advance to Plans screen
     } catch (err) {
       console.warn("Parse fallback:", err);
       // Fallback: regex search for budget in prompt so demo works even offline
+      let fallbackBudget = budgetINR || 60000;
       const budgetMatch = prompt.match(/[₹RsINR\s]*([0-9,]+)/i);
       if (budgetMatch && budgetMatch[1]) {
         const val = parseInt(budgetMatch[1].replace(/,/g, ""), 10);
-        if (val > 1000) setBudgetINR(val);
+        if (val > 1000) {
+          fallbackBudget = val;
+          setBudgetINR(val);
+        }
       }
+
+      let reqCats = [
+        { category: "monitor", quantity: 1 },
+        { category: "keyboard", quantity: 1 },
+        { category: "mouse", quantity: 1 },
+        { category: "headphones", quantity: 1 },
+      ];
+      if (/laptop/i.test(prompt)) {
+        const laptopMatch = prompt.match(/(\d+)\s*laptop/i);
+        const lQty = laptopMatch ? parseInt(laptopMatch[1], 10) : 5;
+        reqCats = [{ category: "laptop", quantity: lQty }];
+        setQuantities({ laptop: lQty });
+      }
+
+      try {
+        const procRes = await fetch(`${API_BASE}/api/procurement/plan`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            requestId: `req_fallback_${Date.now()}`,
+            rawQuery: prompt.trim(),
+            budgetINR: fallbackBudget,
+            maxDeliveryDays: maxDeliveryDays || 10,
+            requiredCategories: reqCats,
+            hardConstraints: {
+              ...(reqCats.some((c) => c.category === "monitor") && minRefreshRateHz
+                ? { monitor: { minRefreshRateHz } }
+                : {}),
+              ...(reqCats.some((c) => c.category === "laptop")
+                ? { laptop: { minRamGB: 16 } }
+                : {}),
+            },
+          }),
+        });
+        if (procRes.ok) {
+          const fallbackPlan = await procRes.json();
+          setServerPlan(fallbackPlan);
+        }
+      } catch (_) {}
+
       message.info("Requirements loaded and verified with deterministic rules!");
       setCurrentStep(1);
     } finally {
@@ -1832,6 +1973,18 @@ export default function App() {
                     >
                       ⚡ ₹1,20,000 High-Spec Station
                     </Tag>
+                    <Tag
+                      color="geekblue"
+                      style={{ cursor: "pointer", borderRadius: 100, padding: "3px 12px", fontSize: 12 }}
+                      onClick={() => {
+                        setPrompt("I need 5 laptops for a small shop under 3 lakh INR total, each with at least 16 GB RAM, delivery within 10 days and a minimum one-year warranty.");
+                        setBudgetINR(300000);
+                        setMaxDeliveryDays(10);
+                        setQuantities({ laptop: 5 });
+                      }}
+                    >
+                      💻 5 Laptops Fleet (OEM Volume Tier)
+                    </Tag>
                   </div>
 
                   {/* Primary Action Button */}
@@ -2102,19 +2255,19 @@ export default function App() {
                         </div>
 
                         <div style={{ marginBottom: 12 }}>
-                          <Money inr={planData.strategies.CHEAPEST.totalINR} inrPerUsd={inrPerUsd} size="lg" />
+                          <Money inr={planData.strategies?.CHEAPEST?.totalINR || 0} inrPerUsd={inrPerUsd} size="lg" />
                           <div style={{ fontSize: 12, color: "#10b981", fontWeight: 600, marginTop: 4 }}>
-                            Savings vs budget: ₹{(budgetINR - planData.strategies.CHEAPEST.totalINR).toLocaleString("en-IN")}
+                            Savings vs budget: ₹{(budgetINR - (planData.strategies?.CHEAPEST?.totalINR || 0)).toLocaleString("en-IN")}
                           </div>
                         </div>
 
                         <Paragraph type="secondary" style={{ fontSize: 12, minHeight: 36, marginBottom: 14 }}>
-                          {planData.strategies.CHEAPEST.objectiveSummary}
+                          {planData.strategies?.CHEAPEST?.objectiveSummary}
                         </Paragraph>
 
                         {/* Items list */}
                         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
-                          {planData.strategies.CHEAPEST.items.map((it) => (
+                          {(planData.strategies?.CHEAPEST?.items || []).map((it) => (
                             <div key={it.productId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: isDarkMode ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` }}>
                               <ProductIcon category={it.category} size={32} />
                               <div style={{ flex: 1, minWidth: 0 }}>
@@ -2160,19 +2313,19 @@ export default function App() {
                         </div>
 
                         <div style={{ marginBottom: 12 }}>
-                          <Money inr={planData.strategies.BEST_VALUE.totalINR} inrPerUsd={inrPerUsd} size="xl" highlight />
+                          <Money inr={planData.strategies?.BEST_VALUE?.totalINR || 0} inrPerUsd={inrPerUsd} size="xl" highlight />
                           <div style={{ fontSize: 13, color: "#0052FF", fontWeight: 700, marginTop: 4 }}>
-                            Savings vs budget: ₹{(budgetINR - planData.strategies.BEST_VALUE.totalINR).toLocaleString("en-IN")}
+                            Savings vs budget: ₹{(budgetINR - (planData.strategies?.BEST_VALUE?.totalINR || 0)).toLocaleString("en-IN")}
                           </div>
                         </div>
 
                         <Paragraph style={{ fontSize: 13, marginBottom: 16 }}>
-                          {planData.strategies.BEST_VALUE.objectiveSummary}
+                          {planData.strategies?.BEST_VALUE?.objectiveSummary}
                         </Paragraph>
 
                         {/* Items list - dynamic with icons */}
                         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
-                          {planData.strategies.BEST_VALUE.items.map((it) => (
+                          {(planData.strategies?.BEST_VALUE?.items || []).map((it) => (
                             <div key={it.productId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: isDarkMode ? "rgba(0,82,255,0.06)" : "rgba(0,82,255,0.04)", border: `1px solid ${isDarkMode ? "rgba(0,82,255,0.15)" : "rgba(0,82,255,0.1)"}` }}>
                               <ProductIcon category={it.category} size={32} />
                               <div style={{ flex: 1, minWidth: 0 }}>
@@ -2239,19 +2392,19 @@ export default function App() {
                         </div>
 
                         <div style={{ marginBottom: 12 }}>
-                          <Money inr={planData.strategies.ALTERNATIVE.totalINR} inrPerUsd={inrPerUsd} size="lg" />
+                          <Money inr={planData.strategies?.ALTERNATIVE?.totalINR || 0} inrPerUsd={inrPerUsd} size="lg" />
                           <div style={{ fontSize: 12, color: "#8b5cf6", fontWeight: 600, marginTop: 4 }}>
-                            Savings vs budget: ₹{(budgetINR - planData.strategies.ALTERNATIVE.totalINR).toLocaleString("en-IN")}
+                            Savings vs budget: ₹{(budgetINR - (planData.strategies?.ALTERNATIVE?.totalINR || 0)).toLocaleString("en-IN")}
                           </div>
                         </div>
 
                         <Paragraph type="secondary" style={{ fontSize: 12, minHeight: 36, marginBottom: 14 }}>
-                          {planData.strategies.ALTERNATIVE.objectiveSummary}
+                          {planData.strategies?.ALTERNATIVE?.objectiveSummary}
                         </Paragraph>
 
                         {/* Items list */}
                         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
-                          {planData.strategies.ALTERNATIVE.items.map((it) => (
+                          {(planData.strategies?.ALTERNATIVE?.items || []).map((it) => (
                             <div key={it.productId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: isDarkMode ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` }}>
                               <ProductIcon category={it.category} size={32} />
                               <div style={{ flex: 1, minWidth: 0 }}>

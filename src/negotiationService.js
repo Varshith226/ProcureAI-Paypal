@@ -8,13 +8,29 @@ const DEFAULT_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 /**
  * Deterministic Vendor floor policy:
  * - Vendor has base margin of 12-15%
- * - Max allowable discount is bounded by minimum floor margin (e.g. 5.5% max discount)
- * - Volume rule: order total >= ₹30,000 unlocks up to 3-5% discount
+ * - Max allowable discount is bounded by minimum floor margin
+ * - Volume rule:
+ *    * 4 or 5+ laptops unlock OEM Bulk Fleet discount (8.0% - 9.5%)
+ *    * Bundle items >= 4 or order total >= ₹35,000 unlocks Multi-Line tier (5.5%)
+ *    * Standard tier (3.0%)
  * - No discount can ever be approved below the vendor's hard cost floor!
  */
-function calculateVendorFloor(totalINR, itemCount) {
-  const isBulk = itemCount >= 3 || totalINR >= 35000;
-  const maxDiscountPct = isBulk ? 5.5 : 3.0; // Max 5.5% on bulk
+function calculateVendorFloor(totalINR, itemCount, items = []) {
+  const laptopCount = items
+    .filter((i) => /laptop/i.test(i.category || i.name))
+    .reduce((sum, i) => sum + (Number(i.quantity) || 1), 0);
+
+  let tierName = "Standard B2B Tier";
+  let maxDiscountPct = 3.0;
+
+  if (laptopCount >= 4) {
+    maxDiscountPct = laptopCount >= 5 ? 9.5 : 8.0;
+    tierName = `OEM Fleet Volume Tier (${laptopCount} Laptops)`;
+  } else if (itemCount >= 4 || totalINR >= 35000) {
+    maxDiscountPct = 5.5;
+    tierName = `Multi-Line Bundle Tier (${itemCount} items)`;
+  }
+
   const maxDiscountINR = Math.round(totalINR * (maxDiscountPct / 100));
   const floorPriceINR = totalINR - maxDiscountINR;
 
@@ -22,8 +38,78 @@ function calculateVendorFloor(totalINR, itemCount) {
     floorPriceINR,
     maxDiscountINR,
     maxDiscountPct,
-    isBulk,
+    tierName,
+    laptopCount,
+    isBulk: itemCount >= 3 || totalINR >= 35000 || laptopCount >= 4,
   };
+}
+
+/**
+ * Generate context-aware hardware upgrade suggestions based on current basket components.
+ */
+function generateUpgradeSuggestions(items = [], totalINR = 0) {
+  const suggestions = [];
+  const laptopItem = items.find((i) => /laptop/i.test(i.category || i.name));
+  const monitorItem = items.find((i) => /monitor/i.test(i.category || i.name));
+  const keyboardItem = items.find((i) => /keyboard/i.test(i.category || i.name));
+
+  if (laptopItem) {
+    const qty = Number(laptopItem.quantity) || 1;
+    suggestions.push({
+      id: "upg_laptop_ram",
+      category: "laptop",
+      title: qty >= 4 ? `Fleet RAM Upgrade: 32 GB Enterprise (${qty} units)` : "Upgrade to 32 GB Multitasking RAM",
+      description: "Upgrade system RAM from 16 GB to 32 GB DDR5 for heavy compiling, Docker containers & local LLMs.",
+      priceDeltaINR: Math.round(4500 * qty),
+      badge: "High Performance",
+      inStock: true,
+    });
+    suggestions.push({
+      id: "upg_laptop_warranty",
+      category: "warranty",
+      title: `3-Year Commercial On-Site SLA Care Pack (${qty} units)`,
+      description: "Next-business-day on-site repairs with accidental damage protection directly from certified OEM technicians.",
+      priceDeltaINR: Math.round(2800 * qty),
+      badge: "Enterprise SLA",
+      inStock: true,
+    });
+  }
+
+  if (monitorItem) {
+    suggestions.push({
+      id: "upg_monitor_qhd",
+      category: "monitor",
+      title: "Upgrade to Veltrix Pulse 27\" QHD 170Hz IPS",
+      description: "Upgrade from 1080p to 1440p 2K resolution with 170Hz refresh rate and wide color gamut.",
+      priceDeltaINR: 8500,
+      badge: "Visuals+",
+      inStock: true,
+    });
+  }
+
+  if (keyboardItem) {
+    suggestions.push({
+      id: "upg_peripherals_hot_swap",
+      category: "keyboard",
+      title: "Tactis Quill 75 Wireless Mechanical Keyboard",
+      description: "Hot-swappable tactile switches with acoustic foam dampening and low-latency 2.4GHz wireless.",
+      priceDeltaINR: 2200,
+      badge: "Ergonomics",
+      inStock: true,
+    });
+  }
+
+  suggestions.push({
+    id: "upg_express_logistics",
+    category: "logistics",
+    title: "Expedited Express 48-Hour Air Courier",
+    description: "Priority air transit with temperature-controlled handling and guaranteed 2-day delivery SLA.",
+    priceDeltaINR: 950,
+    badge: "Fast Delivery",
+    inStock: true,
+  });
+
+  return suggestions;
 }
 
 /**
@@ -38,11 +124,11 @@ async function negotiateVendorDiscount({
 }) {
   const total = Number(currentTotalINR);
   const count = items.reduce((sum, it) => sum + (Number(it.quantity) || 1), 0);
-  const { floorPriceINR, maxDiscountINR, maxDiscountPct } = calculateVendorFloor(total, count);
+  const { floorPriceINR, maxDiscountINR, maxDiscountPct, tierName, laptopCount } = calculateVendorFloor(total, count, items);
 
   const targetDiscount = targetDiscountINR
-    ? Math.min(Number(targetDiscountINR), Math.round(total * 0.08))
-    : Math.round(total * 0.05); // Default target 5%
+    ? Math.min(Number(targetDiscountINR), Math.round(total * 0.12))
+    : Math.round(total * (maxDiscountPct / 100));
 
   const apiKey = process.env.GEMINI_API_KEY;
   const isGeminiAvailable = Boolean(apiKey && apiKey !== "your-gemini-api-key");
@@ -75,31 +161,40 @@ async function negotiateVendorDiscount({
   // Fallback to deterministic rules if Gemini unavailable or failed
   if (rounds.length === 0) {
     mode = "OFFLINE_SIMULATION";
-    // 3 realistic rounds
-    const round1Buyer = Math.round(targetDiscount * 1.15); // Buyer asks for high discount
-    const round1Vendor = Math.round(maxDiscountINR * 0.45); // Vendor counters conservative
+    const round1Buyer = Math.round(maxDiscountINR * 1.15);
+    const round1Vendor = Math.round(maxDiscountINR * 0.5);
+
+    const buyerMsg1 = laptopCount >= 4
+      ? `ProcureAI Buyer Agent: We are executing a corporate fleet procurement of ${laptopCount} enterprise laptops (${tierName}, order total ₹${total.toLocaleString("en-IN")}) with an immediate PayPal Pay-on-Delivery Authorization Hold. We request an institutional volume discount of ₹${round1Buyer.toLocaleString("en-IN")} (${((round1Buyer / total) * 100).toFixed(1)}%).`
+      : `ProcureAI Buyer Agent: We are executing an authorized purchase of ${count} items (${tierName}, ₹${total.toLocaleString("en-IN")}) with an immediate PayPal Pay-on-Delivery Authorization Hold. We request a ₹${round1Buyer.toLocaleString("en-IN")} (${((round1Buyer / total) * 100).toFixed(1)}%) volume concession.`;
+
+    const vendorMsg1 = laptopCount >= 4
+      ? `Merchant Quote Engine: Fleet tier acknowledged. For ${laptopCount} laptops, our direct distributor allocation enables an initial volume concession of ₹${round1Vendor.toLocaleString("en-IN")} (${((round1Vendor / total) * 100).toFixed(1)}%) with unified warranty provisioning.`
+      : `Merchant Quote Engine: Standard distributor margin restricts unbundled discounts. Given the ${count}-unit bundle, we can offer an initial commercial concession of ₹${round1Vendor.toLocaleString("en-IN")} (${((round1Vendor / total) * 100).toFixed(1)}%).`;
+
     rounds.push({
       round: 1,
       buyerOfferINR: total - round1Buyer,
       buyerDiscountINR: round1Buyer,
-      buyerMessage: `ProcureAI Buyer Agent: We are executing a corporate bundle purchase of ${count} items (₹${total.toLocaleString()}) with an immediate PayPal pay-on-delivery authorization hold. We request a ₹${round1Buyer.toLocaleString()} (${((round1Buyer / total) * 100).toFixed(1)}%) volume concession.`,
+      buyerMessage: buyerMsg1,
       vendorCounterINR: total - round1Vendor,
       vendorDiscountINR: round1Vendor,
-      vendorMessage: `Merchant Quote Engine: Standard distributor margin restricts unbundled discounts. Given the ${count}-unit bundle, we can offer an initial educational/B2B concession of ₹${round1Vendor.toLocaleString()} (${((round1Vendor / total) * 100).toFixed(1)}%).`,
+      vendorMessage: vendorMsg1,
       buyerOfferUsd: ((total - round1Buyer) * 0.0119).toFixed(2),
       vendorCounterUsd: ((total - round1Vendor) * 0.0119).toFixed(2),
     });
 
-    const round2Buyer = Math.round((round1Buyer + round1Vendor) / 2); // Split difference
-    const round2Vendor = Math.round(maxDiscountINR * 0.85); // Vendor moves closer to floor
+    const round2Buyer = Math.round((round1Buyer + round1Vendor) / 2);
+    const round2Vendor = Math.round(maxDiscountINR * 0.88);
+
     rounds.push({
       round: 2,
       buyerOfferINR: total - round2Buyer,
       buyerDiscountINR: round2Buyer,
-      buyerMessage: `ProcureAI Buyer Agent: Our authorized spending mandate permits immediate settlement if you can meet at ₹${round2Buyer.toLocaleString()} (-₹${round2Buyer.toLocaleString()}). Delivery SLA must remain <= 7 days.`,
+      buyerMessage: `ProcureAI Buyer Agent: Our authorized Ed25519 spending mandate permits instant escrow lock if distributor meets at ₹${round2Buyer.toLocaleString("en-IN")} (-₹${round2Buyer.toLocaleString("en-IN")}). Delivery SLA must remain guaranteed.`,
       vendorCounterINR: total - round2Vendor,
       vendorDiscountINR: round2Vendor,
-      vendorMessage: `Merchant Quote Engine: Verified verified buyer tier. We can advance to tier-2 volume pricing: ₹${round2Vendor.toLocaleString()} discount with guaranteed 5-day dispatch.`,
+      vendorMessage: `Merchant Quote Engine: Verified corporate tier credentials. We can advance to ${tierName} pricing: ₹${round2Vendor.toLocaleString("en-IN")} discount with guaranteed priority dispatch.`,
       buyerOfferUsd: ((total - round2Buyer) * 0.0119).toFixed(2),
       vendorCounterUsd: ((total - round2Vendor) * 0.0119).toFixed(2),
     });
@@ -110,10 +205,10 @@ async function negotiateVendorDiscount({
       round: 3,
       buyerOfferINR: total - round3Discount,
       buyerDiscountINR: round3Discount,
-      buyerMessage: `ProcureAI Buyer Agent: Accepted. Locking in ₹${round3Discount.toLocaleString()} volume rebate under signed Spending Mandate. Proceeding to PayPal authorization.`,
+      buyerMessage: `ProcureAI Buyer Agent: Accepted. Locking in ₹${round3Discount.toLocaleString("en-IN")} volume rebate under signed Spending Mandate. Proceeding to PayPal authorization hold.`,
       vendorCounterINR: total - round3Discount,
       vendorDiscountINR: round3Discount,
-      vendorMessage: `Merchant Quote Engine: Approved. Promo token B2B-AUTHHOLD-${round3Discount} generated and bound to order session.`,
+      vendorMessage: `Merchant Quote Engine: Approved. Promo token PROCURE-B2B-${round3Discount} generated and bound to order session. Floor price margin preserved.`,
       buyerOfferUsd: ((total - round3Discount) * 0.0119).toFixed(2),
       vendorCounterUsd: ((total - round3Discount) * 0.0119).toFixed(2),
     });
@@ -166,10 +261,13 @@ async function negotiateVendorDiscount({
     finalTotalUSD,
     rebateCode,
     rounds,
+    upgradeSuggestions: generateUpgradeSuggestions(items, total),
     marginMetrics: {
       vendorFloorPriceINR: floorPriceINR,
       maxAllowedDiscountINR: maxDiscountINR,
       discountPct: Number(((finalDiscountINR / total) * 100).toFixed(2)),
+      tierName,
+      laptopCount,
     },
   };
 }
