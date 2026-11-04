@@ -570,3 +570,34 @@ div.ag-theme-quartz-dark {
   transition: width 0.4s ease;
 }
 
+/* ==========================================
+   CUSTOM AURORA VAULT CURSOR DESIGN
+   ========================================== */
+@media (hover: hover) and (pointer: fine) {
+  html, body, #root, .ant-layout {
+    cursor: url('/cursor-default.svg') 3 2, auto !important;
+  }
+
+  /* Interactive Elements - Clickable Targets */
+  a, button, [role="button"], 
+  .ant-btn, .ant-btn *,
+  .ant-select, .ant-select-selector, .ant-select-item,
+  .ant-switch, .ant-slider-handle, .ant-slider-rail, .ant-slider-track,
+  .ant-tabs-tab, .ant-radio-button-wrapper, .ant-checkbox-wrapper,
+  .glass-card-interactive, .ant-tag, .cursor-pointer,
+  [data-interactive="true"] {
+    cursor: url('/cursor-pointer.svg') 5 3, pointer !important;
+  }
+
+  /* Text inputs retain precision text cursor */
+  input[type="text"], input[type="number"], textarea, .ant-input, .ant-input-number-input {
+    cursor: text !important;
+  }
+
+  /* Disabled states */
+  button:disabled, .ant-btn-disabled, [disabled], .ant-btn-disabled * {
+    cursor: not-allowed !important;
+  }
+}
+
+

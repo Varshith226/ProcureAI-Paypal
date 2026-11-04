@@ -87,6 +87,7 @@ import SignedMandateCard from "./components/SignedMandateCard";
 import EscrowFlowVisual from "./components/EscrowFlowVisual";
 
 const AuroraVaultCanvas = React.lazy(() => import("./components/canvas/AuroraVaultCanvas"));
+import CustomCursor from "./components/CustomCursor";
 import BudgetCeilingMeter from "./components/BudgetCeilingMeter";
 import OrdersLedgerGrid from "./components/OrdersLedgerGrid";
 import NegotiationModal from "./components/NegotiationModal";
@@ -599,11 +600,14 @@ const StrategyMatrixGrid = ({
         p.node.isRowPinned() ? (
           <strong style={{ color: "#38bdf8", letterSpacing: 0.5 }}>{p.value}</strong>
         ) : (
-          <div>
-            <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{p.value}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-              <Text type="secondary" style={{ fontSize: 11 }}>{p.data.brand || "Verified Vendor"}</Text>
-              <Tag color="green" style={{ fontSize: 10, padding: "0 4px", lineHeight: "16px" }}>✓ In Stock</Tag>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, height: "100%" }}>
+            <ProductIcon category={p.data?.category} size={28} />
+            <div>
+              <div style={{ fontWeight: 600, lineHeight: 1.3, fontSize: 12 }}>{p.value}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                <Text type="secondary" style={{ fontSize: 10 }}>{p.data.brand || "Demo Brand"}</Text>
+                <Tag color="green" style={{ fontSize: 10, padding: "0 4px", lineHeight: "16px" }}>✓ In Stock</Tag>
+              </div>
             </div>
           </div>
         ),
@@ -831,6 +835,113 @@ const StrategyMatrixGrid = ({
     </Card>
   );
 };
+
+// ==========================================
+// PRODUCT CATEGORY ICON COMPONENT
+// ==========================================
+const CATEGORY_GRADIENTS = {
+  monitor:    ["#1a6fdb", "#22d3ee"],
+  keyboard:   ["#7c3aed", "#a78bfa"],
+  mouse:      ["#059669", "#34d399"],
+  headphones: ["#b45309", "#fbbf24"],
+  headset:    ["#b45309", "#fbbf24"],
+  laptop:     ["#0f766e", "#2dd4bf"],
+  default:    ["#1e40af", "#6366f1"],
+};
+
+const CATEGORY_SVGS = {
+  monitor: (
+    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="5" width="28" height="19" rx="3" fill="url(#mon-g)" />
+      <rect x="6" y="7" width="24" height="15" rx="2" fill="#05070F" opacity="0.7" />
+      <rect x="15" y="24" width="6" height="4" rx="1" fill="url(#mon-g)" />
+      <rect x="11" y="27" width="14" height="2" rx="1" fill="url(#mon-g)" />
+      <defs>
+        <linearGradient id="mon-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#1a6fdb"/><stop offset="1" stopColor="#22d3ee"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  keyboard: (
+    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="10" width="30" height="18" rx="3" fill="url(#kb-g)" />
+      <rect x="6" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="12" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="18" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="24" y="13" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="6" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="12" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="18" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="24" y="18" width="4" height="3" rx="1" fill="#fff" opacity="0.3"/>
+      <rect x="9" y="23" width="18" height="3" rx="1.5" fill="#fff" opacity="0.4"/>
+      <defs>
+        <linearGradient id="kb-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#7c3aed"/><stop offset="1" stopColor="#a78bfa"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  mouse: (
+    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="18" cy="21" rx="9" ry="12" fill="url(#ms-g)" />
+      <rect x="17" y="10" width="2" height="6" rx="1" fill="#fff" opacity="0.4"/>
+      <line x1="18" y1="21" x2="18" y2="21" stroke="#fff" strokeWidth="6" strokeLinecap="round" opacity="0.15"/>
+      <path d="M9 18 Q9 10 18 10 Q27 10 27 18" fill="#fff" opacity="0.1"/>
+      <rect x="17" y="14" width="2" height="8" rx="1" fill="#fff" opacity="0.3"/>
+      <defs>
+        <linearGradient id="ms-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#059669"/><stop offset="1" stopColor="#34d399"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  headphones: (
+    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 20 C7 11 29 11 29 20" stroke="url(#hp-g)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+      <rect x="5" y="20" width="6" height="9" rx="3" fill="url(#hp-g)"/>
+      <rect x="25" y="20" width="6" height="9" rx="3" fill="url(#hp-g)"/>
+      <defs>
+        <linearGradient id="hp-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#b45309"/><stop offset="1" stopColor="#fbbf24"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  laptop: (
+    <svg viewBox="0 0 36 36" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="8" width="26" height="18" rx="2" fill="url(#lp-g)"/>
+      <rect x="7" y="10" width="22" height="14" rx="1" fill="#05070F" opacity="0.7"/>
+      <rect x="2" y="26" width="32" height="3" rx="1.5" fill="url(#lp-g)"/>
+      <rect x="13" y="29" width="10" height="1.5" rx="0.75" fill="#fff" opacity="0.3"/>
+      <defs>
+        <linearGradient id="lp-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#0f766e"/><stop offset="1" stopColor="#2dd4bf"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+};
+
+function ProductIcon({ category, size = 36 }) {
+  const cat = (category || "").toLowerCase();
+  const svgKey = cat === "headset" ? "headphones" : cat;
+  const svg = CATEGORY_SVGS[svgKey] || CATEGORY_SVGS.monitor;
+  const [from, to] = CATEGORY_GRADIENTS[svgKey] || CATEGORY_GRADIENTS.default;
+  return (
+    <div style={{
+      width: size, height: size,
+      borderRadius: 8,
+      background: `linear-gradient(135deg, ${from}22, ${to}33)`,
+      border: `1px solid ${from}44`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      flexShrink: 0,
+      backdropFilter: "blur(4px)",
+    }}>
+      {React.cloneElement(svg, { width: size * 0.72, height: size * 0.72 })}
+    </div>
+  );
+}
 
 // ==========================================
 // MAIN COMPONENT: ProcureAI Application
@@ -1545,6 +1656,9 @@ export default function App() {
         />
       </React.Suspense>
 
+      {/* UNIQUE AURORA VAULT CURSOR FOLLOWER */}
+      <CustomCursor isDarkMode={isDarkMode} />
+
       {/* FOREGROUND APPLICATION CONTAINER */}
       <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         {/* SLIM 60PX TOP NAVIGATION HEADER */}
@@ -2001,9 +2115,13 @@ export default function App() {
                         {/* Items list */}
                         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
                           {planData.strategies.CHEAPEST.items.map((it) => (
-                            <div key={it.productId} style={{ fontSize: 12, display: "flex", justifyContent: "space-between" }}>
-                              <Text ellipsis style={{ maxWidth: 180 }}>{it.name}</Text>
-                              <strong style={{ fontFamily: "var(--font-mono)" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
+                            <div key={it.productId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: isDarkMode ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` }}>
+                              <ProductIcon category={it.category} size={32} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: isDarkMode ? "#e2e8f0" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</div>
+                                <div style={{ fontSize: 10, color: isDarkMode ? "#64748b" : "#94a3b8", textTransform: "capitalize", marginTop: 1 }}>{it.category} · {it.brand || "Demo Brand"}</div>
+                              </div>
+                              <strong style={{ fontFamily: "var(--font-mono)", fontSize: 11, flexShrink: 0, color: isDarkMode ? "#38bdf8" : "#0052FF" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
                             </div>
                           ))}
                         </div>
@@ -2052,23 +2170,18 @@ export default function App() {
                           {planData.strategies.BEST_VALUE.objectiveSummary}
                         </Paragraph>
 
-                        {/* Specs highlight */}
-                        <div
-                          style={{
-                            padding: 12,
-                            borderRadius: 10,
-                            background: isDarkMode ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 82, 255, 0.05)",
-                            marginBottom: 16,
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 6,
-                            fontSize: 12,
-                          }}
-                        >
-                          <div><strong>Monitor:</strong> LG UltraGear 24" 144Hz IPS (3-yr Warranty)</div>
-                          <div><strong>Keyboard:</strong> Keychron V1 QMK Custom Mechanical</div>
-                          <div><strong>Mouse:</strong> Razer Viper V3 Wireless (280h Battery)</div>
-                          <div><strong>Audio:</strong> Audio-Technica ATH-M40x Studio Monitor</div>
+                        {/* Items list - dynamic with icons */}
+                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
+                          {planData.strategies.BEST_VALUE.items.map((it) => (
+                            <div key={it.productId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: isDarkMode ? "rgba(0,82,255,0.06)" : "rgba(0,82,255,0.04)", border: `1px solid ${isDarkMode ? "rgba(0,82,255,0.15)" : "rgba(0,82,255,0.1)"}` }}>
+                              <ProductIcon category={it.category} size={32} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: isDarkMode ? "#e2e8f0" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</div>
+                                <div style={{ fontSize: 10, color: isDarkMode ? "#64748b" : "#94a3b8", textTransform: "capitalize", marginTop: 1 }}>{it.category} · {it.brand || "Demo Brand"}</div>
+                              </div>
+                              <strong style={{ fontFamily: "var(--font-mono)", fontSize: 11, flexShrink: 0, color: "#0052FF" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
+                            </div>
+                          ))}
                         </div>
 
                         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -2139,9 +2252,13 @@ export default function App() {
                         {/* Items list */}
                         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
                           {planData.strategies.ALTERNATIVE.items.map((it) => (
-                            <div key={it.productId} style={{ fontSize: 12, display: "flex", justifyContent: "space-between" }}>
-                              <Text ellipsis style={{ maxWidth: 180 }}>{it.name}</Text>
-                              <strong style={{ fontFamily: "var(--font-mono)" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
+                            <div key={it.productId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: isDarkMode ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` }}>
+                              <ProductIcon category={it.category} size={32} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: isDarkMode ? "#e2e8f0" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</div>
+                                <div style={{ fontSize: 10, color: isDarkMode ? "#64748b" : "#94a3b8", textTransform: "capitalize", marginTop: 1 }}>{it.category} · {it.brand || "Demo Brand"}</div>
+                              </div>
+                              <strong style={{ fontFamily: "var(--font-mono)", fontSize: 11, flexShrink: 0, color: isDarkMode ? "#a78bfa" : "#7c3aed" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
                             </div>
                           ))}
                         </div>

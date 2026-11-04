@@ -247,7 +247,7 @@ test("Phase 1.8.7: Disambiguate PayPal return token vs CFO approval token (preve
   assert.equal(cfoIsApproval, true, "CFO token must be correctly flagged as executive approval token");
 
   // 3. Verify SQLite order creation & authorization cycle for returned PayPal token
-  const testOrderId = "504443905P2469904";
+  const testOrderId = `test_return_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   createOrderRecord({
     orderId: testOrderId,
     planId: "plan_demo_1",

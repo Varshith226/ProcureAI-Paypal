@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" fill="none">
+  <defs>
+    <filter id="aurora-glow" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#0052FF" flood-opacity="0.7"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#22D3EE" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="body-grad" x1="4" y1="3" x2="20" y2="19" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A0F1D"/>
+      <stop offset="1" stop-color="#060A14"/>
+    </linearGradient>
+    <linearGradient id="edge-grad" x1="3" y1="2" x2="19" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="0.6" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#818CF8"/>
+    </linearGradient>
+  </defs>
+  <path d="M3 2L20 13L11.5 14.5L8 22L3 2Z" fill="url(#body-grad)" stroke="url(#edge-grad)" stroke-width="1.5" stroke-linejoin="round" filter="url(#aurora-glow)"/>
+  <path d="M3.5 3.5L11.5 14L8.2 20.8" stroke="#38BDF8" stroke-width="0.8" stroke-opacity="0.6"/>
+  <circle cx="3.5" cy="2.5" r="1.2" fill="#FFFFFF"/>
+</svg>
