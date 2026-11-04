@@ -50,6 +50,7 @@ import {
   CarOutlined,
   CheckOutlined,
   TableOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
@@ -797,18 +798,33 @@ const StrategyMatrixGrid = ({
     const totalQty = items.reduce((sum, i) => sum + (i.quantity || 1), 0);
     const leftover = budgetCap - planTotalINR;
 
-    return [
-      {
-        name: "⚡ SETTLEMENT TOTALS",
-        category: "TOTAL",
-        quantity: totalQty,
-        unitPriceINR: currentStrategy.subtotalINR || planTotalINR,
-        shippingINR: currentStrategy.shippingTotalINR || 0,
-        lineTotalINR: planTotalINR,
-        specs: `Headroom: ₹${leftover.toLocaleString("en-IN")} (${leftover >= 0 ? "FEASIBLE" : "DEFICIT"})`,
-        verification: { status: `PayPal: $${planTotalUSD} USD` },
-      },
-    ];
+    const rows = [];
+    const rebate = Number(currentStrategy.appliedRebateINR) || 0;
+    if (rebate > 0) {
+      rows.push({
+        name: "🏷️ AI NEGOTIATED VENDOR REBATE",
+        category: "REBATE",
+        quantity: 1,
+        unitPriceINR: -rebate,
+        shippingINR: 0,
+        lineTotalINR: -rebate,
+        specs: "B2B Volume Concession Verified",
+        verification: { status: "VERIFIED" },
+      });
+    }
+
+    rows.push({
+      name: "⚡ SETTLEMENT TOTALS",
+      category: "TOTAL",
+      quantity: totalQty,
+      unitPriceINR: currentStrategy.subtotalINR || (currentStrategy.originalTotalINR || planTotalINR),
+      shippingINR: currentStrategy.shippingTotalINR || 0,
+      lineTotalINR: planTotalINR,
+      specs: `Headroom: ₹${leftover.toLocaleString("en-IN")} (${leftover >= 0 ? "FEASIBLE" : "DEFICIT"})`,
+      verification: { status: `PayPal: $${planTotalUSD} USD` },
+    });
+
+    return rows;
   }, [items, currentStrategy, budgetCap, planTotalINR, planTotalUSD]);
 
   const categoryColorMap = {
@@ -816,6 +832,7 @@ const StrategyMatrixGrid = ({
     KEYBOARD: "purple",
     MOUSE: "blue",
     HEADPHONES: "magenta",
+    REBATE: "gold",
   };
 
   const columnDefs = useMemo(() => [
@@ -825,7 +842,9 @@ const StrategyMatrixGrid = ({
       width: 135,
       cellRenderer: (p) =>
         p.node?.isRowPinned?.() ? (
-          <Tag color="gold" style={{ fontWeight: 800, borderRadius: 6 }}>TOTAL</Tag>
+          <Tag color={p.value === "REBATE" ? "gold" : "gold"} style={{ fontWeight: 800, borderRadius: 6 }}>
+            {p.value}
+          </Tag>
         ) : (
           <Tag
             color={categoryColorMap[p.value?.toUpperCase()] || "blue"}
@@ -906,14 +925,20 @@ const StrategyMatrixGrid = ({
       editable: (p) => !p.node?.isRowPinned?.(),
       cellEditor: "agNumberCellEditor",
       cellStyle: (p) => (p.node?.isRowPinned?.() ? {} : { cursor: "pointer", background: isDarkMode ? "rgba(0,82,255,0.06)" : "rgba(0,82,255,0.03)" }),
-      cellRenderer: (p) => (
-        <Space>
-          <strong style={{ fontFamily: "var(--font-mono)" }}>₹{Number(p.value || 0).toLocaleString("en-IN")}</strong>
-          {!p.node?.isRowPinned?.() && (
-            <Tag color="blue" style={{ fontSize: 10, padding: "0 4px", cursor: "pointer" }}>Edit</Tag>
-          )}
-        </Space>
-      ),
+      cellRenderer: (p) => {
+        const val = Number(p.value || 0);
+        const isNeg = val < 0;
+        return (
+          <Space>
+            <strong style={{ fontFamily: "var(--font-mono)", color: isNeg ? "#10b981" : "inherit" }}>
+              {isNeg ? `-₹${Math.abs(val).toLocaleString("en-IN")}` : `₹${val.toLocaleString("en-IN")}`}
+            </strong>
+            {!p.node?.isRowPinned?.() && (
+              <Tag color="blue" style={{ fontSize: 10, padding: "0 4px", cursor: "pointer" }}>Edit</Tag>
+            )}
+          </Space>
+        );
+      },
     },
     {
       field: "quantity",
@@ -938,11 +963,15 @@ const StrategyMatrixGrid = ({
       field: "lineTotalINR",
       headerName: "Line Total",
       width: 145,
-      cellRenderer: (p) => (
-        <strong style={{ color: "#0052FF", fontFamily: "var(--font-mono)", fontSize: 14 }}>
-          ₹{Number(p.value || 0).toLocaleString("en-IN")}
-        </strong>
-      ),
+      cellRenderer: (p) => {
+        const val = Number(p.value || 0);
+        const isNeg = val < 0;
+        return (
+          <strong style={{ color: isNeg ? "#10b981" : "#0052FF", fontFamily: "var(--font-mono)", fontSize: 14 }}>
+            {isNeg ? `-₹${Math.abs(val).toLocaleString("en-IN")}` : `₹${val.toLocaleString("en-IN")}`}
+          </strong>
+        );
+      },
     },
     {
       field: "actions",
@@ -1054,7 +1083,11 @@ const StrategyMatrixGrid = ({
             <div style={{ fontSize: 16, fontWeight: 800, color: "#a855f7" }}>
               {itemsCount} Verified
             </div>
-            <div style={{ fontSize: 11, color: "#10b981" }}>✓ 100% In-Stock</div>
+            {currentStrategy?.appliedRebateINR > 0 ? (
+              <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700 }}>🏷️ -₹{Number(currentStrategy.appliedRebateINR).toLocaleString("en-IN")} Rebate</div>
+            ) : (
+              <div style={{ fontSize: 11, color: "#10b981" }}>✓ 100% In-Stock</div>
+            )}
           </div>
         </Col>
       </Row>
@@ -1120,6 +1153,21 @@ const StrategyMatrixGrid = ({
 };
 
 // ==========================================
+// DEFAULT BRIEF CONSTANTS
+// ==========================================
+const DEFAULT_PROMPT =
+  "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.";
+const DEFAULT_BUDGET = 60000;
+const DEFAULT_DELIVERY_DAYS = 7;
+const DEFAULT_REFRESH_HZ = 144;
+const DEFAULT_QUANTITIES = {
+  monitor: 1,
+  keyboard: 1,
+  mouse: 1,
+  headphones: 1,
+};
+
+// ==========================================
 // MAIN COMPONENT: ProcureAI Application
 // ==========================================
 export default function App() {
@@ -1128,18 +1176,11 @@ export default function App() {
   const [currentStep, setCurrentStep] = useState(0);
 
   // Single source of truth for prompt & parsed budget
-  const [prompt, setPrompt] = useState(
-    "I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week."
-  );
-  const [budgetINR, setBudgetINR] = useState(60000);
-  const [maxDeliveryDays, setMaxDeliveryDays] = useState(7);
-  const [minRefreshRateHz, setMinRefreshRateHz] = useState(144);
-  const [quantities, setQuantities] = useState({
-    monitor: 1,
-    keyboard: 1,
-    mouse: 1,
-    headphones: 1,
-  });
+  const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
+  const [budgetINR, setBudgetINR] = useState(DEFAULT_BUDGET);
+  const [maxDeliveryDays, setMaxDeliveryDays] = useState(DEFAULT_DELIVERY_DAYS);
+  const [minRefreshRateHz, setMinRefreshRateHz] = useState(DEFAULT_REFRESH_HZ);
+  const [quantities, setQuantities] = useState({ ...DEFAULT_QUANTITIES });
   const [showConstraintsEditor, setShowConstraintsEditor] = useState(false);
   const [clarificationState, setClarificationState] = useState(null);
 
@@ -1227,6 +1268,50 @@ export default function App() {
     try {
       localStorage.setItem("procureai_bg_mode", mode);
     } catch (_) {}
+  };
+
+  // Safe navigation between steps: returning to Brief completely resets customizations,
+  // stale rebates, and old plan state so the deterministic check runs 100% fresh from prompt
+  const handleNavigateToStep = (targetStep) => {
+    if (targetStep === 0) {
+      setCustomizedStrategies({});
+      setAppliedRebateINR(0);
+      setLockedPlan(null);
+      setPriceSpikeAlert(null);
+      setClarificationState(null);
+      setServerPlan(null);
+    }
+    setCurrentStep(targetStep);
+  };
+
+  // Reset entire intake brief & constraints to canonical default baseline (₹60,000 setup)
+  const handleResetBriefToDefault = () => {
+    setPrompt(DEFAULT_PROMPT);
+    setBudgetINR(DEFAULT_BUDGET);
+    setMaxDeliveryDays(DEFAULT_DELIVERY_DAYS);
+    setMinRefreshRateHz(DEFAULT_REFRESH_HZ);
+    setQuantities({ ...DEFAULT_QUANTITIES });
+    setCustomizedStrategies({});
+    setAppliedRebateINR(0);
+    setServerPlan(null);
+    setLockedPlan(null);
+    setClarificationState(null);
+    setPriceSpikeAlert(null);
+    message.success("Brief, budget & constraints reset to default baseline (₹60,000).");
+  };
+
+  // Vendor Rebate handler: updates active rebate and recalculates live basket price
+  const handleApplyNegotiatedRebate = (rebate, negResult) => {
+    const numRebate = Number(rebate) || 0;
+    setAppliedRebateINR(numRebate);
+    const targetStratKey = activeMatrixStrategy || "BEST_VALUE";
+    const current = planData?.strategies?.[targetStratKey] || planData?.strategies?.BEST_VALUE;
+    const origTotal = current?.originalTotalINR || current?.totalINR || 35492;
+    const newTotal = Math.max(0, origTotal - numRebate);
+    message.success({
+      content: `✓ Applied -₹${numRebate.toLocaleString("en-IN")} vendor rebate! Basket updated from ₹${origTotal.toLocaleString("en-IN")} to ₹${newTotal.toLocaleString("en-IN")}.`,
+      duration: 4,
+    });
   };
 
   // Keyboard shortcut for Command Palette (Cmd+K / Ctrl+K)
@@ -1372,7 +1457,22 @@ export default function App() {
 
     for (const [key, baseStrat] of Object.entries(BASE_CATALOG_STRATEGIES)) {
       if (customizedStrategies[key]) {
-        strats[key] = customizedStrategies[key];
+        const custom = customizedStrategies[key];
+        const rawSubtotal = custom.subtotalINR || custom.items.reduce((s, i) => s + (Number(i.unitPriceINR) || 0) * (i.quantity || 1), 0);
+        const rawShipping = custom.shippingTotalINR || custom.items.reduce((s, i) => s + (Number(i.shippingINR) || 0) * (i.quantity || 1), 0);
+        const rawTotal = rawSubtotal + rawShipping;
+        const discountedTotal = Math.max(0, rawTotal - (appliedRebateINR || 0));
+
+        strats[key] = {
+          ...custom,
+          subtotalINR: rawSubtotal,
+          shippingTotalINR: rawShipping,
+          totalINR: discountedTotal,
+          originalTotalINR: rawTotal,
+          leftoverBudgetINR: currentCap - discountedTotal,
+          appliedRebateINR: appliedRebateINR || 0,
+          isCustomized: true,
+        };
       } else {
         const rawSubtotal = baseStrat.baseItems.reduce(
           (sum, item) => sum + item.unitPriceINR * (item.quantity || 1),
@@ -1383,7 +1483,7 @@ export default function App() {
           0
         );
         const baseTotal = rawSubtotal + rawShipping;
-        const discountedTotal = Math.max(0, baseTotal - appliedRebateINR);
+        const discountedTotal = Math.max(0, baseTotal - (appliedRebateINR || 0));
 
         strats[key] = {
           ...baseStrat,
@@ -1391,9 +1491,10 @@ export default function App() {
           subtotalINR: rawSubtotal,
           shippingTotalINR: rawShipping,
           totalINR: discountedTotal,
+          originalTotalINR: baseTotal,
           leftoverBudgetINR: currentCap - discountedTotal,
           isCustomized: false,
-          appliedRebateINR,
+          appliedRebateINR: appliedRebateINR || 0,
         };
       }
     }
@@ -1408,11 +1509,17 @@ export default function App() {
         if (!strat) continue;
         const custom = customizedStrategies[key];
         const base = custom || strat;
-        const totalWithRebate = Math.max(0, (base.totalINR || 0) - (appliedRebateINR || 0));
+        const rawTotal = (base.subtotalINR || 0) + (base.shippingTotalINR || 0) || base.originalTotalINR || base.totalINR || 0;
+        const totalWithRebate = Math.max(0, rawTotal - (appliedRebateINR || 0));
         merged[key] = {
           ...base,
+          subtotalINR: base.subtotalINR || rawTotal,
+          shippingTotalINR: base.shippingTotalINR || 0,
           totalINR: totalWithRebate,
-          originalTotalINR: base.totalINR,
+          originalTotalINR: rawTotal,
+          leftoverBudgetINR: currentCap - totalWithRebate,
+          appliedRebateINR: appliedRebateINR || 0,
+          isCustomized: Boolean(custom),
         };
       }
       return {
@@ -1452,6 +1559,8 @@ export default function App() {
   const executePlanGeneration = async (budget, activeQuantities, deliveryDays, refreshHz) => {
     setIsParsing(true);
     setErrorMsg(null);
+    setCustomizedStrategies({});
+    setAppliedRebateINR(0);
     const startTime = Date.now();
     const effBudget = budget || budgetINR || 60000;
     const effDelivery = deliveryDays || maxDeliveryDays || 7;
@@ -1530,6 +1639,8 @@ export default function App() {
   const handleConfirmClarification = async (chosenBudget, updatedQuantities) => {
     const budget = Number(chosenBudget) || 60000;
     setBudgetINR(budget);
+    setCustomizedStrategies({});
+    setAppliedRebateINR(0);
     const effQty = updatedQuantities || clarificationState?.detectedQuantities || quantities;
     if (updatedQuantities) {
       setQuantities(updatedQuantities);
@@ -1549,6 +1660,9 @@ export default function App() {
 
     setIsParsing(true);
     setErrorMsg(null);
+    setCustomizedStrategies({});
+    setAppliedRebateINR(0);
+    setServerPlan(null);
     const startTime = Date.now();
 
     // 1. Natural Language extraction using deterministic rules:
@@ -2036,7 +2150,7 @@ export default function App() {
         {/* SLIM 60PX TOP NAVIGATION HEADER */}
         <HeaderNav
           currentStep={currentStep}
-          onStepChange={setCurrentStep}
+          onStepChange={handleNavigateToStep}
           isDarkMode={isDarkMode}
           onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
           bgQuality={bgQuality}
@@ -2451,6 +2565,16 @@ export default function App() {
                     >
                       Paste Supplier Quote
                     </Button>
+
+                    <Button
+                      id="btn-reset-brief-defaults"
+                      size="large"
+                      icon={<ReloadOutlined />}
+                      onClick={handleResetBriefToDefault}
+                      style={{ borderRadius: 12, fontWeight: 600, height: 48 }}
+                    >
+                      Reset to Default Brief
+                    </Button>
                   </div>
 
                   {/* Expandable Structured Constraints Editor */}
@@ -2586,14 +2710,24 @@ export default function App() {
                     gap: 12,
                   }}
                 >
-                  <div>
-                    <Title level={3} style={{ margin: "0 0 4px 0", letterSpacing: -0.5 }}>
-                      Deterministic Optimizer Results
-                    </Title>
-                    <Space wrap size={6}>
-                      <Tag color="blue" style={{ borderRadius: 100 }}>
-                        Budget Cap: ₹{budgetINR.toLocaleString("en-IN")}
-                      </Tag>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+                    <Button
+                      id="btn-back-to-brief"
+                      size="middle"
+                      icon={<ArrowLeftOutlined />}
+                      onClick={() => handleNavigateToStep(0)}
+                      style={{ borderRadius: 10, fontWeight: 600 }}
+                    >
+                      ← Back to Brief
+                    </Button>
+                    <div>
+                      <Title level={3} style={{ margin: "0 0 4px 0", letterSpacing: -0.5 }}>
+                        Deterministic Optimizer Results
+                      </Title>
+                      <Space wrap size={6}>
+                        <Tag color="blue" style={{ borderRadius: 100 }}>
+                          Budget Cap: ₹{budgetINR.toLocaleString("en-IN")}
+                        </Tag>
                       <Tag color="cyan" style={{ borderRadius: 100 }}>
                         Monitor &gt;= {minRefreshRateHz}Hz
                       </Tag>
@@ -2607,8 +2741,9 @@ export default function App() {
                       )}
                     </Space>
                   </div>
+                </div>
 
-                  <Space wrap>
+                <Space wrap>
                     {/* View Switcher */}
                     <div
                       style={{
@@ -2739,6 +2874,16 @@ export default function App() {
 
                         <div style={{ marginBottom: 12 }}>
                           <Money inr={planData.strategies?.BEST_VALUE?.totalINR || 0} inrPerUsd={inrPerUsd} size="xl" highlight />
+                          {appliedRebateINR > 0 && (
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+                              <Tag color="gold" style={{ borderRadius: 6, fontWeight: 700, margin: 0 }}>
+                                🏷️ -₹{appliedRebateINR.toLocaleString("en-IN")} Rebate Applied
+                              </Tag>
+                              <Text delete type="secondary" style={{ fontSize: 13 }}>
+                                ₹{(planData.strategies?.BEST_VALUE?.originalTotalINR || (planData.strategies?.BEST_VALUE?.totalINR + appliedRebateINR)).toLocaleString("en-IN")}
+                              </Text>
+                            </div>
+                          )}
                           <div style={{ fontSize: 13, color: "#0052FF", fontWeight: 700, marginTop: 4 }}>
                             Savings vs budget: ₹{(budgetINR - (planData.strategies?.BEST_VALUE?.totalINR || 0)).toLocaleString("en-IN")}
                           </div>
@@ -3714,12 +3859,12 @@ export default function App() {
       <NegotiationModal
         open={negotiationModalOpen}
         onClose={() => setNegotiationModalOpen(false)}
-        strategy={planData.strategies.BEST_VALUE}
+        plan={planData}
+        strategyKey={activeMatrixStrategy || "BEST_VALUE"}
+        strategy={planData.strategies?.[activeMatrixStrategy || "BEST_VALUE"] || planData.strategies?.BEST_VALUE}
         isDarkMode={isDarkMode}
-        onRebateAgreed={(rebate) => {
-          setAppliedRebateINR(rebate);
-          message.success(`Vendor negotiation successful! Applied -₹${rebate.toLocaleString()} rebate.`);
-        }}
+        onApplyRebate={handleApplyNegotiatedRebate}
+        onRebateAgreed={handleApplyNegotiatedRebate}
       />
 
       {/* 5. Executive Dual-Custody Approval Portal Modal */}

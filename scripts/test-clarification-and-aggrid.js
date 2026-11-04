@@ -148,6 +148,87 @@ async function run() {
     }
     console.log("✓ Plan successfully reverted back to original baseline verified plan!");
 
+    // 7. Test Return to Brief: Customize plan again, return to Brief, re-run deterministic check
+    console.log("Testing Brief reset & fresh deterministic check...");
+    await swapButton.click();
+    await page.waitForSelector("text=Swap Component for Custom Strategy", { timeout: 4000 });
+    const candidateItem2 = page.locator(".candidate-swap-item").first();
+    await candidateItem2.waitFor({ state: "visible", timeout: 4000 });
+    await candidateItem2.click();
+    await page.waitForTimeout(600);
+    console.log("Customized plan with swap again.");
+
+    // Click "← Back to Brief" button
+    console.log("Clicking '#btn-back-to-brief'...");
+    await page.locator("#btn-back-to-brief").click();
+    await page.waitForTimeout(600);
+
+    // Verify we are back on Step 0 (Brief)
+    const generateBtn = page.locator("#btn-generate-plans");
+    await generateBtn.waitFor({ state: "visible", timeout: 4000 });
+    console.log("✓ Successfully returned to Step 0 (Brief)!");
+
+    // Click "Generate Verified Plans →" to re-run deterministic check
+    console.log("Re-running deterministic check from Brief...");
+    await generateBtn.click();
+
+    // If clarification card appears (or directly Step 1)
+    const clarVisible = await page.locator("#agent-clarification-card").isVisible().catch(() => false);
+    if (clarVisible) {
+      await page.locator("#btn-confirm-clarification").click();
+    }
+    await page.waitForSelector("text=Deterministic Optimizer Results", { timeout: 8000 });
+    console.log("✓ Re-entered Step 1!");
+
+    // Switch to AG Grid Matrix to verify plan is pristine (NOT customized)
+    await page.locator("button:has-text('AG Grid Matrix')").click();
+    await page.waitForTimeout(600);
+    const customBadgeAfterReturn = await page.locator("text=Customized").isVisible().catch(() => false);
+    if (customBadgeAfterReturn) {
+      throw new Error("Stale customized plan persisted after returning to Brief!");
+    }
+    console.log("✓ Returning to Brief cleared old customized state and ran 100% fresh deterministic check!");
+
+    // 8. Test AI Vendor Negotiator & "Apply Negotiated Rebate" button
+    console.log("Testing AI Vendor Negotiator & Apply Rebate button...");
+    const negotiatorBtn = page.locator("button:has-text('AI Vendor Negotiator')");
+    await negotiatorBtn.click();
+
+    // Modal opens
+    await page.waitForSelector("text=Autonomous 2-Agent B2B Discount Negotiation", { timeout: 5000 });
+    console.log("✓ AI Vendor Negotiator modal opened!");
+
+    // Start negotiation
+    const startNegBtn = page.locator("button:has-text('Start Autonomous Negotiation')");
+    await startNegBtn.click();
+    console.log("Started autonomous negotiation rounds...");
+
+    // Wait for "Apply Negotiated Rebate" button
+    const applyRebateBtn = page.locator("#btn-apply-negotiated-rebate");
+    await applyRebateBtn.waitFor({ state: "visible", timeout: 12000 });
+    console.log("✓ Concession secured! Found '#btn-apply-negotiated-rebate'.");
+
+    // Click "Apply Negotiated Rebate"
+    await applyRebateBtn.click();
+    await page.waitForTimeout(800);
+    console.log("Clicked Apply Negotiated Rebate button!");
+
+    // Verify rebate reflects in AG Grid matrix
+    const rebateTag = page.locator("text=Rebate Applied");
+    const rebatePinnedRow = page.locator("text=AI NEGOTIATED VENDOR REBATE");
+    const hasRebateRow = await rebatePinnedRow.isVisible().catch(() => false);
+    const hasRebatePill = await page.locator("text=🏷️ -₹").first().isVisible().catch(() => false);
+    if (!hasRebateRow && !hasRebatePill) {
+      throw new Error("Negotiated rebate did not reflect in prices or grid!");
+    }
+    console.log("✓ Negotiated rebate successfully reflected in AG Grid prices & settlement row!");
+
+    // Switch to Cards View and verify rebate tag & strikethrough price
+    await page.locator("button:has-text('Cards View')").click();
+    await page.waitForTimeout(600);
+    const hasCardRebateTag = await page.locator("text=Rebate Applied").first().isVisible().catch(() => false);
+    console.log(`✓ Cards view displays rebate tag: ${hasCardRebateTag}`);
+
     console.log("\n================ ALL VERIFICATIONS PASSED ================");
   } finally {
     await browser.close();

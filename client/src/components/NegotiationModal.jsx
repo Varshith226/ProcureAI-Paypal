@@ -18,22 +18,33 @@ export default function NegotiationModal({
   open,
   onClose,
   plan,
-  strategyKey,
+  strategy,
+  strategyKey = "BEST_VALUE",
   onApplyRebate,
+  onRebateAgreed,
   isDarkMode = true,
 }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
-  const selectedStrategy = plan?.strategies?.[strategyKey] || Object.values(plan?.strategies || {})[0];
-  const totalINR = selectedStrategy?.totalINR || 60000;
+  const selectedStrategy =
+    strategy ||
+    plan?.strategies?.[strategyKey] ||
+    (plan?.strategies ? Object.values(plan.strategies)[0] : null);
+  const totalINR = selectedStrategy?.totalINR || 35492;
   const items = selectedStrategy?.items || [];
+
+  React.useEffect(() => {
+    if (open) {
+      setResult(null);
+    }
+  }, [open, totalINR]);
 
   const handleStartNegotiation = async () => {
     setLoading(true);
     try {
       const data = await negotiateDiscount({
-        planId: plan?.planId,
+        planId: plan?.planId || "plan_demo_1",
         items,
         currentTotalINR: totalINR,
         maxRounds: 3,
@@ -265,6 +276,7 @@ export default function NegotiationModal({
                 Dismiss
               </Button>
               <Button
+                id="btn-apply-negotiated-rebate"
                 type="primary"
                 icon={<CheckCircleOutlined />}
                 style={{
@@ -274,7 +286,13 @@ export default function NegotiationModal({
                   fontWeight: 700,
                 }}
                 onClick={() => {
-                  onApplyRebate(result.finalDiscountINR, result);
+                  const discount = result?.finalDiscountINR || 0;
+                  if (typeof onApplyRebate === "function") {
+                    onApplyRebate(discount, result);
+                  }
+                  if (typeof onRebateAgreed === "function") {
+                    onRebateAgreed(discount, result);
+                  }
                   onClose();
                 }}
               >
