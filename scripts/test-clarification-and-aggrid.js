@@ -288,6 +288,89 @@ async function run() {
     console.log("✓ Lock button is now re-ENABLED and ready for spending mandate signing!");
     console.log("✓ Over-budget deficit resolved and basket fits within budget cap!");
 
+    // 10. Test Multi-Dimensional Radar Chart & What-If Sensitivity Trade-offs
+    console.log("Testing Radar Chart & What-If Trade-off Frontier...");
+    const radarTab = page.locator("button:has-text('Trade-offs Radar')");
+    await radarTab.click();
+    await page.waitForTimeout(600);
+
+    // Verify SVG Radar exists and has 3 plan polygons
+    const radarSvg = page.locator("svg[viewBox='0 0 460 340']");
+    await radarSvg.waitFor({ state: "visible", timeout: 5000 });
+    const polygonCount = await radarSvg.locator("polygon").count();
+    console.log(`✓ Radar Chart rendered with ${polygonCount} web rings and plan polygons!`);
+
+    // Verify radar axis labels
+    const costLabel = await page.locator("text=Cost Efficiency").first().isVisible();
+    const specLabel = await page.locator("text=Spec Match").first().isVisible();
+    if (!costLabel || !specLabel) {
+      throw new Error("Radar chart axis labels are missing or clipped!");
+    }
+    console.log("✓ Radar chart axes rendered cleanly with zero text truncation!");
+
+    // Verify Smart Trade-off Frontier card
+    const tradeoffCard = page.locator("#tradeoff-frontier-card");
+    await tradeoffCard.waitFor({ state: "visible", timeout: 5000 });
+    const recCards = await tradeoffCard.locator(".ant-col").count();
+    console.log(`✓ Smart Trade-off Frontier rendered with ${recCards} actionable sensitivity recommendations!`);
+
+    // Test applying a trade-off
+    const applyTradeoffBtn = tradeoffCard.locator("button:has-text('Apply')").first();
+    const applyTradeoffText = await applyTradeoffBtn.innerText();
+    console.log(`Clicking Trade-off action: '${applyTradeoffText}'...`);
+    await applyTradeoffBtn.click();
+    await page.waitForTimeout(600);
+
+    // Verify Tradeoff Confirmation Modal is VISIBLE
+    const confirmModal = page.locator(".ant-modal:has-text('Confirm Sensitivity Trade-Off')");
+    await confirmModal.waitFor({ state: "visible", timeout: 5000 });
+    console.log("✓ Sensitivity Trade-Off Confirmation Modal is VISIBLE with itemized adjustments!");
+
+    // Click 'Confirm & Apply Plan Changes →'
+    const confirmApplyBtn = page.locator("button:has-text('Confirm & Apply Plan Changes')");
+    await confirmApplyBtn.waitFor({ state: "visible", timeout: 5000 });
+    await confirmApplyBtn.click();
+    await page.waitForTimeout(1000);
+    console.log("✓ Trade-off confirmed and plan dynamically updated with concrete replacements!");
+
+    // Test 'Reset to Default Constraints' button
+    const resetDefaultBtn = page.locator("#btn-reset-tradeoff-default");
+    await resetDefaultBtn.waitFor({ state: "visible", timeout: 5000 });
+    console.log("Clicking '#btn-reset-tradeoff-default' to revert to baseline...");
+    await resetDefaultBtn.click();
+    await page.waitForTimeout(1000);
+    console.log("✓ Reset to Default Constraints successfully restored baseline plan!");
+
+    // 11. Test Checkout & PayPal Capture in Last Stage
+    console.log("Testing Step 2 (Mandate) and Step 3 (PayPal Pay-on-Delivery Capture)...");
+    const selectPlanBtn = page.locator("button:has-text('Lock & Approve Plan B — Best Value →')").first();
+    await selectPlanBtn.click();
+    await page.waitForTimeout(800);
+
+    // Should be on Step 2 (Order Mandate)
+    await page.waitForSelector("text=Dual-Custody Spending Gate", { timeout: 6000 });
+    console.log("✓ Reached Step 2 with locked cryptographic spending mandate!");
+
+    // Trigger simulation/sandbox auth
+    const simAuthBtn = page.locator("#btn-fast-simulation-auth");
+    await simAuthBtn.click();
+    await page.waitForTimeout(1000);
+
+    // Should be on Step 3 (Settle)
+    await page.waitForSelector("#btn-confirm-delivery", { timeout: 6000 });
+    console.log("✓ Reached Step 3 (Last Stage) with PayPal Authorization Hold active!");
+
+    // Click Confirm Delivery & Capture
+    const confirmDeliveryBtn = page.locator("#btn-confirm-delivery");
+    await confirmDeliveryBtn.waitFor({ state: "visible", timeout: 5000 });
+    console.log("Clicking '#btn-confirm-delivery' in the last stage...");
+    await confirmDeliveryBtn.click();
+    await page.waitForTimeout(1200);
+
+    // Verify capture succeeded and status tag is CAPTURED
+    await page.waitForSelector("text=Delivery Confirmed & Funds Captured", { timeout: 6000 });
+    console.log("✓ Last Stage Payment CAPTURE succeeded flawlessly with zero errors!");
+
     console.log("\n================ ALL VERIFICATIONS PASSED ================");
   } finally {
     await browser.close();

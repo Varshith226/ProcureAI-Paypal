@@ -52,6 +52,10 @@ import {
   TableOutlined,
   ArrowLeftOutlined,
   ArrowRightOutlined,
+  SlidersOutlined,
+  ControlOutlined,
+  DollarCircleOutlined,
+  ArrowUpOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
@@ -68,6 +72,7 @@ import "./index.css";
 
 import localCatalog from "./catalog.json";
 import { rebalanceBasket } from "./utils/rebalancer";
+import { computeTradeoffRecommendations } from "./utils/tradeoffRecommender";
 import {
   fetchFxRate,
   fetchAuditLog,
@@ -100,6 +105,7 @@ import ApprovalPortalModal from "./components/ApprovalPortalModal";
 import MultimodalQuoteModal from "./components/MultimodalQuoteModal";
 import ActivityInspector from "./components/ActivityInspector";
 import PayPalInvoiceModal from "./components/PayPalInvoiceModal";
+import TradeoffConfirmModal from "./components/TradeoffConfirmModal";
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -601,165 +607,523 @@ const BASE_CATALOG_STRATEGIES = {
 };
 
 // ==========================================
-// FEATURE 4: INTERACTIVE 3-STRATEGY SVG RADAR CHART
 // ==========================================
-const StrategyRadarChart = ({ strategies, budgetCap, isDarkMode, onSelectStrategy }) => {
+// FEATURE 4: INTERACTIVE 3-STRATEGY SVG RADAR CHART & WHAT-IF TRADE-OFF FRONTIER
+// ==========================================
+const STRATEGY_RADAR_THEMES = {
+  CHEAPEST: {
+    color: "#10b981", // Emerald Green
+    stroke: "#10b981",
+    fill: "rgba(16, 185, 129, 0.22)",
+    dotColor: "#34d399",
+    name: "Plan A — Cheapest",
+    badge: "Lowest Cost",
+  },
+  BEST_VALUE: {
+    color: "#38bdf8", // Sky Blue
+    stroke: "#38bdf8",
+    fill: "rgba(56, 189, 248, 0.32)",
+    dotColor: "#60a5fa",
+    name: "Plan B — Best Value",
+    badge: "Top Pick",
+  },
+  ALTERNATIVE: {
+    color: "#c084fc", // Radiant Purple
+    stroke: "#c084fc",
+    fill: "rgba(192, 132, 252, 0.22)",
+    dotColor: "#e879f9",
+    name: "Plan C — Alternative",
+    badge: "Spec Trade-off",
+  },
+};
+
+const SmartTradeoffFrontier = ({
+  budgetCap = 60000,
+  maxDeliveryDays = 7,
+  minRefreshRateHz = 144,
+  strategies = {},
+  catalogProducts = [],
+  activeStrategyKey = "BEST_VALUE",
+  appliedTradeoff = null,
+  onSelectTradeoffForConfirm,
+  onApplyTradeoff,
+  onResetToDefault,
+  isDarkMode = true,
+}) => {
+  const recommendations = computeTradeoffRecommendations({
+    budgetINR: budgetCap,
+    maxDeliveryDays,
+    minRefreshRateHz,
+    strategies,
+    catalogProducts,
+    activeStrategyKey,
+  });
+
+  return (
+    <Card
+      id="tradeoff-frontier-card"
+      style={{
+        borderRadius: 16,
+        marginTop: 20,
+        background: isDarkMode ? "rgba(15, 23, 42, 0.75)" : "#ffffff",
+        border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 82, 255, 0.15)"}`,
+      }}
+      bodyStyle={{ padding: "20px 24px" }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <SlidersOutlined style={{ color: "#38bdf8", fontSize: 17 }} />
+            <Title level={4} style={{ margin: 0, letterSpacing: -0.3 }}>
+              Smart Trade-off Frontier & Sensitivity Recommendations
+            </Title>
+            <Tag color="purple" style={{ borderRadius: 100, fontWeight: 700 }}>
+              What-If Intelligence
+            </Tag>
+          </div>
+          <Text type="secondary" style={{ fontSize: 12, marginTop: 4, display: "block" }}>
+            Deterministic sensitivity trade-offs: adjust delivery deadlines or budget envelopes to unlock cost savings and premium specifications.
+          </Text>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          {appliedTradeoff && (
+            <Tag color="cyan" style={{ borderRadius: 6, fontWeight: 700 }}>
+              Active: {appliedTradeoff.title}
+            </Tag>
+          )}
+          <Button
+            id="btn-reset-tradeoff-default"
+            size="small"
+            icon={<UndoOutlined />}
+            onClick={onResetToDefault}
+            style={{ borderRadius: 8, fontSize: 12, fontWeight: 600 }}
+          >
+            Reset to Default
+          </Button>
+        </div>
+      </div>
+
+      <Row gutter={[16, 16]}>
+        {recommendations.map((rec) => {
+          const borderColor = rec.badgeColor === "green" ? "#10b981" : rec.badgeColor === "blue" ? "#38bdf8" : "#c084fc";
+          return (
+            <Col xs={24} md={8} key={rec.id}>
+              <div
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  padding: "16px 18px",
+                  borderRadius: 14,
+                  background: isDarkMode ? "rgba(2, 6, 23, 0.6)" : "#f8fafc",
+                  border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.07)" : "#e2e8f0"}`,
+                  borderTop: `3px solid ${borderColor}`,
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <Space size={8}>
+                      {rec.type === "ECONOMY" ? (
+                        <DollarCircleOutlined style={{ color: "#10b981", fontSize: 15 }} />
+                      ) : rec.type === "UPGRADE" ? (
+                        <ArrowUpOutlined style={{ color: "#38bdf8", fontSize: 15 }} />
+                      ) : (
+                        <ThunderboltOutlined style={{ color: "#c084fc", fontSize: 15 }} />
+                      )}
+                      <Text strong style={{ fontSize: 13 }}>{rec.title}</Text>
+                    </Space>
+                    <Tag color={rec.badgeColor} style={{ borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
+                      {rec.badge}
+                    </Tag>
+                  </div>
+
+                  <div style={{ fontSize: 14, fontWeight: 800, color: borderColor, marginBottom: 8 }}>
+                    {rec.headline}
+                  </div>
+
+                  <Paragraph type="secondary" style={{ fontSize: 12, lineHeight: 1.5, margin: "0 0 12px 0" }}>
+                    {rec.description}
+                  </Paragraph>
+
+                  {rec.replacements && rec.replacements.length > 0 && (
+                    <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 10 }}>
+                      <CheckCircleOutlined style={{ color: "#10b981", marginRight: 4 }} />
+                      {rec.replacements.length} item substitution(s) ready to verify
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gap: 6,
+                      background: isDarkMode ? "rgba(255, 255, 255, 0.03)" : "#f1f5f9",
+                      padding: "8px 10px",
+                      borderRadius: 8,
+                      marginBottom: 14,
+                      fontSize: 11,
+                    }}
+                  >
+                    {rec.metrics.map((m, i) => (
+                      <div key={i}>
+                        <div style={{ color: "#64748b", fontSize: 10 }}>{m.label}</div>
+                        <div style={{ fontWeight: 700, marginTop: 2, color: m.isGood ? "#10b981" : undefined }}>
+                          {m.value}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Button
+                  type="primary"
+                  ghost
+                  block
+                  style={{
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    borderColor,
+                    color: borderColor,
+                  }}
+                  onClick={() => {
+                    if (onSelectTradeoffForConfirm) {
+                      onSelectTradeoffForConfirm(rec);
+                    } else if (onApplyTradeoff) {
+                      onApplyTradeoff(rec);
+                    }
+                  }}
+                >
+                  {rec.actionLabel} →
+                </Button>
+              </div>
+            </Col>
+          );
+        })}
+      </Row>
+    </Card>
+  );
+};
+
+const StrategyRadarChart = ({
+  strategies,
+  budgetCap,
+  maxDeliveryDays = 7,
+  minRefreshRateHz = 144,
+  catalogProducts = [],
+  isDarkMode,
+  onSelectStrategy,
+  onApplyTradeoff,
+  onSelectTradeoffForConfirm,
+  onResetToDefault,
+  appliedTradeoff,
+}) => {
+  const [hoveredKey, setHoveredKey] = useState(null);
+
   const axes = [
-    { label: "Cost Efficiency", key: "cost" },
-    { label: "Hardware Quality", key: "quality" },
-    { label: "Reliability & Warranty", key: "reliability" },
-    { label: "Delivery Speed", key: "delivery" },
-    { label: "Specification Match", key: "specMatch" },
+    { label: "Cost Efficiency", key: "cost", anchor: "middle", dx: 0, dy: -14 },
+    { label: "Hardware Quality", key: "quality", anchor: "start", dx: 14, dy: -4 },
+    { label: "Reliability & Warranty", key: "reliability", anchor: "start", dx: 12, dy: 14 },
+    { label: "Delivery Speed", key: "delivery", anchor: "end", dx: -12, dy: 14 },
+    { label: "Spec Match", key: "specMatch", anchor: "end", dx: -14, dy: -4 },
   ];
 
   const calculateNormalizedMetrics = (strat) => {
-    const costRatio = Math.max(0.2, Math.min(1.0, 1 - strat.totalINR / (budgetCap * 1.2)));
-    const quality = (strat.scoreBreakdown?.quality || 75) / 100;
-    const reliability = (strat.scoreBreakdown?.reliability || 80) / 100;
-    const delivery = (strat.scoreBreakdown?.delivery || 85) / 100;
-    const specMatch = strat.compositeScore || 0.85;
+    // 1. Cost Efficiency
+    const total = Number(strat.totalINR || budgetCap);
+    const costRatio = Math.max(0.35, Math.min(0.96, 1 - (total / (budgetCap * 1.35))));
+
+    // 2. Hardware Quality
+    const rawQ = strat.scoreBreakdown?.quality ?? 0.75;
+    const quality = Math.max(0.35, Math.min(0.96, rawQ > 1 ? rawQ / 100 : rawQ));
+
+    // 3. Reliability & Warranty
+    const rawR = strat.scoreBreakdown?.reliability ?? 0.8;
+    const reliability = Math.max(0.35, Math.min(0.96, rawR > 1 ? rawR / 100 : rawR));
+
+    // 4. Delivery Speed
+    const rawD = strat.scoreBreakdown?.delivery ?? 0.85;
+    const delivery = Math.max(0.35, Math.min(0.96, rawD > 1 ? rawD / 100 : rawD));
+
+    // 5. Specification Match
+    const rawSpec = strat.compositeScore ?? 0.88;
+    const specMatch = Math.max(0.4, Math.min(0.98, rawSpec > 1 ? rawSpec / 100 : rawSpec));
 
     return [costRatio, quality, reliability, delivery, specMatch];
   };
 
-  const polarToCartesian = (radius, angleDeg, center = 160) => {
+  const center = { x: 230, y: 165 };
+  const maxRadius = 110;
+
+  const polarToCartesian = (radius, angleDeg) => {
     const angleRad = ((angleDeg - 90) * Math.PI) / 180;
     return {
-      x: center + radius * Math.cos(angleRad),
-      y: center + radius * Math.sin(angleRad),
+      x: center.x + radius * Math.cos(angleRad),
+      y: center.y + radius * Math.sin(angleRad),
     };
   };
 
-  const getPolygonPoints = (metrics, maxRadius = 110, center = 160) => {
+  const getPolygonPoints = (metrics) => {
     const angleStep = 360 / axes.length;
     return metrics
       .map((val, idx) => {
-        const pt = polarToCartesian(val * maxRadius, idx * angleStep, center);
+        const pt = polarToCartesian(val * maxRadius, idx * angleStep);
         return `${pt.x},${pt.y}`;
       })
       .join(" ");
   };
 
   return (
-    <Card
-      style={{
-        borderRadius: 16,
-        marginBottom: 24,
-        background: isDarkMode ? "rgba(15, 23, 42, 0.75)" : "#ffffff",
-        border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 82, 255, 0.15)"}`,
-      }}
-    >
-      <Row gutter={[24, 24]} align="middle">
-        <Col xs={24} md={12} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Title level={4} style={{ margin: "0 0 12px 0", letterSpacing: -0.5 }}>
-            🕸️ Multi-Dimensional Trade-off Radar
-          </Title>
-          <Text type="secondary" style={{ fontSize: 13, marginBottom: 16, textAlign: "center" }}>
-            Compare plans across cost efficiency, specs, reliability, and delivery speed
-          </Text>
+    <div>
+      <Card
+        style={{
+          borderRadius: 16,
+          marginBottom: 20,
+          background: isDarkMode ? "rgba(15, 23, 42, 0.75)" : "#ffffff",
+          border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 82, 255, 0.15)"}`,
+        }}
+        bodyStyle={{ padding: 24 }}
+      >
+        <Row gutter={[28, 24]} align="middle">
+          <Col xs={24} md={13} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ textAlign: "center", marginBottom: 8 }}>
+              <Title level={4} style={{ margin: "0 0 4px 0", letterSpacing: -0.5 }}>
+                <CompassOutlined style={{ color: "#38bdf8", marginRight: 8 }} />
+                Multi-Dimensional Trade-off Radar
+              </Title>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Hover plans to inspect relative strengths across cost, specs, quality, and delivery
+              </Text>
+            </div>
 
-          <svg width={320} height={320} viewBox="0 0 320 320">
-            {[0.25, 0.5, 0.75, 1.0].map((ring) => (
-              <circle
-                key={ring}
-                cx={160}
-                cy={160}
-                r={110 * ring}
-                fill="none"
-                stroke={isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)"}
-                strokeDasharray={ring < 1.0 ? "3 3" : undefined}
-              />
-            ))}
+            <svg
+              width="100%"
+              height={340}
+              viewBox="0 0 460 340"
+              style={{ overflow: "visible", maxWidth: 460 }}
+            >
+              <defs>
+                <filter id="radar-glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
 
-            {axes.map((ax, idx) => {
-              const pt = polarToCartesian(110, (idx * 360) / axes.length, 160);
-              const labelPt = polarToCartesian(128, (idx * 360) / axes.length, 160);
-              return (
-                <g key={ax.key}>
-                  <line
-                    x1={160}
-                    y1={160}
-                    x2={pt.x}
-                    y2={pt.y}
-                    stroke={isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"}
-                  />
-                  <text
-                    x={labelPt.x}
-                    y={labelPt.y}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill={isDarkMode ? "#94a3b8" : "#475569"}
-                    fontSize={10}
-                    fontWeight={600}
+              {/* Concentric Pentagonal Web Grid */}
+              {[0.25, 0.5, 0.75, 1.0].map((ring) => {
+                const ringPoints = axes
+                  .map((_, idx) => {
+                    const pt = polarToCartesian(maxRadius * ring, (idx * 360) / axes.length);
+                    return `${pt.x},${pt.y}`;
+                  })
+                  .join(" ");
+                return (
+                  <g key={ring}>
+                    <polygon
+                      points={ringPoints}
+                      fill="none"
+                      stroke={isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"}
+                      strokeWidth={1}
+                      strokeDasharray={ring < 1.0 ? "3 3" : undefined}
+                    />
+                    {/* Ring label on top vertical spoke */}
+                    <text
+                      x={center.x + 4}
+                      y={center.y - maxRadius * ring + 10}
+                      fill={isDarkMode ? "#64748b" : "#94a3b8"}
+                      fontSize={9}
+                      fontWeight={700}
+                    >
+                      {`${Math.round(ring * 100)}%`}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Axis Spoke Lines & Padded Labels */}
+              {axes.map((ax, idx) => {
+                const angle = (idx * 360) / axes.length;
+                const spokeEnd = polarToCartesian(maxRadius, angle);
+                const labelPos = polarToCartesian(maxRadius + 18, angle);
+                return (
+                  <g key={ax.key}>
+                    <line
+                      x1={center.x}
+                      y1={center.y}
+                      x2={spokeEnd.x}
+                      y2={spokeEnd.y}
+                      stroke={isDarkMode ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.15)"}
+                      strokeWidth={1.2}
+                    />
+                    <text
+                      x={labelPos.x + ax.dx}
+                      y={labelPos.y + ax.dy}
+                      textAnchor={ax.anchor}
+                      dominantBaseline="middle"
+                      fill={isDarkMode ? "#cbd5e1" : "#334155"}
+                      fontSize={11}
+                      fontWeight={700}
+                    >
+                      {ax.label}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Plan Polygons */}
+              {Object.values(strategies).map((strat) => {
+                const cfg = STRATEGY_RADAR_THEMES[strat.strategyKey] || {
+                  color: "#38bdf8",
+                  stroke: "#38bdf8",
+                  fill: "rgba(56, 189, 248, 0.25)",
+                  dotColor: "#60a5fa",
+                };
+                const metrics = calculateNormalizedMetrics(strat);
+                const points = getPolygonPoints(metrics);
+                const isHovered = hoveredKey === strat.strategyKey;
+                const isDimmed = hoveredKey && !isHovered;
+
+                return (
+                  <g
+                    key={strat.strategyKey}
+                    onMouseEnter={() => setHoveredKey(strat.strategyKey)}
+                    onMouseLeave={() => setHoveredKey(null)}
+                    style={{ cursor: "pointer", transition: "opacity 0.2s ease" }}
+                    opacity={isDimmed ? 0.2 : 1}
                   >
-                    {ax.label}
-                  </text>
-                </g>
-              );
-            })}
+                    <polygon
+                      points={points}
+                      fill={cfg.fill}
+                      fillOpacity={isHovered ? 0.5 : strat.strategyKey === "BEST_VALUE" ? 0.32 : 0.2}
+                      stroke={cfg.stroke}
+                      strokeWidth={isHovered ? 3.5 : strat.strategyKey === "BEST_VALUE" ? 2.8 : 2.0}
+                      filter={isHovered ? "url(#radar-glow)" : undefined}
+                    />
+                    {/* Vertices */}
+                    {metrics.map((val, idx) => {
+                      const pt = polarToCartesian(val * maxRadius, (idx * 360) / axes.length);
+                      return (
+                        <circle
+                          key={idx}
+                          cx={pt.x}
+                          cy={pt.y}
+                          r={isHovered ? 5.5 : 4}
+                          fill={cfg.dotColor}
+                          stroke={isDarkMode ? "#0f172a" : "#ffffff"}
+                          strokeWidth={1.5}
+                        />
+                      );
+                    })}
+                  </g>
+                );
+              })}
+            </svg>
 
-            {Object.values(strategies).map((strat) => {
-              const metrics = calculateNormalizedMetrics(strat);
-              const points = getPolygonPoints(metrics);
-              return (
-                <polygon
-                  key={strat.strategyKey}
-                  points={points}
-                  fill={strat.badgeColor}
-                  fillOpacity={strat.strategyKey === "BEST_VALUE" ? 0.35 : 0.15}
-                  stroke={strat.badgeColor}
-                  strokeWidth={strat.strategyKey === "BEST_VALUE" ? 2.5 : 1.5}
-                />
-              );
-            })}
-          </svg>
-        </Col>
-
-        <Col xs={24} md={12}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {Object.values(strategies).map((strat) => {
-              const isBest = strat.strategyKey === "BEST_VALUE";
-              return (
-                <div
-                  key={strat.strategyKey}
-                  style={{
-                    padding: "14px 16px",
-                    borderRadius: 12,
-                    background: isBest
-                      ? isDarkMode ? "rgba(0, 82, 255, 0.12)" : "#eff6ff"
-                      : isDarkMode ? "rgba(255, 255, 255, 0.03)" : "#f8fafc",
-                    border: `1px solid ${isBest ? "#0052FF" : isDarkMode ? "rgba(255, 255, 255, 0.08)" : "#e2e8f0"}`,
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <Space>
-                      {strat.icon}
-                      <Text strong style={{ fontSize: 14 }}>{strat.strategyName}</Text>
-                      {isBest && <Tag color="blue">Top Pick</Tag>}
-                    </Space>
-                    <Text strong style={{ color: strat.badgeColor, fontSize: 15 }}>
-                      ₹{strat.totalINR.toLocaleString()}
-                    </Text>
+            {/* Interactive Color Swatch Legend */}
+            <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "wrap", justifyContent: "center" }}>
+              {Object.values(strategies).map((strat) => {
+                const cfg = STRATEGY_RADAR_THEMES[strat.strategyKey] || { color: "#38bdf8", name: strat.strategyName };
+                const isHovered = hoveredKey === strat.strategyKey;
+                return (
+                  <div
+                    key={strat.strategyKey}
+                    onMouseEnter={() => setHoveredKey(strat.strategyKey)}
+                    onMouseLeave={() => setHoveredKey(null)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "4px 10px",
+                      borderRadius: 100,
+                      background: isHovered
+                        ? isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.08)"
+                        : isDarkMode ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.03)",
+                      border: `1px solid ${isHovered ? cfg.color : "transparent"}`,
+                      cursor: "pointer",
+                      fontSize: 11,
+                      fontWeight: 600,
+                    }}
+                  >
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: cfg.color, display: "inline-block" }} />
+                    <span style={{ color: cfg.color }}>{strat.strategyName}</span>
+                    <span style={{ color: "#94a3b8" }}>(₹{strat.totalINR.toLocaleString("en-IN")})</span>
                   </div>
-                  <Paragraph type="secondary" style={{ fontSize: 12, margin: "6px 0 10px 0" }}>
-                    {strat.objectiveSummary}
-                  </Paragraph>
-                  <Button
-                    type={isBest ? "primary" : "default"}
-                    size="small"
-                    block
-                    style={{ borderRadius: 8, fontWeight: 600 }}
-                    onClick={() => onSelectStrategy(strat.strategyKey)}
+                );
+              })}
+            </div>
+          </Col>
+
+          {/* Right Strategy Cards */}
+          <Col xs={24} md={11}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {Object.values(strategies).map((strat) => {
+                const isBest = strat.strategyKey === "BEST_VALUE";
+                const cfg = STRATEGY_RADAR_THEMES[strat.strategyKey] || { color: "#38bdf8" };
+                const isHovered = hoveredKey === strat.strategyKey;
+                return (
+                  <div
+                    key={strat.strategyKey}
+                    onMouseEnter={() => setHoveredKey(strat.strategyKey)}
+                    onMouseLeave={() => setHoveredKey(null)}
+                    style={{
+                      padding: "14px 16px",
+                      borderRadius: 12,
+                      background: isHovered
+                        ? isDarkMode ? "rgba(255, 255, 255, 0.06)" : "#f8fafc"
+                        : isBest
+                        ? isDarkMode ? "rgba(0, 82, 255, 0.12)" : "#eff6ff"
+                        : isDarkMode ? "rgba(255, 255, 255, 0.02)" : "#f8fafc",
+                      border: `1px solid ${isHovered ? cfg.color : isBest ? "#0052FF" : isDarkMode ? "rgba(255, 255, 255, 0.08)" : "#e2e8f0"}`,
+                      transition: "all 0.2s ease",
+                    }}
                   >
-                    Select {strat.strategyName} →
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        </Col>
-      </Row>
-    </Card>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <Space>
+                        {strat.icon}
+                        <Text strong style={{ fontSize: 14 }}>{strat.strategyName}</Text>
+                        {isBest && <Tag color="blue">Top Pick</Tag>}
+                      </Space>
+                      <Text strong style={{ color: cfg.color, fontSize: 16 }}>
+                        ₹{strat.totalINR.toLocaleString("en-IN")}
+                      </Text>
+                    </div>
+                    <Paragraph type="secondary" style={{ fontSize: 12, margin: "6px 0 10px 0" }}>
+                      {strat.objectiveSummary}
+                    </Paragraph>
+                    <Button
+                      type={isBest ? "primary" : "default"}
+                      size="small"
+                      block
+                      style={{ borderRadius: 8, fontWeight: 700 }}
+                      onClick={() => onSelectStrategy(strat.strategyKey)}
+                    >
+                      Lock & Approve {strat.strategyName} →
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </Col>
+        </Row>
+      </Card>
+
+      {/* Smart Trade-off Frontier & Sensitivity Section */}
+      <SmartTradeoffFrontier
+        budgetCap={budgetCap}
+        maxDeliveryDays={maxDeliveryDays}
+        minRefreshRateHz={minRefreshRateHz}
+        strategies={strategies}
+        catalogProducts={catalogProducts}
+        activeStrategyKey="BEST_VALUE"
+        appliedTradeoff={appliedTradeoff}
+        onSelectTradeoffForConfirm={onSelectTradeoffForConfirm}
+        onApplyTradeoff={onApplyTradeoff}
+        onResetToDefault={onResetToDefault}
+        isDarkMode={isDarkMode}
+      />
+    </div>
   );
 };
 
@@ -1299,6 +1663,15 @@ export default function App() {
   const [appliedRebateINR, setAppliedRebateINR] = useState(0);
   const [rebalanceReport, setRebalanceReport] = useState(null);
 
+  // Sensitivity Trade-off State
+  const [pendingTradeoff, setPendingTradeoff] = useState(null);
+  const [appliedTradeoff, setAppliedTradeoff] = useState(null);
+  const [baselineParameters, setBaselineParameters] = useState({
+    budgetINR: DEFAULT_BUDGET,
+    maxDeliveryDays: DEFAULT_DELIVERY_DAYS,
+    minRefreshRateHz: DEFAULT_REFRESH_HZ,
+  });
+
   // Parsing & Loading States
   const [isParsing, setIsParsing] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -1352,6 +1725,8 @@ export default function App() {
     if (targetStep === 0) {
       setCustomizedStrategies({});
       setAppliedRebateINR(0);
+      setAppliedTradeoff(null);
+      setPendingTradeoff(null);
       setLockedPlan(null);
       setPriceSpikeAlert(null);
       setClarificationState(null);
@@ -1369,6 +1744,13 @@ export default function App() {
     setQuantities({ ...DEFAULT_QUANTITIES });
     setCustomizedStrategies({});
     setAppliedRebateINR(0);
+    setAppliedTradeoff(null);
+    setPendingTradeoff(null);
+    setBaselineParameters({
+      budgetINR: DEFAULT_BUDGET,
+      maxDeliveryDays: DEFAULT_DELIVERY_DAYS,
+      minRefreshRateHz: DEFAULT_REFRESH_HZ,
+    });
     setServerPlan(null);
     setLockedPlan(null);
     setClarificationState(null);
@@ -1429,6 +1811,110 @@ export default function App() {
       content: `✓ Auto-Rebalanced! Saved ₹${result.totalSavedINR.toLocaleString("en-IN")}. Basket fits budget (₹${result.totalINR.toLocaleString("en-IN")}).`,
       duration: 5,
     });
+  };
+
+  // Handle What-If Sensitivity Trade-off Request (opens confirmation modal)
+  const handleApplyTradeoff = (tradeoffOrDelta) => {
+    if (tradeoffOrDelta && tradeoffOrDelta.id && tradeoffOrDelta.title) {
+      setPendingTradeoff(tradeoffOrDelta);
+    } else {
+      // Find recommendation matching delta or fall back to first recommendation
+      const recs = computeTradeoffRecommendations({
+        budgetINR,
+        maxDeliveryDays,
+        minRefreshRateHz,
+        strategies: planData?.strategies || {},
+        catalogProducts: localCatalog.products || [],
+        activeStrategyKey: activeMatrixStrategy || "BEST_VALUE",
+      });
+      const match = recs.find(
+        (r) =>
+          (tradeoffOrDelta?.maxDeliveryDays && r.actionDelta?.maxDeliveryDays === tradeoffOrDelta.maxDeliveryDays) ||
+          (tradeoffOrDelta?.budgetINR && r.actionDelta?.budgetINR === tradeoffOrDelta.budgetINR)
+      );
+      setPendingTradeoff(match || recs[0]);
+    }
+  };
+
+  // Handle Confirmed What-If Sensitivity Trade-off Application
+  const handleConfirmTradeoff = async (tradeoff) => {
+    setPendingTradeoff(null);
+    if (!tradeoff) return;
+
+    let newBudget = budgetINR;
+    let newDays = maxDeliveryDays;
+    let newHz = minRefreshRateHz;
+
+    if (tradeoff.actionDelta?.budgetINR !== undefined) {
+      newBudget = Number(tradeoff.actionDelta.budgetINR);
+      setBudgetINR(newBudget);
+    }
+    if (tradeoff.actionDelta?.maxDeliveryDays !== undefined) {
+      newDays = Number(tradeoff.actionDelta.maxDeliveryDays);
+      setMaxDeliveryDays(newDays);
+    }
+    if (tradeoff.actionDelta?.minRefreshRateHz !== undefined) {
+      newHz = Number(tradeoff.actionDelta.minRefreshRateHz);
+      setMinRefreshRateHz(newHz);
+    }
+
+    setAppliedTradeoff(tradeoff);
+
+    // Apply concrete new items from the trade-off algorithm!
+    const targetKey = activeMatrixStrategy || "BEST_VALUE";
+    const currentStrat = planData?.strategies?.[targetKey] || planData?.strategies?.BEST_VALUE;
+
+    if (currentStrat && tradeoff.newItems && tradeoff.newItems.length > 0) {
+      const rawSubtotal = tradeoff.newItems.reduce(
+        (sum, item) => sum + (Number(item.unitPriceINR) || 0) * (item.quantity || 1),
+        0
+      );
+      const rawShipping = tradeoff.newItems.reduce(
+        (sum, item) => sum + (Number(item.shippingINR) || 0) * (item.quantity || 1),
+        0
+      );
+      const rawTotal = rawSubtotal + rawShipping;
+      const discountedTotal = Math.max(0, rawTotal - (appliedRebateINR || 0));
+
+      setCustomizedStrategies((prev) => ({
+        ...prev,
+        [targetKey]: {
+          ...currentStrat,
+          items: tradeoff.newItems.map((it) => ({
+            ...it,
+            quantity: it.quantity || 1,
+            lineTotalINR: (Number(it.unitPriceINR) || 0) * (it.quantity || 1) + (Number(it.shippingINR) || 0),
+          })),
+          subtotalINR: rawSubtotal,
+          shippingTotalINR: rawShipping,
+          totalINR: discountedTotal,
+          originalTotalINR: rawTotal,
+          leftoverBudgetINR: newBudget - discountedTotal,
+          isCustomized: true,
+          appliedTradeoffTitle: tradeoff.title,
+        },
+      }));
+    }
+
+    message.success({
+      content: `✓ Trade-off applied: ${tradeoff.title}! Basket updated to ₹${tradeoff.projectedTotalINR.toLocaleString("en-IN")}.`,
+      duration: 5,
+    });
+  };
+
+  // Reset Sensitivity Trade-offs to Default Constraints
+  const handleResetToDefaultConstraints = async () => {
+    setAppliedTradeoff(null);
+    setCustomizedStrategies({});
+    setAppliedRebateINR(0);
+    const defBudget = baselineParameters.budgetINR || 60000;
+    const defDays = baselineParameters.maxDeliveryDays || 7;
+    const defHz = baselineParameters.minRefreshRateHz || 144;
+    setBudgetINR(defBudget);
+    setMaxDeliveryDays(defDays);
+    setMinRefreshRateHz(defHz);
+    await executePlanGeneration(defBudget, quantities, defDays, defHz);
+    message.info("Reverted to original brief baseline constraints & default plans.");
   };
 
   // Keyboard shortcut for Command Palette (Cmd+K / Ctrl+K)
@@ -1769,6 +2255,11 @@ export default function App() {
     const days = clarificationState?.maxDeliveryDays || maxDeliveryDays;
     const hz = clarificationState?.minRefreshRateHz || minRefreshRateHz;
     setClarificationState(null);
+    setBaselineParameters({
+      budgetINR: budget,
+      maxDeliveryDays: days || 7,
+      minRefreshRateHz: hz || 144,
+    });
     await executePlanGeneration(budget, effQty, days, hz);
   };
 
@@ -1874,6 +2365,11 @@ export default function App() {
     // If budget was explicitly mentioned, proceed directly
     setClarificationState(null);
     setBudgetINR(effectiveBudget);
+    setBaselineParameters({
+      budgetINR: effectiveBudget,
+      maxDeliveryDays: nlpBrief.maxDeliveryDays || 7,
+      minRefreshRateHz: nlpBrief.minRefreshRateHz || 144,
+    });
     await executePlanGeneration(effectiveBudget, nlpBrief.quantities, nlpBrief.maxDeliveryDays, nlpBrief.minRefreshRateHz);
   };
 
@@ -2934,7 +3430,8 @@ export default function App() {
 
                 {/* VIEW MODE 1: FOCUSED CARDS (Plan B Featured Hero) */}
                 {step2ViewMode === "cards" && (
-                  <Row gutter={[20, 20]} align="stretch">
+                  <>
+                    <Row gutter={[20, 20]} align="stretch">
                     {/* PLAN A: CHEAPEST */}
                     <Col xs={24} lg={7}>
                       <Card
@@ -3171,6 +3668,21 @@ export default function App() {
                       </Card>
                     </Col>
                   </Row>
+
+                  <SmartTradeoffFrontier
+                    budgetCap={budgetINR}
+                    maxDeliveryDays={maxDeliveryDays}
+                    minRefreshRateHz={minRefreshRateHz}
+                    strategies={planData.strategies}
+                    catalogProducts={localCatalog.products || []}
+                    activeStrategyKey={activeMatrixStrategy || "BEST_VALUE"}
+                    appliedTradeoff={appliedTradeoff}
+                    onSelectTradeoffForConfirm={(rec) => setPendingTradeoff(rec)}
+                    onApplyTradeoff={handleApplyTradeoff}
+                    onResetToDefault={handleResetToDefaultConstraints}
+                    isDarkMode={isDarkMode}
+                  />
+                </>
                 )}
 
                 {/* VIEW MODE 2: AG GRID INTERACTIVE MATRIX */}
@@ -3204,8 +3716,15 @@ export default function App() {
                   <StrategyRadarChart
                     strategies={planData.strategies}
                     budgetCap={budgetINR}
+                    maxDeliveryDays={maxDeliveryDays}
+                    minRefreshRateHz={minRefreshRateHz}
+                    catalogProducts={localCatalog.products || []}
                     isDarkMode={isDarkMode}
                     onSelectStrategy={handleApproveAndLock}
+                    onApplyTradeoff={handleApplyTradeoff}
+                    onSelectTradeoffForConfirm={(rec) => setPendingTradeoff(rec)}
+                    onResetToDefault={handleResetToDefaultConstraints}
+                    appliedTradeoff={appliedTradeoff}
                   />
                 )}
               </motion.div>
@@ -4061,6 +4580,18 @@ export default function App() {
         }}
         isDarkMode={isDarkMode}
         inrPerUsd={inrPerUsd}
+      />
+
+      {/* 5.5 What-If Sensitivity Trade-Off Confirmation Modal */}
+      <TradeoffConfirmModal
+        open={!!pendingTradeoff}
+        onClose={() => setPendingTradeoff(null)}
+        tradeoff={pendingTradeoff}
+        currentBudgetINR={budgetINR}
+        currentDeliveryDays={maxDeliveryDays}
+        currentTotalINR={planData?.strategies?.[activeMatrixStrategy || "BEST_VALUE"]?.totalINR || budgetINR}
+        onConfirmApply={handleConfirmTradeoff}
+        isDarkMode={isDarkMode}
       />
 
       {/* 6. Cryptographic Audit Log & SSE Telemetry Inspector Drawer */}
