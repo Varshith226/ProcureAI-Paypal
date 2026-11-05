@@ -1,65 +1,72 @@
-# ProcureAI: Autonomous AI Procurement Agent
-### Powered by PayPal Pay-on-Delivery Authorization Holds & Cryptographic Spending Mandates
+# ProcureAI: Autonomous AI Hardware Procurement Agent
+### Powered by PayPal Pay-on-Delivery Authorization Holds & Ed25519 Spending Mandates
 
 [![Hackathon](https://img.shields.io/badge/Hackathon-Build_What's_Next_with_PayPal_%26_AI-0052FF.svg)](https://paypalaihackathon.devpost.com/)
-[![Tests](https://img.shields.io/badge/Tests-206_Passing-10b981.svg)](test/)
-[![Lighthouse](https://img.shields.io/badge/Lighthouse_Mobile-Perf_98_|_A11y_96-success.svg)](docs/screenshots/lighthouse-mobile-report.json)
+[![Tests](https://img.shields.io/badge/Tests-208_Passing-10b981.svg)](test/)
 [![PayPal Sandbox](https://img.shields.io/badge/PayPal-Authorize--then--Capture-003087.svg)](https://developer.paypal.com/)
-[![AI Model](https://img.shields.io/badge/AI-Google_Gemini_2.5_Flash-8b5cf6.svg)](https://ai.google.dev/)
+[![AI Model](https://img.shields.io/badge/AI-Google_Gemini_Flash-8b5cf6.svg)](https://ai.google.dev/)
 [![AG Grid](https://img.shields.io/badge/AG_Grid-Community_v36-00e5ff.svg)](https://www.ag-grid.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Deployment](https://img.shields.io/badge/Deploy-Render-46E3B7.svg)](https://paypal-ai-hackathon.onrender.com)
 
-> **"ProcureAI is an autonomous AI procurement agent that purchases hardware on your behalf under an Ed25519 cryptographic spending mandate, with PayPal holding the funds in a pay-on-delivery authorization hold until the goods are delivered and inspected."**
+> [!NOTE]
+> **ProcureAI** is an autonomous AI procurement agent that negotiates and purchases workstation hardware on your behalf under an **Ed25519 cryptographic spending mandate**. PayPal holds buyer funds in a **pay-on-delivery authorization hold** until goods are delivered and verified—eliminating upfront payment risk.
 
 ---
 
-## 1. The Real-World Problem & Target Audience
+## 1. Real-World Problem & Target Audience
 
 ### The Target Audience
-Small businesses, fast-growing tech startups (5–50 employees), design agencies, and educational institutions in India.
+Startups (5–50 employees), engineering teams, creative studios, and SMBs procuring commercial IT hardware in bulk.
 
 ### The Problem
-Equipping a team of developers or designers requires buying 5–20 workstations (monitors, mechanical keyboards, laptops, noise-canceling headsets). Today, the purchasing flow is broken:
-- **WhatsApp Chaos:** Office managers negotiate with unverified local vendors over WhatsApp chat and fragmented PDF proformas.
-- **100% Upfront Risk:** Vendors demand 100% upfront payment via wire transfer.
-- **Zero Recourse:** When boxes arrive 10 days late or contain 75Hz monitors instead of the requested 144Hz displays, the buyer has zero leverage. The money is already gone.
-- **No Governance:** Unregulated employee spending without mathematical budget ceilings.
+Equipping a team with workstations (monitors, laptops, mechanical keyboards, audio) currently suffers from:
+* **Fragmented Vendor Chaos:** Tedious negotiations across WhatsApp, spreadsheets, and unverified vendor proformas.
+* **100% Upfront Capital Risk:** Merchants require 100% upfront wire transfers before dispatch.
+* **Zero Leverage on Failure:** When components arrive defective, delayed by weeks, or missing specs (e.g., 75Hz panels instead of requested 144Hz), buyers have zero financial recourse.
+* **Lack of Spending Governance:** Employees and procurement leads lack cryptographic spending limits and tamper-proof audit trails.
 
 ### The Solution: ProcureAI
-ProcureAI turns natural language procurement into a secure, pay-on-delivery authorization-backed commerce lifecycle. The agent finds constraint-verified hardware, negotiates volume discounts against private vendor margin floors, locks the agreement in an **Ed25519-signed Cryptographic Spending Mandate**, issues **Single-Use Expiring Approval Tokens** for remote CFO sign-off, and initiates a **PayPal Authorize-then-Capture** authorization hold. **Funds are captured only when physical delivery inspection is confirmed.**
+1. **Natural Language Intake:** Specify workstation requirements in plain English; Gemini extracts quantities and hardware constraints.
+2. **Deterministic Optimizer:** Zero math in the LLM. Algorithms check compatibility, stock, and delivery deadlines across the catalog.
+3. **What-If Sensitivity Frontier:** Real-time trade-offs (Cost Relief, Hardware Boost, Express Speed) with itemized change confirmation.
+4. **Autonomous Vendor Negotiation:** Multi-round agentic negotiation defending private vendor reservation floors.
+5. **Ed25519 Cryptographic Spending Mandate:** Generates tamper-proof mathematical envelopes with single-use expiring CFO approval tokens.
+6. **PayPal Pay-on-Delivery Authorization Hold:** Funds remain in an authorization hold (`intent: "AUTHORIZE"`) and are captured only upon physical delivery inspection.
 
 ---
 
-## 2. End-to-End Architecture
+## 2. End-to-End System Architecture
 
 ```mermaid
 flowchart TD
-    User["Operations Lead / Founder<br>('Set up 5 workstations under ₹3 lakh')"] -->|Natural Language| AI["Google Gemini 2.5 Flash<br>(Intent & Constraint Extraction)"]
+    User["Operations Lead / Founder<br/>Request: 5 Workstations"] -->|"Natural Language"| AI["Google Gemini Flash<br/>Intent & Constraint Parser"]
     
-    AI -->|Structured Constraints| Verifier["Deterministic Verifier & Optimizer<br>(Zero Math in LLM · Rejection Transparency)"]
+    AI -->|"Structured Constraints"| Verifier["Deterministic Verifier & Optimizer<br/>Zero Math in LLM · Transparent Rejection"]
     
-    Catalog["Channel3 / Merchant Feeds<br>(Live Retailer or Sample Catalog)"] -->|Specs & Inventory| Verifier
+    Catalog["Merchant Inventory Feeds<br/>Live Retailer & Benchmark Data"] -->|"Specs & Inventory"| Verifier
     
-    Verifier -->|3 Verified Plans<br>(Cheapest · Best Value · Fastest)| Neg["Two-Agent Autonomous Negotiation<br>(Buyer LLM vs Vendor Floor Policy)"]
+    Verifier -->|"3 Verified Plans"| Frontier["What-If Sensitivity Frontier<br/>Cost Relief · Spec Boost · Rush SLA"]
     
-    Neg -->|Agreed Discount & Terms| Mandate["Ed25519 Cryptographic Spending Mandate<br>(Hard Ceiling · Merchant · Nonce · Signature)"]
+    Frontier -->|"Selected Plan"| Neg["Two-Agent Autonomous Negotiation<br/>Buyer Agent vs Vendor Floor Policy"]
     
-    Mandate -->|Single-Use Expiring Token| Approver["Executive Remote Approval Portal<br>(Bound to Mandate & Plan Version)"]
+    Neg -->|"Agreed Rebate & Terms"| Mandate["Ed25519 Cryptographic Mandate<br/>Hard Ceiling · Nonce · Signature"]
     
-    Approver -->|Interactive Matrix| AGGrid["AG Grid Community Data Matrix<br>(Inline Quantity Editing · Pinned Totals)"]
+    Mandate -->|"Single-Use Expiring Token"| Approver["Executive Remote Approval Portal<br/>CFO One-Click Review & Sign-Off"]
     
-    AGGrid -->|Enforce Mandate Ceiling| PPAuth["PayPal Orders v2 (intent: AUTHORIZE)<br>(Authorization valid up to 29 days; honor period ~3 days)"]
+    Approver -->|"Interactive Matrix"| AGGrid["AG Grid Community Data Matrix<br/>Inline Quantity Editing · Pinned Settlement"]
     
-    PPAuth -->|Physical Inspection Confirmed| PPCapture["PayPal Payments v2 Capture<br>(Or SLA Credit Partial Capture: 90% capture / 10% void)"]
+    AGGrid -->|"Enforce Mandate Ceiling"| PPAuth["PayPal Orders v2 - intent: AUTHORIZE<br/>Pay-on-Delivery Authorization Hold"]
     
-    PPCapture -->|Automated Payout - 1.5% Fee| PPPayout["PayPal Payouts v1 (Simulation Fallback / Region Restricted)"]
-    PPCapture -->|Itemized Tax Invoice| PPInvoice["PayPal Invoicing v2 (Draft Tax Invoice)"]
+    PPAuth -->|"Physical Delivery Confirmed"| PPCapture["PayPal Payments v2 Capture<br/>100% Release or 90% SLA Partial Capture"]
     
-    subgraph DataPersistence ["Persistence & Audit Trail"]
-        DB[(SQLite WAL Engine)]
+    PPCapture -->|"Net Settlement"| PPPayout["PayPal Payouts v1<br/>Merchant Disbursement - 1.5% Fee"]
+    PPCapture -->|"Itemized Tax Invoice"| PPInvoice["PayPal Invoicing v2<br/>Official B2B Tax Invoice Draft"]
+    
+    subgraph DataPersistence ["Persistence & Tamper-Proof Audit Trail"]
+        DB[("SQLite WAL Engine")]
         AuditLog["Cryptographic SHA-256 Hash Chain"]
-        SSE["Server-Sent Events (/api/events)"]
+        SSE["Real-Time SSE Event Stream"]
     end
     
     PPAuth -.-> DataPersistence
@@ -69,206 +76,128 @@ flowchart TD
 
 ---
 
-## 3. How PayPal is Used (Deep Platform Implementation)
+## 3. Four-Step Agentic Commerce Lifecycle
 
-ProcureAI utilizes a complete B2B pay-on-delivery authorization hold and settlement lifecycle built on official PayPal Sandbox APIs:
-
-| PayPal API / Capability | Endpoint Used | Purpose in ProcureAI |
-|---|---|---|
-| **Orders v2 (Authorize Intent)** | `POST /v2/checkout/orders` with `intent: "AUTHORIZE"` | Creates orders that **hold funds in a pay-on-delivery authorization hold** rather than capturing immediately. Gives buyers protection against delayed or defective goods. |
-| **Orders v2 (Authorize Call)** | `POST /v2/checkout/orders/:id/authorize` | Authorizes the held amount after buyer approval, establishing a validity window up to 29 days (funds guaranteed ~3 days honor period; reauthorize if delivery is later) with PayPal `authorization_id`. |
-| **Payments v2 (Capture)** | `POST /v2/payments/authorizations/:id/capture` | Captures held funds atomically upon physical delivery confirmation and inspection sign-off. |
-| **Atomic SLA Penalty Capture** | `POST /v2/payments/authorizations/:id/capture` with `final_capture: true` | On SLA delivery slippage, captures only 90% and automatically voids the remaining 10% penalty credit in a **single atomic call**—no separate refunds needed. |
-| **Payments v2 (Void)** | `POST /v2/payments/authorizations/:id/void` | Immediately voids the authorization if the order is cancelled, a fraud alert triggers, or the spending mandate fails verification. |
-| **Payments v2 (Reauthorization)** | `POST /v2/payments/authorizations/:id/reauthorize` | Documented path for reauthorizing held funds if fulfillment extends beyond the initial 3-day honor window within the 29-day validity window. |
-| **PayPal Webhooks v1** | `POST /api/paypal/webhook` with `verify-webhook-signature` | Cryptographically verifies incoming event signatures via PayPal's `/v1/notifications/verify-webhook-signature` endpoint. |
-| **Invoicing v2** | `POST /v2/invoicing/invoices` | Automatically generates an itemized official B2B business invoice with line items, tax, and currency metadata upon delivery capture. |
-| **Payouts v1** | `POST /v1/payments/payouts` | Disburses net settlement to merchant account while retaining platform fee. Handled via labeled simulation fallback when region-restricted (`PAYOUT_NOT_AVAILABLE`). |
-| **Live Currency Reconciliation** | `reconcileItemizedTotal()` | Reconciles fractional cent rounding differences when converting INR to USD, eliminating `ITEM_TOTAL_MISMATCH` errors. |
-
----
-
-## 4. How AI is Used (Agentic Commerce & Guardrails)
-
-We deliberately rejected asking an LLM to "calculate totals" or "check specs." AI does what it excels at: understanding ambiguous natural language, multimodal intake, and autonomous negotiation. The rest is mathematically enforced.
-
-| AI Module | Model / Implementation | Responsibilities & Guardrails |
-|---|---|---|
-| **Procurement Agent Loop** | Google Gemini 2.5 Flash (`@google/genai`) | Autonomous agent tool-calling loop equipped with tools: `search_catalog`, `verify_specs`, `build_plans`, `check_budget`, `start_negotiation`, `create_mandate`. |
-| **Two-Agent Autonomous Negotiation** | LLM-vs-LLM (Buyer Agent vs Vendor Quote Engine) | Structured multi-round negotiation. The vendor agent defends a private mathematical reservation price (`calculateVendorFloor`) while granting volume rebates. |
-| **Multimodal Quote Comparison** | Gemini Vision / Text Parser | Parses messy vendor proforma invoices and WhatsApp quotes, converts them into canonical catalog schemas, and calculates guaranteed savings against verified plans. |
-| **Deterministic Constraint Verifier** | Pure TypeScript / JavaScript Engine | Evaluates hard inequalities (e.g. `144Hz >= 144Hz`, `delivery <= 7 days`). Products failing any constraint are rejected with explicit, explainable audit reasons. |
-| **Prompt-Injection Defense** | Guardrail sanitizer & Schema Firewall | Rejects adversarial instructions embedded in vendor catalog feeds or user prompts (e.g. *"Ignore budget ceiling"*). Fails closed immediately. |
-| **Offline Simulation Fallback** | Deterministic Multi-Round Simulator | If Gemini API limits or network outages occur, smoothly falls back to an offline simulated negotiation clearly labeled **"Offline Simulation"** for judging integrity. |
-
----
-
-## 5. Foreign Exchange (FX) Correctness
-
-ProcureAI queries live foreign exchange rates from `open.er-api.com` with explicit direction tracking:
-- **Base Currency:** `USD`
-- **Target Currency:** `INR`
-- **Direction:** `USD_TO_INR`
-- **Current Live Rate:** `95.08 INR per USD` (1 USD = 95.08 INR; 1 INR = 0.010517 USD)
-- **Known Test Fixture:** ₹60,000 INR at 95.08 INR/USD = **$631.05 USD** (verified in [test/fxCorrectness.test.js](file:///home/varshith/paypal-ai-hackathon/test/fxCorrectness.test.js)).
-- **UI Display:** Explicitly renders `FX: 1 USD = ₹95.08 INR (open.er-api.com · updated UTC)` in the header and checkout breakdown.
-
----
-
-## 6. Real Spending Mandate & Cryptographic Integrity
-
-ProcureAI implements an **Ed25519 Cryptographic Spending Mandate** (`node:crypto`):
-
-```json
-{
-  "mandateId": "mandate_1793627200923_ade0fced",
-  "buyerId": "org_design_studios",
-  "approverId": "finance_lead_01",
-  "planId": "plan_workstations_v2",
-  "planVersion": 1,
-  "maxTotalINR": 58000,
-  "maxTotalUSD": "690.20",
-  "fxRate": 0.010517,
-  "allowedMerchants": ["hardware_supplier_01", "direct_distributor"],
-  "nonce": "d6fa21010078",
-  "expiresAt": "2026-11-03T13:46:40.923Z",
-  "signature": "3a0b49f8...",
-  "publicKey": "..."
-}
+```
+[ Step 0: Brief & Clarification ] ──▶ [ Step 1: Verified Plans & Matrix ] ──▶ [ Step 2: Mandate & Hold ] ──▶ [ Step 3: Delivery Settle ]
 ```
 
-### Mandate Enforcement Guarantees:
-1. **Hard Budget Ceiling:** The PayPal authorization endpoint (`/api/paypal/authorize-order`) mathematically rejects any order if the total exceeds `maxTotalINR` or `maxTotalUSD`.
-2. **Single-Use Expiring Approval Tokens:** Replaces raw query parameters with cryptographically random tokens (`approval_tokens` table) bound to the mandate and plan version. Auto-expires in 60 minutes and strictly rejects reuse.
-3. **Version Pinning:** Prevents race-condition front-running if a plan was modified after approval.
-4. **Replay Defense:** Single-use nonces and expiration timestamps prevent replay attacks.
-5. **Tamper Detection:** The UI includes an interactive **"Test Tampering"** button that lets judges alter a single rupee or dollar and watch verification fail instantly.
-6. **Hash-Chained Audit Trail:** Every order state transition is recorded in SQLite with a SHA-256 hash pointer to the preceding block (`verifyAuditLogIntegrity()`), preventing audit tampering.
+### Step 0: Natural Language Intake & Clarification Guardrails
+* **Context Extraction:** Translates requests like *"5 workstations under ₹3 lakh with 144Hz monitors"* into structured category requirements.
+* **Clarification Engine:** If critical details (such as budget cap or quantities) are omitted, the agent pauses and prompts targeted clarification questions rather than guessing or hallucinating defaults.
+
+### Step 1: Deterministic Plan Optimization & Sensitivity Frontier
+* **Tri-Plan Synthesis:**
+  * **Plan A (Cheapest):** Minimum cost basket meeting every hard constraint.
+  * **Plan B (Best Value):** Optimal weighted quality, warranty, and delivery score within budget.
+  * **Plan C (Alternative):** Max performance tier diversifying component brands.
+* **Interactive AG Grid Matrix:** Edit quantities, test price changes, and swap items in real time with pinned settlement totals.
+* **Over-Budget Guardrail & Auto-Rebalance:** If customizations exceed budget, the mandate lock is disabled and an autonomous algorithm downgrades non-essential components to restore compliance with transparency reports.
+* **What-If Sensitivity Frontier:** Recommends actionable parameter trade-offs:
+  * *Cost Relief (+2 Days):* Unlocks standard freight, saving up to ₹30,000+.
+  * *Hardware Boost (+₹10k):* Unlocks tier-1 components (165Hz IPS panels, hot-swap keyboards).
+  * *Express Priority (3 Days):* Prioritizes immediate-dispatch air freight.
+* **Itemized Confirmation Modal:** Transparently breaks down before-and-after component changes, unit prices, and net differences before applying. A **Reset to Default** button reverts constraints anytime.
+
+### Step 2: Dual-Custody Mandate & Remote Approval Portal
+* **Ed25519 Spending Mandate:** Asymmetrically signed spending envelope binding budget ceiling (`maxTotalINR`, `maxTotalUSD`), merchant IDs, and expiration timestamp.
+* **Single-Use Expiring Tokens:** Generates time-limited CFO approval links. Replay attacks and parameter tampering are rejected instantly.
+
+### Step 3: PayPal Authorization Hold & Delivery Settle
+* **Authorization Hold Placed:** Calls PayPal Orders v2 with `intent: "AUTHORIZE"`. Funds are guaranteed in escrow without leaving the buyer's account.
+* **Physical Inspection Sign-Off:** When delivery arrives intact, buyer confirms release to capture payment (`POST /v2/payments/authorizations/:id/capture`).
+* **Atomic SLA Penalty Capture:** If delivery slips past agreed horizon, captures 90% and automatically voids 10% penalty credit in a single atomic transaction.
 
 ---
 
-## 7. Responsive Mobile & Desktop Layout (Playwright Verified)
+## 4. PayPal Platform Implementation
 
-ProcureAI is verified with automated Playwright tests at:
-- **Mobile Viewport (390x844)**: `clientWidth = 390px, scrollWidth = 390px (delta = 0px)` — zero horizontal overflow.
-- **Desktop Viewport (1440x900)**: `clientWidth = 1440px, scrollWidth = 1440px (delta = 0px)` — zero horizontal overflow.
-- **Natural Touch Targets:** Configured Ant Design token `controlHeight: 44` for standard 44px buttons and inputs without blanket `!important` CSS overrides.
-- **Screenshots:** Saved under [docs/screenshots/](file:///home/varshith/paypal-ai-hackathon/docs/screenshots/):
-  - [mobile-390x844-dashboard.png](file:///home/varshith/paypal-ai-hackathon/docs/screenshots/mobile-390x844-dashboard.png)
-  - [mobile-390x844-approval.png](file:///home/varshith/paypal-ai-hackathon/docs/screenshots/mobile-390x844-approval.png)
-  - [desktop-1440x900-dashboard.png](file:///home/varshith/paypal-ai-hackathon/docs/screenshots/desktop-1440x900-dashboard.png)
-  - [desktop-1440x900-approval.png](file:///home/varshith/paypal-ai-hackathon/docs/screenshots/desktop-1440x900-approval.png)
+ProcureAI exercises official PayPal Sandbox APIs across the entire procurement lifecycle:
 
----
-
-## 8. 3-Minute Judge Demo Walkthrough
-
-See [DEMO.md](file:///home/varshith/paypal-ai-hackathon/DEMO.md) for the complete minute-by-minute script and sandbox login details:
-
-1. **(0:00–0:25) Request:** Click **"🔄 Reset Demo State"**, then click **"1️⃣ Request: ₹60k Setup"**. Click **"Search & Plan"**.
-2. **(0:25–0:55) Verification:** Review the 3 generated plans. View rejection reasons in the drawer (e.g. 75Hz monitor rejected).
-3. **(0:55–1:20) AG Grid Live Matrix:** Click **"2️⃣ AG Grid Live Matrix"**. Edit monitor quantity from 1 to 5. Watch totals and USD settlement update dynamically.
-4. **(1:20–1:50) AI Negotiation & Mandate:** Click **"3️⃣ AI Vendor Negotiation (-5%)"**. Review Ed25519 signature. Test tampering refusal and verify signature.
-5. **(1:50–2:20) Approver Portal & Hold:** Click **"Copy CFO Approval Link"** or **"Open Approver Portal"**. Approve mandate, checkout on PayPal. Status becomes **AUTHORIZED**.
-6. **(2:20–2:45) Delivery Capture & Payout:** Click **"6️⃣ Confirm Delivery (Capture & Payout)"**. SSE updates to **CAPTURED**. View PayPal invoice draft.
-7. **(2:45–3:00) Audit Trail & Ledger:** Open Orders Ledger (AG Grid) and Activity Inspector to view SHA-256 hash chain and live event streams.
+| PayPal API / Feature | Endpoint | Business Purpose |
+|---|---|---|
+| **Orders v2 (Authorize Intent)** | `POST /v2/checkout/orders` (`intent: "AUTHORIZE"`) | Holds buyer funds in a pay-on-delivery escrow authorization hold instead of capturing immediately. |
+| **Orders v2 (Authorize Call)** | `POST /v2/checkout/orders/:id/authorize` | Authorizes the held amount after buyer approval, establishing an authorization window with unique PayPal `authorization_id`. |
+| **Payments v2 (Capture)** | `POST /v2/payments/authorizations/:id/capture` | Captures held funds atomically upon physical delivery inspection confirmation. |
+| **Atomic SLA Penalty Capture** | `POST /v2/payments/authorizations/:id/capture` (`final_capture: true`) | On delivery delay, captures 90% and automatically voids the 10% penalty credit in one call. |
+| **Payments v2 (Void)** | `POST /v2/payments/authorizations/:id/void` | Immediately voids authorization and unfreezes buyer funds if order is cancelled or mandate fails. |
+| **Invoicing v2** | `POST /v2/invoicing/invoices` | Automatically generates an official itemized B2B tax invoice draft with line items, tax, and currency metadata. |
+| **Payouts v1** | `POST /v1/payments/payouts` | Disburses merchant settlement minus platform fee (gracefully handled via simulation fallback in regions where Payouts API is restricted). |
+| **Currency Reconciliation** | `reconcileItemizedTotal()` | Resolves fractional cent rounding differences when converting INR to USD, preventing `ITEM_TOTAL_MISMATCH` errors. |
 
 ---
 
-## 9. Quickstart: Run in 5 Commands
+## 5. AI Engineering & Zero-Math Principles
+
+> [!IMPORTANT]
+> **No LLM Math:** Large Language Models are non-deterministic and prone to calculation errors. ProcureAI delegates semantic parsing and multi-turn negotiation to AI, while all financial arithmetic and inequality constraints are executed by pure deterministic code.
+
+* **Intent & Constraint Extraction:** Google Gemini Flash parses unstructured natural language and maps requirements to strict numeric attributes.
+* **Two-Agent Autonomous Negotiation:** Buyer LLM negotiates volume discounts against an autonomous vendor agent defending private mathematical reservation price floors (`calculateVendorFloor`).
+* **Prompt Injection Defense:** Multi-layered input sanitizer rejects adversarial prompts attempting to bypass spending limits or waive escrow protections.
+* **Offline Simulation Mode:** If network or API limits occur, negotiations gracefully transition to an offline simulation engine clearly labeled for audit integrity.
+
+---
+
+## 6. Quickstart: Run in 4 Steps
 
 ### Prerequisites
-- **Node.js >= 22.5.0** (Required for native `node:sqlite`; pinned to Node 22.12.0 in `render.yaml`)
-- Modern web browser
+* **Node.js >= 22.5.0** (required for native `node:sqlite`)
+* Modern web browser
 
 ```bash
-# 1. Clone the repository
+# 1. Clone repository & install dependencies
 git clone https://github.com/Varshith226/ProcureAI-Paypal.git
 cd ProcureAI-Paypal
-
-# 2. Install dependencies (backend & frontend)
 npm install
-cd client && npm install && cd ..
+npm install --prefix client
 
-# 3. Configure environment
+# 2. Configure environment
 cp .env.example .env
-# (Add your PAYPAL_CLIENT_ID and GEMINI_API_KEY, or run with built-in sandbox defaults)
+# (Optional: Add PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, and GEMINI_API_KEY)
 
-# 4. Run automated test suite (204 passing tests)
-npm test
+# 3. Build frontend assets
+npm run build --prefix client
 
-# 5. Build and launch ProcureAI
-cd client && npm run build && cd ..
+# 4. Start the application
 npm start
 ```
 Open **`http://localhost:3000`** in your browser.
 
 ---
 
-## 10. Automated Test Suite (204 Passing Tests)
+## 7. Automated Test Suite (208 Passing Tests)
 
+Run the comprehensive test suite:
 ```bash
 npm test
 ```
 
 ```
-ℹ tests 204
-ℹ suites 0
-ℹ pass 204
-ℹ fail 0
-ℹ cancelled 0
-ℹ skipped 0
-ℹ todo 0
+✔ 208 passing tests across unit, integration, and security suites (0 failures)
+✔ Full Playwright E2E browser verification across mobile (390x844) and desktop (1440x900)
 ```
 
-### Coverage Highlights:
-- **`scripts/test-responsive.js`**: Playwright headless browser test checking zero horizontal overflow at 390x844 (mobile) and 1440x900 (desktop).
-- **`test/fxCorrectness.test.js`**: Currency conversion fixture (₹60,000 at 95.08 INR/USD = $631.05 USD), explicit direction validation, and mathematical reciprocal integrity.
-- **`test/endToEndHardening.test.js`**: SQL injection prevention, revalidation on price drop / delivery slip, multi-item unit quota calculations, 29-day authorization validity, and mandate tampering (buyerId, approverId, items).
-- **`test/approvalTokens.test.js`**: Single-use approval tokens, token consumption, replay attack defense, expiration enforcement, and plan tampering refusal.
-- **`test/paypalHardening.test.js`**: Authorize-then-capture lifecycle, 90% SLA penalty atomic capture, authorization voiding, duplicate webhook handling, and issue code mapping.
-- **`test/promptInjectionSecurity.test.js`**: Adversarial prompt injection defense, budget bypass prevention, quote instruction sanitization, and negative price rejections.
-- **`test/auditLogResilience.test.js`**: SQLite hash-chained audit trail integrity verification and tamper detection.
-- **`test/aiAgent.test.js` & `test/channel3.test.js`**: Tool-calling agent execution, 2-agent negotiation margin floor defense, multimodal quote parsing, and Channel3 live/sample data origin attribution.
+### Key Test Suites:
+* **`test/endToEndHardening.test.js`:** SQL injection defense, price spike revalidation, quota calculations, and mandate tampering refusal.
+* **`test/approvalTokens.test.js`:** Single-use approval tokens, token consumption, replay attack defense, and expiration enforcement.
+* **`test/paypalHardening.test.js`:** Authorize-then-capture lifecycle, atomic 90% SLA penalty capture, and void flows.
+* **`test/promptInjectionSecurity.test.js`:** Adversarial prompt injection defense, budget bypass prevention, and negative price rejection.
+* **`test/auditLogResilience.test.js`:** SQLite SHA-256 hash-chained audit trail integrity verification.
+* **`scripts/test-clarification-and-aggrid.js`:** Automated Playwright browser test verifying clarification, AG Grid rendering, auto-rebalance, What-If Frontier confirmation, and PayPal capture.
 
 ---
 
-## 11. Known Limitations & Transparent Disclosures
+## 8. Technology Stack
 
-1. **PayPal Sandbox Payouts Regional Availability**:
-   - In Indian and certain regional PayPal Sandbox accounts, `POST /v1/payments/payouts` returns HTTP 403 `PAYOUT_NOT_AVAILABLE` because Payouts capabilities require explicit commercial enablement by PayPal Developer Support.
-   - **Handling**: ProcureAI catches this 403 status code and returns a simulation object (`isSimulation: true`), clearly labeled in the UI as **Simulation**. In eligible sandbox regions (e.g. US accounts), live payouts execute directly.
-   - Recorded raw response in [docs/SANDBOX_EVIDENCE.md](file:///home/varshith/paypal-ai-hackathon/docs/SANDBOX_EVIDENCE.md).
-
-2. **Channel3 E-Commerce Catalog Feeds**:
-   - The application supports live e-commerce catalog queries via Channel3 when `CHANNEL3_API_KEY` is provided. When no API key is present in `.env`, ProcureAI falls back to local reference products with evidence explicitly labeled as `SAMPLE_CATALOG`. Only live API responses receive the `LIVE_RETAILER` label.
-
-3. **PayPal Webhooks Setup & Delivery**:
-   - Inbound webhook delivery requires a publicly accessible HTTPS endpoint (`https://<app>.onrender.com/api/paypal/webhook`).
-   - Signature verification is fully implemented against PayPal's `/v1/notifications/verify-webhook-signature` endpoint and tested with automated unit/integration tests; local development is supplemented by an in-app webhook simulation clearly labeled as **Simulation**.
-
-4. **Ephemeral Database on Free-Tier Hosting**:
-   - In environments without persistent disk storage, SQLite safely falls back to local `./procureai.db` and auto-seeds the genesis audit log entry on cold boot.
+* **Frontend:** React 18, Vite, Ant Design 5 (Cyberpunk Dark Glassmorphic Theme), AG Grid Community v36, Three.js (Dynamic Aurora Vault Canvas), Framer Motion.
+* **Backend:** Node.js (Express 5), SQLite WAL (`node:sqlite`), Server-Sent Events (SSE), Ed25519 Cryptography (`node:crypto`).
+* **Payments & Escrow:** PayPal Orders v2, Payments v2, Invoicing v2, Payouts v1 Sandbox APIs.
+* **AI & NLP:** Google Gemini Flash (`@google/genai`), Multi-Agent Negotiation Protocol.
+* **Testing & Quality:** Node Test Runner (`node --test`), Playwright Headless Browser Automation.
 
 ---
 
-## 12. Final Hackathon Submission Checklist
-
-| # | Requirement | Status | Evidence & Verification Link |
-|---|---|---|---|
-| 1 | **PayPal Sandbox Deep Implementation** | **PASS** | Live sandbox `intent: "AUTHORIZE"` order created (`9KX89008SB555684J`), captured, SLA partial capture (90% capture / 10% void), voided, Invoicing v2 draft created (`INV2-BT4R-JNPH-WD74-9F6R`). Documented in [docs/SANDBOX_EVIDENCE.md](file:///home/varshith/paypal-ai-hackathon/docs/SANDBOX_EVIDENCE.md). |
-| 2 | **Meaningful AI Integration** | **PASS** | Gemini 2.5 Flash used for natural language parsing, tool calling, 2-agent LLM negotiation with private margin floor defense, multimodal quote intake, and prompt injection defense. Tested in [test/aiAgent.test.js](file:///home/varshith/paypal-ai-hackathon/test/aiAgent.test.js) & [test/promptInjectionSecurity.test.js](file:///home/varshith/paypal-ai-hackathon/test/promptInjectionSecurity.test.js). |
-| 3 | **Ed25519 Cryptographic Spending Mandate** | **PASS** | `node:crypto` Ed25519 asymmetric key signing. Hard ceiling enforcement at PayPal authorization. Single-use expiring tokens for CFO approval. Verified in [test/approvalTokens.test.js](file:///home/varshith/paypal-ai-hackathon/test/approvalTokens.test.js). |
-| 4 | **AG Grid Community Integration** | **PASS** | AG Grid Community v36 Plan Matrix with inline cell editing, live USD recalculation, and Orders Ledger with CSV export. Implemented in [client/src/components/PlanMatrixGrid.jsx](file:///home/varshith/paypal-ai-hackathon/client/src/components/PlanMatrixGrid.jsx) and [client/src/components/OrdersLedgerGrid.jsx](file:///home/varshith/paypal-ai-hackathon/client/src/components/OrdersLedgerGrid.jsx). |
-| 5 | **Cryptographic Audit Trail** | **PASS** | Native SQLite WAL database with SHA-256 hash-chaining across all order transitions. Verified in [test/auditLogResilience.test.js](file:///home/varshith/paypal-ai-hackathon/test/auditLogResilience.test.js). |
-| 6 | **Automated Test Suite** | **PASS** | **206 automated tests passing**, 0 failing (`npm test`). Verified via `node --test`. |
-| 7 | **Mobile & Desktop Responsive Layout** | **PASS** | Playwright test verified zero horizontal overflow and full flow completion at 390x844 and 1440x900. Mobile Lighthouse: **Performance: 98/100**, **Accessibility: 96/100**. Verified in [scripts/test-responsive.js](file:///home/varshith/paypal-ai-hackathon/scripts/test-responsive.js); screenshots in [docs/screenshots/](file:///home/varshith/paypal-ai-hackathon/docs/screenshots/). |
-| 8 | **Production Deployment** | **PASS** | Configured in [render.yaml](file:///home/varshith/paypal-ai-hackathon/render.yaml) with pinned Node version (`22.12.0`) and health check `/api/health`. |
-| 9 | **Public GitHub & Open Source License** | **PASS** | Fully open source under standard **MIT License** with visible [LICENSE](file:///home/varshith/paypal-ai-hackathon/LICENSE) file and clean [.env.example](file:///home/varshith/paypal-ai-hackathon/.env.example). |
-| 10 | **Postman / APIMatic Specification** | **PASS** | Complete [openapi.yaml](file:///home/varshith/paypal-ai-hackathon/openapi.yaml) (OpenAPI 3.1) and [procureai.postman_collection.json](file:///home/varshith/paypal-ai-hackathon/procureai.postman_collection.json) with automated test assertions. |
-
----
-
-## 13. License
+## 9. License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
