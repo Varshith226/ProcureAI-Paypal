@@ -22,6 +22,9 @@ export default function HeaderNav({
   fxData = {},
   onOpenTools,
   onTriggerPreset,
+  isPresenterMode = false,
+  onTogglePresenterMode,
+  onResetDemoState,
 }) {
   const steps = [
     { num: 0, label: "Request", short: "1. Brief" },
@@ -38,13 +41,31 @@ export default function HeaderNav({
 
   const presetMenuItems = [
     {
+      key: "presenter",
+      label: isPresenterMode ? "✓ Presenter Mode (110% Zoom Active)" : "🎬 Presenter Mode (110% Zoom)",
+      onClick: onTogglePresenterMode,
+    },
+    {
+      key: "reset_demo",
+      label: "🔄 Reset Demo State (Clean DB & Storage)",
+      onClick: onResetDemoState,
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "scenarios_title",
+      label: <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>Scenario Quick-Jumps</span>,
+      disabled: true,
+    },
+    {
       key: "1",
       label: "1️⃣ Request: ₹60k Setup & AI Parse",
       onClick: () => onTriggerPreset(1),
     },
     {
       key: "2",
-      label: "2️⃣ AG Grid Live Matrix (Sponsor Showcase)",
+      label: "2️⃣ AG Grid Live Matrix (Sponsor)",
       onClick: () => onTriggerPreset(2),
     },
     {
@@ -143,18 +164,18 @@ export default function HeaderNav({
                   : isDone
                     ? isDarkMode ? "#e2e8f0" : "#1e293b"
                     : "#94a3b8",
-                padding: "3px 10px",
+                padding: "4px 12px",
                 borderRadius: 100,
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: isActive ? 700 : 500,
                 cursor: isDone || isActive ? "pointer" : "default",
                 display: "flex",
                 alignItems: "center",
-                gap: 4,
+                gap: 5,
                 transition: "all 0.15s ease",
               }}
             >
-              {isDone ? <CheckCircleOutlined style={{ color: "#10b981", fontSize: 10 }} /> : null}
+              {isDone ? <CheckCircleOutlined style={{ color: "#10b981", fontSize: 12 }} /> : null}
               {s.short}
             </button>
           );
@@ -167,10 +188,10 @@ export default function HeaderNav({
         style={{
           display: "none",
           alignItems: "center",
-          padding: "2px 8px",
+          padding: "3px 10px",
           borderRadius: 100,
           background: isDarkMode ? "rgba(0, 82, 255, 0.15)" : "#eff6ff",
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 700,
           color: "#0052FF",
         }}
@@ -203,11 +224,12 @@ export default function HeaderNav({
         <div className="header-presets-btn">
           <Dropdown menu={{ items: presetMenuItems }} placement="bottomRight" trigger={["click"]}>
             <Button
+              id="btn-demo-guide"
               size="small"
               icon={<RocketOutlined style={{ color: "#0052FF" }} />}
-              style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, padding: "0 8px" }}
+              style={{ borderRadius: 6, fontWeight: 600, fontSize: 12, padding: "0 10px" }}
             >
-              Presets
+              Demo guide
             </Button>
           </Dropdown>
         </div>

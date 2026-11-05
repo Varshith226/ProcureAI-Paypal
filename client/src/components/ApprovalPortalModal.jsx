@@ -71,7 +71,7 @@ export default function ApprovalPortalModal({
         type="info"
         showIcon
         message="Cryptographic Approval Verification"
-        description="This spending envelope requires dual-custody approval. By approving, your authorization token is cryptographically bound to Plan Version 1 and expires immediately upon submission."
+        description="This spending envelope requires executive approval. By approving, your authorization token is cryptographically bound to Plan Version 1 and expires immediately upon submission."
         style={{ marginBottom: 16, borderRadius: 10 }}
       />
 
@@ -82,7 +82,7 @@ export default function ApprovalPortalModal({
         style={{ marginBottom: 16 }}
       >
         <Descriptions.Item label="Order Plan ID">
-          <Text code>{plan.planId || "plan_demo_1"}</Text>
+          <Text code>{plan.planId || "PA-PLAN-1042"}</Text>
         </Descriptions.Item>
         <Descriptions.Item label="Strategy Key">
           <Tag color="blue">{plan.strategyKey || "BEST_VALUE"}</Tag>

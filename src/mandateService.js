@@ -75,7 +75,7 @@ function createSignedMandate({
   // Core payload to be signed
   const payload = {
     mandateId: id,
-    standard: "AP2_COMPLIANT_AGENTIC_MANDATE_V1",
+    standard: "PROCUREAI_AGENTIC_MANDATE_V1",
     planId,
     planVersion: Number(planVersion),
     buyerId,
@@ -276,11 +276,20 @@ function enforceMandate({
   }
 
   const allowedCeiling = mandate.maxTotalINR * (1 + (mandate.priceDriftTolerancePct || 0) / 100);
-  if (Number(totalINR) > allowedCeiling) {
+  if (totalINR !== undefined && totalINR !== null && Number(totalINR) > allowedCeiling) {
     return {
       allowed: false,
       code: "CEILING_EXCEEDED",
       message: `Safety Boundary: Order total ₹${Number(totalINR).toLocaleString()} exceeds the authorized spending ceiling of ₹${allowedCeiling.toLocaleString()}.`,
+    };
+  }
+
+  const allowedCeilingUSD = Number(mandate.maxTotalUSD) * (1 + (mandate.priceDriftTolerancePct || 0) / 100);
+  if (totalUSD !== undefined && totalUSD !== null && Number(totalUSD) > (allowedCeilingUSD + 0.01)) {
+    return {
+      allowed: false,
+      code: "CEILING_EXCEEDED",
+      message: `Safety Boundary: Order total $${Number(totalUSD).toFixed(2)} USD exceeds the authorized spending ceiling of $${allowedCeilingUSD.toFixed(2)} USD.`,
     };
   }
 

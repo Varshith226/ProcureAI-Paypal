@@ -6,6 +6,7 @@ export default function AuroraVaultCanvas({
   sceneState = "idle", // "idle" | "thinking" | "plans" | "locked" | "authorized" | "settled" | "blocked"
   quality = "full",    // "full" | "lite" | "off"
   isDarkMode = true,
+  step = 0,
 }) {
   const mountRef = useRef(null);
   const [webglSupported, setWebglSupported] = useState(true);
@@ -261,15 +262,36 @@ export default function AuroraVaultCanvas({
 
       const elapsed = clock.getElapsedTime();
 
+      // Scene Intensity & Placement per Step
+      const isCalm = step >= 1;
+      const targetIntensity = isCalm ? 0.38 : 1.0;
+      
+      // Push rings to edges / depth in calm mode
+      if (isCalm) {
+        ringGroup.position.z = THREE.MathUtils.lerp(ringGroup.position.z, -10, 0.05);
+        ringGroup.scale.lerp(new THREE.Vector3(1.45, 1.45, 1.45), 0.05);
+        ringMat1.opacity = THREE.MathUtils.lerp(ringMat1.opacity, 0.12 * targetIntensity, 0.05);
+        ringMat2.opacity = THREE.MathUtils.lerp(ringMat2.opacity, 0.08 * targetIntensity, 0.05);
+        coreOctaMat.opacity = THREE.MathUtils.lerp(coreOctaMat.opacity, 0.04, 0.05);
+        particleMaterial.opacity = THREE.MathUtils.lerp(particleMaterial.opacity, 0.35, 0.05);
+      } else {
+        ringGroup.position.z = THREE.MathUtils.lerp(ringGroup.position.z, -4, 0.05);
+        ringGroup.scale.lerp(new THREE.Vector3(1.0, 1.0, 1.0), 0.05);
+        ringMat1.opacity = THREE.MathUtils.lerp(ringMat1.opacity, 0.22, 0.05);
+        ringMat2.opacity = THREE.MathUtils.lerp(ringMat2.opacity, 0.16, 0.05);
+        coreOctaMat.opacity = THREE.MathUtils.lerp(coreOctaMat.opacity, 0.18, 0.05);
+        particleMaterial.opacity = THREE.MathUtils.lerp(particleMaterial.opacity, 0.75, 0.05);
+      }
+
       // Smooth Mouse Parallax Lerp
       mouseX += (targetMouseX - mouseX) * 0.04;
       mouseY += (targetMouseY - mouseY) * 0.04;
-      camera.position.x = mouseX * 2.8;
-      camera.position.y = -mouseY * 2.2;
+      camera.position.x = mouseX * (isCalm ? 1.4 : 2.8);
+      camera.position.y = -mouseY * (isCalm ? 1.1 : 2.2);
       camera.lookAt(0, 0, 0);
 
       // State-driven dynamics
-      let speedFactor = 1.0;
+      let speedFactor = isCalm ? 0.7 : 1.0;
       let targetColor = new THREE.Color(0x0052ff);
 
       if (sceneState === "thinking") {
@@ -304,9 +326,14 @@ export default function AuroraVaultCanvas({
       // Update Floating Constellation
       crystalMeshes.forEach((mesh) => {
         const { r, speed, phase, yOffset } = mesh.userData;
+        const effectiveR = isCalm ? Math.max(r, 18) : r;
         const angle = elapsed * speed * speedFactor + phase;
-        mesh.position.x = Math.cos(angle) * r;
-        mesh.position.z = Math.sin(angle) * (r * 0.7) - 3;
+        let posX = Math.cos(angle) * effectiveR;
+        if (isCalm && Math.abs(posX) < 14) {
+          posX = posX < 0 ? -16 - Math.abs(posX) : 16 + Math.abs(posX);
+        }
+        mesh.position.x = posX;
+        mesh.position.z = Math.sin(angle) * (effectiveR * 0.7) - (isCalm ? 8 : 3);
         mesh.position.y = yOffset + Math.sin(elapsed * 1.5 + phase) * 0.8;
         mesh.rotation.x += 0.012 * speedFactor;
         mesh.rotation.y += 0.016 * speedFactor;

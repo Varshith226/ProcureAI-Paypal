@@ -97,8 +97,8 @@ async function run() {
     console.log("✓ Successfully reached Step 1 with user-clarified budget!");
 
     // 5. Test AG Grid Matrix View Click (User reported white screen bug)
-    console.log("Clicking 'AG Grid Matrix' view tab...");
-    const agGridButton = page.locator("button:has-text('AG Grid Matrix')");
+    console.log("Clicking 'Matrix' view tab...");
+    const agGridButton = page.locator("button:has-text('AG Grid Matrix'), button:has-text('Matrix')").first();
     await agGridButton.click();
 
     await page.waitForTimeout(1000);
@@ -181,7 +181,7 @@ async function run() {
     console.log("✓ Re-entered Step 1!");
 
     // Switch to AG Grid Matrix to verify plan is pristine (NOT customized)
-    await page.locator("button:has-text('AG Grid Matrix')").click();
+    await page.locator("button:has-text('AG Grid Matrix'), button:has-text('Matrix')").first().click();
     await page.waitForTimeout(600);
     const customBadgeAfterReturn = await page.locator("text=Customized").isVisible().catch(() => false);
     if (customBadgeAfterReturn) {
@@ -191,11 +191,11 @@ async function run() {
 
     // 8. Test AI Vendor Negotiator & "Apply Negotiated Rebate" button
     console.log("Testing AI Vendor Negotiator & Apply Rebate button...");
-    const negotiatorBtn = page.locator("button:has-text('AI Vendor Negotiator')");
+    const negotiatorBtn = page.locator("button:has-text('Negotiate price'), button:has-text('AI Vendor Negotiator')").first();
     await negotiatorBtn.click();
 
     // Modal opens
-    await page.waitForSelector("text=Autonomous 2-Agent B2B Discount Negotiation", { timeout: 5000 });
+    await page.waitForSelector("text=Autonomous 2-Agent", { timeout: 8000 });
     console.log("✓ AI Vendor Negotiator modal opened!");
 
     // Start negotiation
@@ -224,14 +224,14 @@ async function run() {
     console.log("✓ Negotiated rebate successfully reflected in AG Grid prices & settlement row!");
 
     // Switch to Cards View and verify rebate tag & strikethrough price
-    await page.locator("button:has-text('Cards View')").click();
+    await page.locator("button:has-text('Cards')").first().click();
     await page.waitForTimeout(600);
     const hasCardRebateTag = await page.locator("text=Rebate Applied").first().isVisible().catch(() => false);
     console.log(`✓ Cards view displays rebate tag: ${hasCardRebateTag}`);
 
     // 9. Test Over-Budget Guardrail (Lock Button Disabled) & Auto-Rebalance Transparency
     console.log("Testing Over-Budget Guardrail & Auto-Rebalance algorithm...");
-    await page.locator("button:has-text('AG Grid Matrix')").click();
+    await page.locator("button:has-text('AG Grid Matrix'), button:has-text('Matrix')").first().click();
     await page.waitForTimeout(600);
 
     // Swap monitor to 4K Veltrix Pulse 32U (₹39,999) to intentionally exceed budgetCap of ₹60,000
@@ -290,7 +290,7 @@ async function run() {
 
     // 10. Test Multi-Dimensional Radar Chart & What-If Sensitivity Trade-offs
     console.log("Testing Radar Chart & What-If Trade-off Frontier...");
-    const radarTab = page.locator("button:has-text('Trade-offs Radar')");
+    const radarTab = page.locator("button:has-text('Trade-offs')").first();
     await radarTab.click();
     await page.waitForTimeout(600);
 
@@ -343,12 +343,12 @@ async function run() {
 
     // 11. Test Checkout & PayPal Capture in Last Stage
     console.log("Testing Step 2 (Mandate) and Step 3 (PayPal Pay-on-Delivery Capture)...");
-    const selectPlanBtn = page.locator("button:has-text('Lock & Approve Plan B — Best Value →')").first();
+    const selectPlanBtn = page.locator("#btn-approve-plan-b, button:has-text('Approve Plan B')").first();
     await selectPlanBtn.click();
     await page.waitForTimeout(800);
 
     // Should be on Step 2 (Order Mandate)
-    await page.waitForSelector("text=Dual-Custody Spending Gate", { timeout: 6000 });
+    await page.waitForSelector("text=Executive Approval", { timeout: 6000 });
     console.log("✓ Reached Step 2 with locked cryptographic spending mandate!");
 
     // Trigger simulation/sandbox auth

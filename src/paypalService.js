@@ -631,7 +631,7 @@ async function createVendorPayout({
           currency: "USD",
         },
         receiver: vendorEmail,
-        note: `ProcureAI settlement for ${planId} after ${platformFeePct}% escrow platform fee`,
+        note: `ProcureAI settlement for ${planId} after ${platformFeePct}% platform fee`,
         sender_item_id: `settle_${planId || Date.now()}`,
       },
     ],

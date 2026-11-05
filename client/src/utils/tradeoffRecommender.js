@@ -143,6 +143,8 @@ export function computeTradeoffRecommendations({
       maxDeliveryDays: relaxedDays,
       minRefreshRateHz: minRefreshRateHz,
     },
+    breaksConstraint: relaxedDays > maxDeliveryDays,
+    brokenConstraintText: relaxedDays > maxDeliveryDays ? `Breaks your ${maxDeliveryDays}-day limit` : null,
   };
 
   // =========================================================================
@@ -238,6 +240,9 @@ export function computeTradeoffRecommendations({
       maxDeliveryDays: currentDays,
       minRefreshRateHz: Math.max(minRefreshRateHz, 165),
     },
+    raisesBudget: true,
+    newBudgetCap: newBudgetCap,
+    budgetBadgeText: `Raises budget to ₹${newBudgetCap.toLocaleString("en-IN")}`,
   };
 
   // =========================================================================
@@ -338,6 +343,9 @@ export function computeTradeoffRecommendations({
       maxDeliveryDays: targetRushDays,
       minRefreshRateHz: minRefreshRateHz,
     },
+    raisesBudget: expressProjectedTotal > budgetINR,
+    newBudgetCap: Math.max(budgetINR, expressProjectedTotal),
+    budgetBadgeText: expressProjectedTotal > budgetINR ? `Raises budget to ₹${expressProjectedTotal.toLocaleString("en-IN")}` : null,
   };
 
   return [rec1, rec2, rec3];

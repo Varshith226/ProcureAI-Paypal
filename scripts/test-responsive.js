@@ -76,6 +76,10 @@ async function runResponsiveTests() {
     });
 
     const page = await context.newPage();
+    page.on("console", (msg) => {
+      if (msg.type() === "error") console.log(`   [PAGE ERROR] ${msg.text()}`);
+    });
+    page.on("pageerror", (err) => console.log(`   [UNCAUGHT] ${err.message}`));
 
     // Helper: Check horizontal overflow
     async function checkOverflow(screenName) {
@@ -179,14 +183,14 @@ async function runResponsiveTests() {
     await page.waitForSelector("#btn-fast-simulation-auth", { timeout: 10000 });
     await page.waitForTimeout(600);
 
-    // 3. STEP 2: CHECKOUT & DUAL-CUSTODY MANDATE
+    // 3. STEP 2: CHECKOUT & EXECUTIVE APPROVAL MANDATE
     const step2Overflow = await checkOverflow("Step 2 Checkout");
     const step2Cta = await checkVisibleInInitialView("#btn-fast-simulation-auth");
-    const dualCustodyPresent = await page.evaluate(() => {
-      return Boolean(document.body.innerText.includes("Executive Dual-Custody"));
+    const approvalPresent = await page.evaluate(() => {
+      return Boolean(document.body.innerText.includes("Executive Approval"));
     });
     console.log(`   Step 2: clientWidth=${step2Overflow.clientWidth}px, overflow delta=${step2Overflow.delta}px`);
-    console.log(`   Dual-Custody Gate Card Present: ${dualCustodyPresent}`);
+    console.log(`   Executive Approval Card Present: ${approvalPresent}`);
     console.log(`   Step 2 Primary CTA found: ${step2Cta.found}, inView: ${step2Cta.inView}`);
 
     const step2Shot = path.join(SCREENSHOTS_DIR, `${vp.name}-step2-checkout.png`);

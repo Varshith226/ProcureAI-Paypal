@@ -134,7 +134,7 @@ plansStore.set("plan_demo_1", {
   strategies: {
     BEST_VALUE: {
       strategyKey: "BEST_VALUE",
-      strategyName: "Plan B — Best Value",
+      strategyName: "Plan B — Best Quality in Budget",
       totalINR: canonicalTotalINR,
       items: canonicalDemoItems,
     }

@@ -16,21 +16,21 @@ const PLAN_SCHEMA_VERSION = 1;
 
 const STRATEGY_META = {
   CHEAPEST: {
-    strategyName: "Plan A — Cheapest",
+    strategyName: "Plan A — Lowest Cost",
     objectiveSummary:
       "Lowest total cost among complete baskets that meet every hard constraint and the budget; higher composite score breaks ties.",
     itemReason: "Part of the lowest-cost complete basket that meets every hard constraint.",
   },
   BEST_VALUE: {
-    strategyName: "Plan B — Best Value",
+    strategyName: "Plan B — Best Quality in Budget",
     objectiveSummary:
-      "Highest weighted quality, reliability and delivery score among complete baskets within budget; the lower total wins ties. Price is a budget limit and tie-breaker, not part of the score.",
+      "Highest quality, reliability and delivery score within your budget.",
     itemReason: "Part of the highest-scoring complete basket within budget.",
   },
   ALTERNATIVE: {
-    strategyName: "Plan C — Alternative",
+    strategyName: "Plan C — Max Performance",
     objectiveSummary:
-      "Highest-scoring complete basket that changes at least two category picks versus Best Value and is cheaper or better evidenced.",
+      "Highest-scoring complete basket that changes at least two category picks versus Best Quality in Budget and is cheaper or better evidenced.",
     itemReason: "Chosen for the alternative trade-off basket.",
   },
 };
@@ -371,11 +371,11 @@ function describeTradeOff(alt, best) {
   const totalUnits = alt.selections.reduce((sum, sel) => sum + sel.quantity, 0);
   const diffPaise = best.costPaise - alt.costPaise;
   const scoreDelta = round(alt.score - best.score);
-  const pieces = [`Changes the ${changed.join(", ")} pick(s) versus Best Value (a different product for ${units} of ${totalUnits} unit(s)).`];
+  const pieces = [`Changes the ${changed.join(", ")} pick(s) versus Best Quality in Budget (a different product for ${units} of ${totalUnits} unit(s)).`];
   if (diffPaise > 0) pieces.push(`Costs ${formatINR(diffPaise)} less`);
   else if (diffPaise < 0) pieces.push(`Costs ${formatINR(-diffPaise)} more`);
   else pieces.push("Costs the same");
-  pieces[pieces.length - 1] += ` with a composite score ${scoreDelta >= 0 ? "+" : ""}${scoreDelta} relative to Best Value.`;
+  pieces[pieces.length - 1] += ` with a composite score ${scoreDelta >= 0 ? "+" : ""}${scoreDelta} relative to Best Quality in Budget.`;
   if (alt.evidence > best.evidence + 1e-9) pieces.push("Its products have more complete evidence.");
   return {
     categoriesChanged: changed,

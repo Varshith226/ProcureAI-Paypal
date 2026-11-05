@@ -65,21 +65,25 @@ export default function NegotiationModal({
       footer={null}
       width={720}
       title={
-        <Space align="center">
+        <Space align="center" wrap>
           <RocketOutlined style={{ color: "#7c3aed", fontSize: 18 }} />
           <Text strong style={{ fontSize: 16 }}>
-            Autonomous 2-Agent B2B Discount Negotiation
+            Autonomous 2-Agent Discount Negotiation
           </Text>
-          {result && (
-            <Tag color={result.mode === "GEMINI_LLM" ? "purple" : "orange"}>
-              {result.mode === "GEMINI_LLM" ? "⚡ Gemini Live LLM" : "⚙️ Offline Simulation"}
-            </Tag>
-          )}
+          <Tag color={result?.mode === "GEMINI_LLM" || !result ? "purple" : "orange"} style={{ borderRadius: 6, fontWeight: 700 }}>
+            {result?.mode === "GEMINI_LLM" ? "⚡ Live AI" : result?.mode ? "⚙️ Offline simulation" : "⚡ Live AI"}
+          </Tag>
         </Space>
       }
     >
       <div style={{ padding: "4px 0" }}>
-        <Paragraph type="secondary" style={{ fontSize: 13, marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 12, marginBottom: 14, padding: "8px 12px", borderRadius: 8, background: isDarkMode ? "rgba(255,255,255,0.04)" : "#f1f5f9", fontSize: 12 }}>
+          <div><strong style={{ color: "#0052FF" }}>Buyer Agent:</strong> Google Gemini LLM</div>
+          <div>·</div>
+          <div><strong style={{ color: "#7c3aed" }}>Vendor Policy:</strong> Rule-based wholesale margin engine</div>
+        </div>
+
+        <Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 16 }}>
           ProcureAI Buyer Agent negotiates volume discounts directly against distributor quote engines using bundle leverage and PayPal Pay-on-Delivery Authorization Hold commitment:
         </Paragraph>
 
@@ -168,7 +172,7 @@ export default function NegotiationModal({
                         fontSize: 12,
                       }}
                     >
-                      <div style={{ fontWeight: 700, color: "#0052FF", marginBottom: 2 }}>Buyer Agent</div>
+                      <div style={{ fontWeight: 700, color: "#0052FF", marginBottom: 2 }}>Buyer Agent (LLM)</div>
                       <div>{round.buyerMessage}</div>
                       <div style={{ marginTop: 4, fontWeight: 600, fontSize: 11, color: "#64748b" }}>
                         Offer: ₹{round.buyerOfferINR.toLocaleString("en-IN")} (${round.buyerOfferUsd} USD)
@@ -188,7 +192,7 @@ export default function NegotiationModal({
                         textAlign: "right",
                       }}
                     >
-                      <div style={{ fontWeight: 700, color: "#7c3aed", marginBottom: 2 }}>Distributor Engine</div>
+                      <div style={{ fontWeight: 700, color: "#7c3aed", marginBottom: 2 }}>Vendor Policy (Rule-based)</div>
                       <div>{round.vendorMessage}</div>
                       <div style={{ marginTop: 4, fontWeight: 600, fontSize: 11, color: "#64748b" }}>
                         Counter: ₹{round.vendorCounterINR.toLocaleString("en-IN")} (${round.vendorCounterUsd} USD)

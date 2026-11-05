@@ -20,6 +20,7 @@ import {
   Spin,
   message,
   Tooltip,
+  Popover,
   ConfigProvider,
   theme,
 } from "antd";
@@ -56,6 +57,8 @@ import {
   ControlOutlined,
   DollarCircleOutlined,
   ArrowUpOutlined,
+  InfoCircleOutlined,
+  CopyOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
@@ -73,6 +76,7 @@ import "./index.css";
 import localCatalog from "./catalog.json";
 import { rebalanceBasket } from "./utils/rebalancer";
 import { computeTradeoffRecommendations } from "./utils/tradeoffRecommender";
+import { computeWhatExtraBuys } from "./utils/specComparison";
 import {
   fetchFxRate,
   fetchAuditLog,
@@ -94,7 +98,7 @@ import HeaderNav from "./components/HeaderNav";
 import ToolsDrawer from "./components/ToolsDrawer";
 import Money from "./components/Money";
 import SignedMandateCard from "./components/SignedMandateCard";
-import EscrowFlowVisual from "./components/EscrowFlowVisual";
+import HoldPipelineVisual from "./components/HoldPipelineVisual";
 
 const AuroraVaultCanvas = React.lazy(() => import("./components/canvas/AuroraVaultCanvas"));
 import CustomCursor from "./components/CustomCursor";
@@ -616,7 +620,7 @@ const STRATEGY_RADAR_THEMES = {
     stroke: "#10b981",
     fill: "rgba(16, 185, 129, 0.22)",
     dotColor: "#34d399",
-    name: "Plan A — Cheapest",
+    name: "Plan A — Lowest Cost",
     badge: "Lowest Cost",
   },
   BEST_VALUE: {
@@ -624,16 +628,16 @@ const STRATEGY_RADAR_THEMES = {
     stroke: "#38bdf8",
     fill: "rgba(56, 189, 248, 0.32)",
     dotColor: "#60a5fa",
-    name: "Plan B — Best Value",
-    badge: "Top Pick",
+    name: "Plan B — Best Quality in Budget",
+    badge: "Recommended",
   },
   ALTERNATIVE: {
     color: "#c084fc", // Radiant Purple
     stroke: "#c084fc",
     fill: "rgba(192, 132, 252, 0.22)",
     dotColor: "#e879f9",
-    name: "Plan C — Alternative",
-    badge: "Spec Trade-off",
+    name: "Plan C — Max Performance",
+    badge: "Max Performance",
   },
 };
 
@@ -735,9 +739,21 @@ const SmartTradeoffFrontier = ({
                       )}
                       <Text strong style={{ fontSize: 13 }}>{rec.title}</Text>
                     </Space>
-                    <Tag color={rec.badgeColor} style={{ borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
-                      {rec.badge}
-                    </Tag>
+                    <Space size={4} wrap>
+                      <Tag color={rec.badgeColor} style={{ borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
+                        {rec.badge}
+                      </Tag>
+                      {rec.raisesBudget && (
+                        <Tag color="warning" style={{ borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
+                          {rec.budgetBadgeText || `Raises budget to ₹${rec.newBudgetCap?.toLocaleString("en-IN")}`}
+                        </Tag>
+                      )}
+                      {rec.breaksConstraint && (
+                        <Tag color="error" style={{ borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
+                          {rec.brokenConstraintText || `Breaks your ${maxDeliveryDays}-day limit`}
+                        </Tag>
+                      )}
+                    </Space>
                   </div>
 
                   <div style={{ fontSize: 14, fontWeight: 800, color: borderColor, marginBottom: 8 }}>
@@ -1625,6 +1641,7 @@ export default function App() {
 
   // Optimization & Mandate state
   const [step2ViewMode, setStep2ViewMode] = useState("cards"); // "cards" | "grid" | "radar"
+  const [showWhatIfOptions, setShowWhatIfOptions] = useState(false);
   const [activeMatrixStrategy, setActiveMatrixStrategy] = useState("BEST_VALUE");
   const [lockedPlan, setLockedPlan] = useState(null);
   const [activeMandate, setActiveMandate] = useState(null);
@@ -1676,9 +1693,16 @@ export default function App() {
   const [isParsing, setIsParsing] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [isSseConnected, setIsSseConnected] = useState(false);
+  const [isPresenterMode, setIsPresenterMode] = useState(() => {
+    try {
+      return new URLSearchParams(window.location.search).get("present") === "1";
+    } catch (_) {
+      return false;
+    }
+  });
   const [authorizingManual, setAuthorizingManual] = useState(false);
 
-  // Dual-Custody Approval & Real Order States
+  // Executive Approval & Real Order States
   const [isWaitingCfoApproval, setIsWaitingCfoApproval] = useState(false);
   const [cfoApproved, setCfoApproved] = useState(false);
   const [cfoApprovalLink, setCfoApprovalLink] = useState("");
@@ -1756,6 +1780,19 @@ export default function App() {
     setClarificationState(null);
     setPriceSpikeAlert(null);
     message.success("Brief, budget & constraints reset to default baseline (₹60,000).");
+  };
+
+  // Reset entire demo state (cleans DB orders, tokens, storage, and resets to Step 0)
+  const handleResetDemoState = async () => {
+    try {
+      await fetch(`${API_BASE}/api/demo/reset`, { method: "POST" });
+    } catch (_) {}
+    try {
+      sessionStorage.clear();
+    } catch (_) {}
+    handleResetBriefToDefault();
+    setCurrentStep(0);
+    message.success("Demo state reset: database cleared, storage wiped, baseline restored.");
   };
 
   // Vendor Rebate handler: updates active rebate and recalculates live basket price
@@ -1988,7 +2025,7 @@ export default function App() {
             } catch (_) {}
             confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
             message.success({ content: "Hold successfully placed on PayPal Sandbox!", key: "paypal_auth", duration: 5 });
-            setCurrentStep(3); // Jump straight to Settle & Escrow Release!
+            setCurrentStep(3); // Jump straight to Settle & Payment Capture!
             window.history.replaceState({}, document.title, window.location.pathname);
           })
           .catch((err) => {
@@ -2044,7 +2081,7 @@ export default function App() {
           const data = JSON.parse(e.data);
           logTelemetry("SSE: MANDATE_APPROVED", `Mandate ${data.mandateId} signed by ${data.approverId}`, "200 OK", 5, data);
           setCfoApproved(true);
-          message.success("✓ Executive Dual-Custody Approval received via SSE! Checkout is now unlocked.");
+          message.success("✓ Executive Approval received via SSE! Checkout is now unlocked.");
         } catch (_) {}
       });
     } catch (_) {}
@@ -2146,6 +2183,14 @@ export default function App() {
       strategies: computedStrategies,
     };
   }, [serverPlan, budgetINR, maxDeliveryDays, quantities, computedStrategies, customizedStrategies, appliedRebateINR]);
+
+  const whatExtraBuys = useMemo(() => {
+    return computeWhatExtraBuys(
+      planData?.strategies?.CHEAPEST,
+      planData?.strategies?.BEST_VALUE,
+      localCatalog
+    );
+  }, [planData?.strategies]);
 
   // Scene state for dynamic 3D Aurora background
   const sceneState = useMemo(() => {
@@ -2500,7 +2545,7 @@ export default function App() {
     }
   };
 
-  // Request Executive Dual-Custody Approval Token
+  // Request Executive Approval Token
   const handleRequestCfoApproval = async () => {
     if (!activeMandate) return;
     setGeneratingToken(true);
@@ -2775,6 +2820,7 @@ export default function App() {
           sceneState={sceneState}
           quality={bgQuality}
           isDarkMode={isDarkMode}
+          step={currentStep}
         />
       </React.Suspense>
 
@@ -2782,7 +2828,19 @@ export default function App() {
       <CustomCursor isDarkMode={isDarkMode} />
 
       {/* FOREGROUND APPLICATION CONTAINER */}
-      <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div
+        className={isPresenterMode ? "presenter-mode" : ""}
+        style={{
+          position: "relative",
+          zIndex: 1,
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          zoom: isPresenterMode ? 1.08 : 1,
+        }}
+      >
+        {/* Soft Radial Scrim for Text Contrast AA Integrity */}
+        <div className="content-stage-scrim" />
         {/* SLIM 60PX TOP NAVIGATION HEADER */}
         <HeaderNav
           currentStep={currentStep}
@@ -2794,6 +2852,13 @@ export default function App() {
           fxData={fxData}
           onOpenTools={() => setToolsDrawerOpen(true)}
           onTriggerPreset={handleTriggerPreset}
+          isPresenterMode={isPresenterMode}
+          onTogglePresenterMode={() => {
+            const next = !isPresenterMode;
+            setIsPresenterMode(next);
+            message.info(next ? "🎬 Presenter mode enabled (110% zoom)" : "Presenter mode disabled");
+          }}
+          onResetDemoState={handleResetDemoState}
         />
 
         {/* PRICE SPIKE SAFETY ALERT */}
@@ -2843,43 +2908,56 @@ export default function App() {
                 transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
               >
                 {/* Hero Headline */}
-                <div style={{ textAlign: "center", marginBottom: 32, marginTop: 12 }}>
-                  <Tag
-                    color="blue"
-                    style={{
-                      borderRadius: 100,
-                      padding: "4px 14px",
-                      fontSize: 12,
-                      fontWeight: 700,
-                      marginBottom: 14,
-                      background: isDarkMode ? "rgba(0, 82, 255, 0.15)" : "#eff6ff",
-                      border: "1px solid rgba(0, 82, 255, 0.3)",
-                    }}
-                  >
-                    ⚡ AUTONOMOUS AGENTIC COMMERCE
-                  </Tag>
+                <div style={{ textAlign: "center", marginBottom: 28, marginTop: 8 }}>
+                  <Space align="center" style={{ marginBottom: 12 }}>
+                    <Tag
+                      color="blue"
+                      style={{
+                        borderRadius: 100,
+                        padding: "3px 12px",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        background: isDarkMode ? "rgba(0, 82, 255, 0.15)" : "#eff6ff",
+                        border: "1px solid rgba(0, 82, 255, 0.3)",
+                      }}
+                    >
+                      ⚡ AUTONOMOUS AGENTIC COMMERCE
+                    </Tag>
+                    <Tag
+                      color="default"
+                      style={{
+                        borderRadius: 100,
+                        padding: "3px 12px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        background: isDarkMode ? "rgba(255, 255, 255, 0.06)" : "#f1f5f9",
+                        border: "1px solid rgba(148, 163, 184, 0.3)",
+                      }}
+                    >
+                      🛡️ Sandbox mode: no real money
+                    </Tag>
+                  </Space>
                   <Title
                     level={1}
                     style={{
-                      margin: "0 0 12px 0",
+                      margin: "0 0 10px 0",
                       fontSize: "clamp(26px, 4vw, 40px)",
                       letterSpacing: "-0.03em",
                       fontWeight: 800,
                     }}
                   >
-                    Hardware Procurement, Solved Deterministically.
+                    Buy with an AI agent that can't overspend.
                   </Title>
                   <Paragraph
                     type="secondary"
                     style={{
                       fontSize: 16,
-                      maxWidth: 680,
+                      maxWidth: 720,
                       margin: "0 auto",
-                      lineHeight: 1.6,
+                      lineHeight: 1.5,
                     }}
                   >
-                    Specify your workstation requirements in plain English. We optimize stock,
-                    warranty, and delivery, negotiate vendor margins, and lock payment under cryptographic Ed25519 spending envelopes.
+                    Describe what you need. ProcureAI finds verified options, you set the limit, and PayPal holds payment until delivery.
                   </Paragraph>
                 </div>
 
@@ -2914,14 +2992,35 @@ export default function App() {
                     />
                   </div>
 
+                  {/* Trust Line */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 14,
+                      marginBottom: 16,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: isDarkMode ? "#94a3b8" : "#64748b",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <span>🤖 AI proposes</span>
+                    <span>·</span>
+                    <span>⚙️ Engine verifies</span>
+                    <span>·</span>
+                    <span>🛡️ PayPal protects</span>
+                  </div>
+
                   {/* Instant Demo Prompt Chips */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-                    <Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
-                      Try Preset:
+                    <Text type="secondary" style={{ fontSize: 13, fontWeight: 700 }}>
+                      Try:
                     </Text>
                     <Tag
                       color="blue"
-                      style={{ cursor: "pointer", borderRadius: 100, padding: "3px 12px", fontSize: 12 }}
+                      style={{ cursor: "pointer", borderRadius: 100, padding: "5px 14px", fontSize: 14, fontWeight: 600 }}
                       onClick={() => {
                         setPrompt("I need a complete setup for coding and gaming under ₹60,000. I already own a laptop. I need a 144 Hz monitor, keyboard, mouse and headphones. Prioritize value for money, reliability and delivery within a week.");
                         setBudgetINR(60000);
@@ -2933,7 +3032,7 @@ export default function App() {
                     </Tag>
                     <Tag
                       color="cyan"
-                      style={{ cursor: "pointer", borderRadius: 100, padding: "3px 12px", fontSize: 12 }}
+                      style={{ cursor: "pointer", borderRadius: 100, padding: "5px 14px", fontSize: 14, fontWeight: 600 }}
                       onClick={() => {
                         setPrompt("Need an ergonomic remote office hardware bundle under ₹45,000. Low noise mechanical keyboard, wireless mouse, high quality headset, and delivery within 4 days.");
                         setBudgetINR(45000);
@@ -2944,7 +3043,7 @@ export default function App() {
                     </Tag>
                     <Tag
                       color="purple"
-                      style={{ cursor: "pointer", borderRadius: 100, padding: "3px 12px", fontSize: 12 }}
+                      style={{ cursor: "pointer", borderRadius: 100, padding: "5px 14px", fontSize: 14, fontWeight: 600 }}
                       onClick={() => {
                         setPrompt("High-spec developer workstation under ₹1,20,000 with 170Hz 1440p monitor, ultra-light mouse, studio headphones and 8000Hz keyboard.");
                         setBudgetINR(120000);
@@ -2952,11 +3051,11 @@ export default function App() {
                         setMaxDeliveryDays(3);
                       }}
                     >
-                      ⚡ ₹1,20,000 High-Spec Station
+                      ⚡ ₹1.2L High-Spec Station
                     </Tag>
                     <Tag
                       color="geekblue"
-                      style={{ cursor: "pointer", borderRadius: 100, padding: "3px 12px", fontSize: 12 }}
+                      style={{ cursor: "pointer", borderRadius: 100, padding: "5px 14px", fontSize: 14, fontWeight: 600 }}
                       onClick={() => {
                         setPrompt("I need 5 laptops for a small shop under 3 lakh INR total, each with at least 16 GB RAM, delivery within 10 days and a minimum one-year warranty.");
                         setBudgetINR(300000);
@@ -2964,7 +3063,7 @@ export default function App() {
                         setQuantities({ laptop: 5 });
                       }}
                     >
-                      💻 5 Laptops Fleet (OEM Volume Tier)
+                      💻 ₹3L 5-Laptop Fleet
                     </Tag>
                   </div>
 
@@ -3162,8 +3261,8 @@ export default function App() {
                     )}
                   </AnimatePresence>
 
-                  {/* Primary Action Button */}
-                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                  {/* Primary Action Button & Quiet Links */}
+                  <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
                     <Button
                       id="btn-generate-plans"
                       type="primary"
@@ -3181,36 +3280,38 @@ export default function App() {
                         boxShadow: "0 4px 18px rgba(0, 82, 255, 0.4)",
                       }}
                     >
-                      Generate Verified Plans →
+                      Generate verified plans →
                     </Button>
 
-                    <Button
-                      size="large"
-                      icon={<ToolOutlined />}
-                      onClick={() => setShowConstraintsEditor(!showConstraintsEditor)}
-                      style={{ borderRadius: 12, fontWeight: 600, height: 48 }}
-                    >
-                      {showConstraintsEditor ? "Hide Constraints" : "Edit Constraints & Budget"}
-                    </Button>
+                    <Space size={12} wrap>
+                      <Button
+                        type="text"
+                        icon={<ToolOutlined />}
+                        onClick={() => setShowConstraintsEditor(!showConstraintsEditor)}
+                        style={{ fontSize: 13, color: isDarkMode ? "#94a3b8" : "#475569", fontWeight: 500 }}
+                      >
+                        {showConstraintsEditor ? "Hide constraints" : "Edit constraints"}
+                      </Button>
 
-                    <Button
-                      size="large"
-                      icon={<PaperClipOutlined />}
-                      onClick={() => setQuoteModalOpen(true)}
-                      style={{ borderRadius: 12, fontWeight: 600, height: 48 }}
-                    >
-                      Paste Supplier Quote
-                    </Button>
+                      <Button
+                        type="text"
+                        icon={<PaperClipOutlined />}
+                        onClick={() => setQuoteModalOpen(true)}
+                        style={{ fontSize: 13, color: isDarkMode ? "#94a3b8" : "#475569", fontWeight: 500 }}
+                      >
+                        Paste supplier quote
+                      </Button>
 
-                    <Button
-                      id="btn-reset-brief-defaults"
-                      size="large"
-                      icon={<ReloadOutlined />}
-                      onClick={handleResetBriefToDefault}
-                      style={{ borderRadius: 12, fontWeight: 600, height: 48 }}
-                    >
-                      Reset to Default Brief
-                    </Button>
+                      <Button
+                        id="btn-reset-brief-defaults"
+                        type="text"
+                        icon={<ReloadOutlined />}
+                        onClick={handleResetBriefToDefault}
+                        style={{ fontSize: 13, color: isDarkMode ? "#94a3b8" : "#475569", fontWeight: 500 }}
+                      >
+                        Reset
+                      </Button>
+                    </Space>
                   </div>
 
                   {/* Expandable Structured Constraints Editor */}
@@ -3395,25 +3496,46 @@ export default function App() {
                         size="small"
                         type={step2ViewMode === "cards" ? "primary" : "text"}
                         onClick={() => setStep2ViewMode("cards")}
-                        style={{ borderRadius: 100, fontSize: 12, fontWeight: 600 }}
+                        style={{
+                          borderRadius: 100,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          padding: "4px 14px",
+                          background: step2ViewMode === "cards" ? "#0052FF" : "transparent",
+                          color: step2ViewMode === "cards" ? "#ffffff" : undefined,
+                        }}
                       >
-                        Cards View
+                        Cards
                       </Button>
                       <Button
                         size="small"
                         type={step2ViewMode === "grid" ? "primary" : "text"}
                         onClick={() => setStep2ViewMode("grid")}
-                        style={{ borderRadius: 100, fontSize: 12, fontWeight: 600 }}
+                        style={{
+                          borderRadius: 100,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          padding: "4px 14px",
+                          background: step2ViewMode === "grid" ? "#0052FF" : "transparent",
+                          color: step2ViewMode === "grid" ? "#ffffff" : undefined,
+                        }}
                       >
-                        AG Grid Matrix
+                        Matrix
                       </Button>
                       <Button
                         size="small"
                         type={step2ViewMode === "radar" ? "primary" : "text"}
                         onClick={() => setStep2ViewMode("radar")}
-                        style={{ borderRadius: 100, fontSize: 12, fontWeight: 600 }}
+                        style={{
+                          borderRadius: 100,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          padding: "4px 14px",
+                          background: step2ViewMode === "radar" ? "#0052FF" : "transparent",
+                          color: step2ViewMode === "radar" ? "#ffffff" : undefined,
+                        }}
                       >
-                        Trade-offs Radar
+                        Trade-offs
                       </Button>
                     </div>
 
@@ -3421,9 +3543,9 @@ export default function App() {
                     <Button
                       icon={<ThunderboltOutlined style={{ color: "#F59E0B" }} />}
                       onClick={() => setNegotiationModalOpen(true)}
-                      style={{ borderRadius: 10, fontWeight: 600 }}
+                      style={{ borderRadius: 10, fontWeight: 600, fontSize: 13 }}
                     >
-                      AI Vendor Negotiator
+                      Negotiate price
                     </Button>
                   </Space>
                 </div>
@@ -3447,7 +3569,7 @@ export default function App() {
                         bodyStyle={{ padding: 20, display: "flex", flexDirection: "column", height: "100%" }}
                       >
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                          <Tag color="green" style={{ borderRadius: 6, fontWeight: 700 }}>MINIMUM COST</Tag>
+                          <Tag color="green" style={{ borderRadius: 6, fontWeight: 700 }}>Lowest Cost</Tag>
                           <Text type="secondary" style={{ fontSize: 12 }}>Plan A</Text>
                         </div>
 
@@ -3459,19 +3581,18 @@ export default function App() {
                         </div>
 
                         <Paragraph type="secondary" style={{ fontSize: 12, minHeight: 36, marginBottom: 14 }}>
-                          {planData.strategies?.CHEAPEST?.objectiveSummary}
+                          {planData.strategies?.CHEAPEST?.objectiveSummary || "Lowest total cost among complete baskets that meet every hard constraint and the budget."}
                         </Paragraph>
 
                         {/* Items list */}
                         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
                           {(planData.strategies?.CHEAPEST?.items || []).map((it) => (
                             <div key={it.productId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: isDarkMode ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` }}>
-                              <ProductIcon category={it.category} size={32} />
+                              <ProductIcon category={it.category} size={28} />
                               <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: isDarkMode ? "#e2e8f0" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</div>
-                                <div style={{ fontSize: 10, color: isDarkMode ? "#64748b" : "#94a3b8", textTransform: "capitalize", marginTop: 1 }}>{it.category} · {it.brand || "Demo Brand"}</div>
+                                <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.3, color: isDarkMode ? "#e2e8f0" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</div>
                               </div>
-                              <strong style={{ fontFamily: "var(--font-mono)", fontSize: 11, flexShrink: 0, color: isDarkMode ? "#38bdf8" : "#0052FF" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
+                              <strong style={{ fontFamily: "var(--font-mono)", fontSize: 12, flexShrink: 0, color: isDarkMode ? "#38bdf8" : "#0052FF" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
                             </div>
                           ))}
                         </div>
@@ -3481,12 +3602,12 @@ export default function App() {
                           onClick={() => handleApproveAndLock("CHEAPEST")}
                           style={{ borderRadius: 10, fontWeight: 600 }}
                         >
-                          Select Plan A →
+                          Approve Plan A and create mandate →
                         </Button>
                       </Card>
                     </Col>
 
-                    {/* PLAN B: BEST VALUE (FEATURED HERO CARD) */}
+                    {/* PLAN B: BEST QUALITY IN BUDGET (RECOMMENDED HERO CARD) */}
                     <Col xs={24} lg={10}>
                       <Card
                         className="plan-b-featured-card"
@@ -3504,9 +3625,9 @@ export default function App() {
                       >
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                           <Tag color="blue" icon={<StarOutlined />} style={{ borderRadius: 6, fontWeight: 800, padding: "2px 8px" }}>
-                            ⭐ RECOMMENDED BY OPTIMIZER
+                            ⭐ RECOMMENDED
                           </Tag>
-                          <Tag color="purple" style={{ borderRadius: 6 }}>Plan B</Tag>
+                          <Tag color="purple" style={{ borderRadius: 6, fontWeight: 700 }}>Plan B — Best Quality in Budget</Tag>
                         </div>
 
                         <div style={{ marginBottom: 12 }}>
@@ -3526,20 +3647,44 @@ export default function App() {
                           </div>
                         </div>
 
-                        <Paragraph style={{ fontSize: 13, marginBottom: 16 }}>
-                          {planData.strategies?.BEST_VALUE?.objectiveSummary}
+                        <Paragraph style={{ fontSize: 13, marginBottom: 12 }}>
+                          Highest quality, reliability and delivery score within your budget.
                         </Paragraph>
+
+                        {/* Deterministic "What the extra ₹X buys vs Plan A" block */}
+                        {whatExtraBuys?.hasUpgrades && (
+                          <div
+                            style={{
+                              marginBottom: 14,
+                              padding: "10px 14px",
+                              borderRadius: 10,
+                              background: isDarkMode ? "rgba(0, 82, 255, 0.08)" : "#f0f7ff",
+                              border: "1px solid rgba(0, 82, 255, 0.2)",
+                              fontSize: 12,
+                            }}
+                          >
+                            <div style={{ fontWeight: 700, color: "#0052FF", marginBottom: 6 }}>
+                              What the extra ₹{whatExtraBuys.extraINR.toLocaleString("en-IN")} buys vs Plan A:
+                            </div>
+                            <ul style={{ margin: 0, paddingLeft: 18, color: isDarkMode ? "#e2e8f0" : "#1e293b", lineHeight: 1.5 }}>
+                              {whatExtraBuys.differences.map((diff, idx) => (
+                                <li key={idx} style={{ marginBottom: 4 }}>
+                                  <strong style={{ textTransform: "capitalize" }}>{diff.category}:</strong> {diff.label}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
 
                         {/* Items list - dynamic with icons */}
                         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
                           {(planData.strategies?.BEST_VALUE?.items || []).map((it) => (
                             <div key={it.productId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: isDarkMode ? "rgba(0,82,255,0.06)" : "rgba(0,82,255,0.04)", border: `1px solid ${isDarkMode ? "rgba(0,82,255,0.15)" : "rgba(0,82,255,0.1)"}` }}>
-                              <ProductIcon category={it.category} size={32} />
+                              <ProductIcon category={it.category} size={28} />
                               <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: isDarkMode ? "#e2e8f0" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</div>
-                                <div style={{ fontSize: 10, color: isDarkMode ? "#64748b" : "#94a3b8", textTransform: "capitalize", marginTop: 1 }}>{it.category} · {it.brand || "Demo Brand"}</div>
+                                <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.3, color: isDarkMode ? "#e2e8f0" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</div>
                               </div>
-                              <strong style={{ fontFamily: "var(--font-mono)", fontSize: 11, flexShrink: 0, color: "#0052FF" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
+                              <strong style={{ fontFamily: "var(--font-mono)", fontSize: 12, flexShrink: 0, color: "#0052FF" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
                             </div>
                           ))}
                         </div>
@@ -3578,6 +3723,18 @@ export default function App() {
                           )}
 
                           <Button
+                            size="middle"
+                            icon={<TableOutlined />}
+                            onClick={() => {
+                              setActiveMatrixStrategy("BEST_VALUE");
+                              setStep2ViewMode("grid");
+                            }}
+                            style={{ borderRadius: 10, fontWeight: 600 }}
+                          >
+                            Edit in matrix
+                          </Button>
+
+                          <Button
                             id="btn-approve-plan-b"
                             type="primary"
                             size="large"
@@ -3595,26 +3752,13 @@ export default function App() {
                           >
                             {planData.strategies?.BEST_VALUE?.totalINR > budgetINR
                               ? `Budget Exceeded (₹${planData.strategies.BEST_VALUE.totalINR.toLocaleString("en-IN")} > ₹${budgetINR.toLocaleString("en-IN")})`
-                              : "Approve Plan B & Issue Mandate →"}
-                          </Button>
-
-                          <Button
-                            type="text"
-                            size="small"
-                            icon={<SwapOutlined />}
-                            onClick={() => {
-                              setActiveMatrixStrategy("BEST_VALUE");
-                              setStep2ViewMode("grid");
-                            }}
-                            style={{ color: "#94a3b8" }}
-                          >
-                            Customize Components in Matrix View
+                              : "Approve Plan B and create mandate →"}
                           </Button>
                         </div>
                       </Card>
                     </Col>
 
-                    {/* PLAN C: TOP SPEC */}
+                    {/* PLAN C: MAX PERFORMANCE */}
                     <Col xs={24} lg={7}>
                       <Card
                         className="glass-card-interactive"
@@ -3629,7 +3773,7 @@ export default function App() {
                         bodyStyle={{ padding: 20, display: "flex", flexDirection: "column", height: "100%" }}
                       >
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                          <Tag color="purple" style={{ borderRadius: 6, fontWeight: 700 }}>MAX PERFORMANCE</Tag>
+                          <Tag color="purple" style={{ borderRadius: 6, fontWeight: 700 }}>Max Performance</Tag>
                           <Text type="secondary" style={{ fontSize: 12 }}>Plan C</Text>
                         </div>
 
@@ -3648,12 +3792,11 @@ export default function App() {
                         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
                           {(planData.strategies?.ALTERNATIVE?.items || []).map((it) => (
                             <div key={it.productId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: isDarkMode ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` }}>
-                              <ProductIcon category={it.category} size={32} />
+                              <ProductIcon category={it.category} size={28} />
                               <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: isDarkMode ? "#e2e8f0" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</div>
-                                <div style={{ fontSize: 10, color: isDarkMode ? "#64748b" : "#94a3b8", textTransform: "capitalize", marginTop: 1 }}>{it.category} · {it.brand || "Demo Brand"}</div>
+                                <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.3, color: isDarkMode ? "#e2e8f0" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</div>
                               </div>
-                              <strong style={{ fontFamily: "var(--font-mono)", fontSize: 11, flexShrink: 0, color: isDarkMode ? "#a78bfa" : "#7c3aed" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
+                              <strong style={{ fontFamily: "var(--font-mono)", fontSize: 12, flexShrink: 0, color: isDarkMode ? "#a78bfa" : "#7c3aed" }}>₹{it.unitPriceINR.toLocaleString()}</strong>
                             </div>
                           ))}
                         </div>
@@ -3663,25 +3806,38 @@ export default function App() {
                           onClick={() => handleApproveAndLock("ALTERNATIVE")}
                           style={{ borderRadius: 10, fontWeight: 600 }}
                         >
-                          Select Plan C →
+                          Approve Plan C and create mandate →
                         </Button>
                       </Card>
                     </Col>
                   </Row>
 
-                  <SmartTradeoffFrontier
-                    budgetCap={budgetINR}
-                    maxDeliveryDays={maxDeliveryDays}
-                    minRefreshRateHz={minRefreshRateHz}
-                    strategies={planData.strategies}
-                    catalogProducts={localCatalog.products || []}
-                    activeStrategyKey={activeMatrixStrategy || "BEST_VALUE"}
-                    appliedTradeoff={appliedTradeoff}
-                    onSelectTradeoffForConfirm={(rec) => setPendingTradeoff(rec)}
-                    onApplyTradeoff={handleApplyTradeoff}
-                    onResetToDefault={handleResetToDefaultConstraints}
-                    isDarkMode={isDarkMode}
-                  />
+                  {/* Collapsed What-If Options Bar */}
+                  <div style={{ marginTop: 24, textAlign: "center" }}>
+                    <Button
+                      icon={<SlidersOutlined />}
+                      onClick={() => setShowWhatIfOptions(!showWhatIfOptions)}
+                      style={{ borderRadius: 10, fontWeight: 600, fontSize: 13 }}
+                    >
+                      {showWhatIfOptions ? "Hide What-if Sensitivity Options ▴" : "What-if options: Adjust delivery or budget envelopes ▾"}
+                    </Button>
+                  </div>
+
+                  {showWhatIfOptions && (
+                    <SmartTradeoffFrontier
+                      budgetCap={budgetINR}
+                      maxDeliveryDays={maxDeliveryDays}
+                      minRefreshRateHz={minRefreshRateHz}
+                      strategies={planData.strategies}
+                      catalogProducts={localCatalog.products || []}
+                      activeStrategyKey={activeMatrixStrategy || "BEST_VALUE"}
+                      appliedTradeoff={appliedTradeoff}
+                      onSelectTradeoffForConfirm={(rec) => setPendingTradeoff(rec)}
+                      onApplyTradeoff={handleApplyTradeoff}
+                      onResetToDefault={handleResetToDefaultConstraints}
+                      isDarkMode={isDarkMode}
+                    />
+                  )}
                 </>
                 )}
 
@@ -3743,12 +3899,56 @@ export default function App() {
               >
                 {/* Header info */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
-                  <Space align="baseline">
+                  <Space align="center" wrap>
                     <Title level={3} style={{ margin: 0, letterSpacing: -0.5 }}>
                       Order #PA-1042
                     </Title>
-                    <Tag color="blue" style={{ borderRadius: 6 }}>plan_demo_1</Tag>
-                    <Tag color="green" style={{ borderRadius: 6, fontWeight: 700 }}>APPROVED & BOUND</Tag>
+                    {cfoApproved ? (
+                      <Tag color="success" id="order-status-chip" style={{ borderRadius: 6, fontWeight: 700 }}>APPROVED</Tag>
+                    ) : isWaitingCfoApproval || cfoApprovalLink ? (
+                      <Tag color="warning" id="order-status-chip" style={{ borderRadius: 6, fontWeight: 700 }}>AWAITING APPROVAL</Tag>
+                    ) : (
+                      <Tag color="blue" id="order-status-chip" style={{ borderRadius: 6, fontWeight: 700 }}>MANDATE SIGNED</Tag>
+                    )}
+                    <Tag color="default" style={{ background: isDarkMode ? "rgba(255, 255, 255, 0.06)" : "#f1f5f9", borderRadius: 100, fontSize: 11, fontWeight: 600 }}>
+                      🛡️ Sandbox mode: no real money
+                    </Tag>
+                    <Popover
+                      trigger="click"
+                      placement="bottomLeft"
+                      title={<Text strong style={{ fontSize: 13 }}>Order & Mandate Details</Text>}
+                      content={
+                        <div style={{ minWidth: 260, display: "flex", flexDirection: "column", gap: 8, fontSize: 12 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <Text type="secondary">Order Ref:</Text>
+                            <Space size={4}>
+                              <Text code>PA-1042</Text>
+                              <Button size="small" type="text" icon={<CopyOutlined style={{ fontSize: 11 }} />} onClick={() => { navigator.clipboard.writeText("PA-1042"); message.success("Copied order ref"); }} />
+                            </Space>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <Text type="secondary">Plan ID:</Text>
+                            <Space size={4}>
+                              <Text code>{lockedPlan?.planId || "PA-PLAN-1042"}</Text>
+                              <Button size="small" type="text" icon={<CopyOutlined style={{ fontSize: 11 }} />} onClick={() => { navigator.clipboard.writeText(lockedPlan?.planId || "PA-PLAN-1042"); message.success("Copied plan ID"); }} />
+                            </Space>
+                          </div>
+                          {activeMandate?.mandateId && (
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <Text type="secondary">Mandate ID:</Text>
+                              <Space size={4}>
+                                <Text code>{activeMandate.mandateId.slice(0, 16)}...</Text>
+                                <Button size="small" type="text" icon={<CopyOutlined style={{ fontSize: 11 }} />} onClick={() => { navigator.clipboard.writeText(activeMandate.mandateId); message.success("Copied mandate ID"); }} />
+                              </Space>
+                            </div>
+                          )}
+                        </div>
+                      }
+                    >
+                      <Button size="small" icon={<InfoCircleOutlined />} style={{ borderRadius: 6, fontSize: 12, height: 26, padding: "0 8px" }}>
+                        Details
+                      </Button>
+                    </Popover>
                   </Space>
 
                   <Button
@@ -3865,22 +4065,58 @@ export default function App() {
                     />
                   </Col>
 
-                  {/* RIGHT COLUMN: Pipeline Visual & PayPal Payment Terminal */}
+                  {/* RIGHT COLUMN: Guided Checklist & Payment Terminal */}
                   <Col xs={24} lg={12}>
-                    {/* Pay-on-Delivery Authorization Hold Pipeline Visual */}
-                    <EscrowFlowVisual
-                      status={receipt?.status || "DRAFT"}
-                      amountINR={lockedPlan?.lockedTotalINR || 35492}
-                      amountUSD={toUSD(lockedPlan?.lockedTotalINR || 35492)}
-                      isDarkMode={isDarkMode}
-                    />
+                    {/* Compact 3-Node Architecture Pipeline Visual */}
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        background: isDarkMode ? "rgba(2, 6, 23, 0.5)" : "#f8fafc",
+                        border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.05)" : "#e2e8f0"}`,
+                        marginBottom: 14,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, fontWeight: 700 }}>
+                        <span style={{ color: "#94a3b8" }}>Buyer Org</span>
+                        <span style={{ color: "#38bdf8" }}>➔ [Hold] ➔</span>
+                        <span style={{ color: "#0052FF" }}>PayPal Hold (${toUSD(lockedPlan?.lockedTotalINR || 35492)})</span>
+                        <span style={{ color: "#38bdf8" }}>➔ [Delivery] ➔</span>
+                        <span style={{ color: "#10b981" }}>Seller (Paid)</span>
+                      </div>
+                    </div>
 
-                    {/* Executive Dual-Custody Spending Gate Card */}
+                    {/* Step 1: Mandate Signed (Done) */}
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: 8,
+                        background: isDarkMode ? "rgba(16, 185, 129, 0.08)" : "#f0fdf4",
+                        border: "1px solid rgba(16, 185, 129, 0.2)",
+                        marginBottom: 10,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontSize: 12,
+                      }}
+                    >
+                      <Space size={6}>
+                        <CheckCircleOutlined style={{ color: "#10b981" }} />
+                        <span style={{ fontWeight: 600 }}>1. Spending Mandate Signed</span>
+                      </Space>
+                      <Tag color="success" style={{ margin: 0, fontWeight: 700, borderRadius: 6, fontSize: 11 }}>
+                        ✓ CEILING LOCKED
+                      </Tag>
+                    </div>
+
+                    {/* Step 2: Executive Approval Card */}
                     <Card
                       style={{
                         borderRadius: 14,
-                        marginBottom: 16,
-                        background: isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff",
+                        marginBottom: 14,
+                        background: cfoApproved
+                          ? (isDarkMode ? "rgba(16, 185, 129, 0.08)" : "#f0fdf4")
+                          : (isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff"),
                         border: `1px solid ${
                           cfoApproved
                             ? "#10b981"
@@ -3891,62 +4127,69 @@ export default function App() {
                             : "#e2e8f0"
                         }`,
                       }}
-                      bodyStyle={{ padding: 16 }}
+                      bodyStyle={{ padding: 14 }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: cfoApproved ? 0 : 8 }}>
                         <Space align="center">
-                          <SafetyCertificateOutlined style={{ color: cfoApproved ? "#10b981" : isWaitingCfoApproval ? "#f59e0b" : "#0052FF", fontSize: 16 }} />
-                          <Text strong style={{ fontSize: 13 }}>Executive Dual-Custody Spending Gate</Text>
+                          {cfoApproved ? (
+                            <CheckCircleOutlined style={{ color: "#10b981", fontSize: 16 }} />
+                          ) : (
+                            <SafetyCertificateOutlined style={{ color: isWaitingCfoApproval ? "#f59e0b" : "#0052FF", fontSize: 16 }} />
+                          )}
+                          <Text strong style={{ fontSize: 13 }}>2. Executive Approval</Text>
                         </Space>
                         {cfoApproved ? (
-                          <Tag color="green">✓ CFO SIGNED VIA SSE</Tag>
+                          <Tag color="green" style={{ margin: 0, fontWeight: 700, borderRadius: 6 }}>✓ APPROVED</Tag>
                         ) : isWaitingCfoApproval ? (
-                          <Tag color="orange" icon={<ClockCircleOutlined />}>AWAITING CFO SIGNATURE</Tag>
+                          <Tag color="orange" icon={<ClockCircleOutlined />} style={{ margin: 0, fontWeight: 700, borderRadius: 6 }}>WAITING FOR APPROVAL</Tag>
                         ) : (
-                          <Tag color="blue">GOVERNANCE READY</Tag>
+                          <Tag color="blue" style={{ margin: 0, fontWeight: 600, borderRadius: 6 }}>REQUEST LINK</Tag>
                         )}
                       </div>
 
-                      <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 12 }}>
-                        {cfoApproved
-                          ? "Single-use approval token consumed. Executive signature verified via real-time SSE stream. PayPal hold checkout is fully authorized."
-                          : isWaitingCfoApproval
-                          ? "Expiring approval link generated. Checkout is held until signed by authorized executive authority."
-                          : "Require executive finance authorization before placing PayPal authorization hold."}
-                      </div>
+                      {!cfoApproved && (
+                        <div>
+                          <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 10 }}>
+                            {isWaitingCfoApproval
+                              ? "Single-use approval token generated. Checkout held until signed by executive authority."
+                              : "Require executive finance authorization before placing PayPal authorization hold."}
+                          </div>
 
-                      {!isWaitingCfoApproval && !cfoApproved && (
-                        <Button
-                          size="small"
-                          loading={generatingToken}
-                          onClick={handleRequestCfoApproval}
-                          style={{ borderRadius: 6, fontWeight: 600, fontSize: 12 }}
-                        >
-                          Request Executive Approval Link
-                        </Button>
-                      )}
+                          {!isWaitingCfoApproval && (
+                            <Button
+                              size="small"
+                              type="primary"
+                              loading={generatingToken}
+                              onClick={handleRequestCfoApproval}
+                              style={{ borderRadius: 6, fontWeight: 600, fontSize: 12, background: "#0052FF" }}
+                            >
+                              Request approval link
+                            </Button>
+                          )}
 
-                      {isWaitingCfoApproval && !cfoApproved && (
-                        <Space wrap>
-                          <Button
-                            size="small"
-                            onClick={() => {
-                              navigator.clipboard?.writeText(cfoApprovalLink);
-                              message.success("Copied single-use approval token link!");
-                            }}
-                            style={{ borderRadius: 6, fontSize: 12 }}
-                          >
-                            Copy Link
-                          </Button>
-                          <Button
-                            size="small"
-                            type="primary"
-                            onClick={() => setApprovalModalOpen(true)}
-                            style={{ borderRadius: 6, fontSize: 12, background: "#f59e0b", borderColor: "#f59e0b", color: "#000", fontWeight: 700 }}
-                          >
-                            Simulate CFO Sign-off ↗
-                          </Button>
-                        </Space>
+                          {isWaitingCfoApproval && (
+                            <Space wrap size={8}>
+                              <Button
+                                size="small"
+                                onClick={() => {
+                                  navigator.clipboard?.writeText(cfoApprovalLink);
+                                  message.success("Copied single-use approval token link!");
+                                }}
+                                style={{ borderRadius: 6, fontSize: 12 }}
+                              >
+                                Copy link
+                              </Button>
+                              <Button
+                                size="small"
+                                type="primary"
+                                onClick={() => setApprovalModalOpen(true)}
+                                style={{ borderRadius: 6, fontSize: 12, background: "#f59e0b", borderColor: "#f59e0b", color: "#000", fontWeight: 700 }}
+                              >
+                                Simulate sign-off ↗
+                              </Button>
+                            </Space>
+                          )}
+                        </div>
                       )}
                     </Card>
 
@@ -3970,8 +4213,8 @@ export default function App() {
                         type="info"
                         showIcon
                         icon={<SafetyCertificateOutlined style={{ color: "#0052FF" }} />}
-                        message={<span style={{ fontWeight: 700 }}>Pay-on-Delivery Authorization Hold (Zero Risk)</span>}
-                        description="Your card or balance is NOT debited today. PayPal places an authorization hold (valid up to 29 days; funds guaranteed ~3 days (honor period); reauthorize if delivery is later). Funds are captured only after you inspect and confirm delivery."
+                        message={<span style={{ fontWeight: 700 }}>Pay-on-Delivery Authorization Hold</span>}
+                        description="No payment is captured today. PayPal places an authorization hold; funds are guaranteed for about 3 days and the authorization stays valid up to 29 days (reauthorize if delivery is later). Payment is captured only when delivery is confirmed."
                         style={{ marginBottom: 16, borderRadius: 10 }}
                       />
 
@@ -4003,6 +4246,7 @@ export default function App() {
                           }}
                         >
                           <PayPalButtons
+                            fundingSource="paypal"
                             disabled={Boolean(fxData?.unavailable || (isWaitingCfoApproval && !cfoApproved))}
                             style={{ layout: "vertical", shape: "rect", borderRadius: 8, height: 44 }}
                             createOrder={async () => {
@@ -4179,7 +4423,7 @@ export default function App() {
             )}
 
             {/* ========================================================= */}
-            {/* SCREEN 4: DELIVERY VERIFICATION & SETTLE (ESCROW RELEASE) */}
+            {/* SCREEN 4: DELIVERY VERIFICATION & SETTLE (PAYMENT CAPTURE) */}
             {/* ========================================================= */}
             {currentStep === 3 && (
               <motion.div
@@ -4350,12 +4594,12 @@ export default function App() {
                           <div>
                             <Text strong style={{ fontSize: 16 }}>4. Settlement, Invoicing & Financial Reconciliation</Text>
                             <div style={{ fontSize: 12, color: "#94a3b8" }}>
-                              Automated escrow smart disbursements with cryptographic audit trail
+                              Automated smart disbursements with cryptographic audit trail
                             </div>
                           </div>
                         </Space>
                         <Tag color="green" icon={<CheckCircleOutlined />} style={{ padding: "2px 8px", fontWeight: 700 }}>
-                          ESCROW FULFILLED
+                          SETTLEMENT FULFILLED
                         </Tag>
                       </div>
 
@@ -4372,7 +4616,7 @@ export default function App() {
                         </Col>
                         <Col xs={24} sm={8}>
                           <div style={{ padding: "12px 14px", borderRadius: 10, background: isDarkMode ? "rgba(255,255,255,0.03)" : "#f8fafc", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.06)" : "#e2e8f0"}` }}>
-                            <div style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>Escrow Guarantee Fee (1.5%)</div>
+                            <div style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>Platform Guarantee Fee (1.5%)</div>
                             <div style={{ fontSize: 16, fontWeight: 800, color: "#10b981", fontFamily: "var(--font-mono)" }}>
                               -${(Number(receipt?.capturedUSD || toUSD(lockedPlan?.lockedTotalINR || 35492)) * 0.015).toFixed(2)} USD
                             </div>
@@ -4445,7 +4689,7 @@ export default function App() {
                           >
                             <div>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                                <Text strong style={{ fontSize: 14 }}>Escrow Reversal & Protection</Text>
+                                <Text strong style={{ fontSize: 14 }}>Payment Reversal & Protection</Text>
                                 <Tag color="warning">BUYER SLA</Tag>
                               </div>
                               <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 12 }}>
@@ -4562,12 +4806,12 @@ export default function App() {
         onRebateAgreed={handleApplyNegotiatedRebate}
       />
 
-      {/* 5. Executive Dual-Custody Approval Portal Modal */}
+      {/* 5. Executive Approval Portal Modal */}
       <ApprovalPortalModal
         open={approvalModalOpen}
         onClose={() => setApprovalModalOpen(false)}
         plan={lockedPlan || {
-          planId: "plan_demo_1",
+          planId: "PA-PLAN-1042",
           strategyKey: "BEST_VALUE",
           lockedTotalINR: 35492,
           lockedTotalUSD: toUSD(35492),
@@ -4575,7 +4819,7 @@ export default function App() {
         mandate={activeMandate}
         tokenRecord={activeApprovalToken}
         onApprove={() => {
-          message.success("Executive dual-custody authorization signed!");
+          message.success("Executive approval granted!");
           setCurrentStep(2);
         }}
         isDarkMode={isDarkMode}

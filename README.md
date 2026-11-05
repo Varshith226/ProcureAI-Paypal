@@ -99,12 +99,12 @@ flowchart TD
   * *Express Priority (3 Days):* Prioritizes immediate-dispatch air freight.
 * **Itemized Confirmation Modal:** Transparently breaks down before-and-after component changes, unit prices, and net differences before applying. A **Reset to Default** button reverts constraints anytime.
 
-### Step 2: Dual-Custody Mandate & Remote Approval Portal
+### Step 2: Spending Mandate & Executive Approval Portal
 * **Ed25519 Spending Mandate:** Asymmetrically signed spending envelope binding budget ceiling (`maxTotalINR`, `maxTotalUSD`), merchant IDs, and expiration timestamp.
 * **Single-Use Expiring Tokens:** Generates time-limited CFO approval links. Replay attacks and parameter tampering are rejected instantly.
 
 ### Step 3: PayPal Authorization Hold & Delivery Settle
-* **Authorization Hold Placed:** Calls PayPal Orders v2 with `intent: "AUTHORIZE"`. Funds are guaranteed in escrow without leaving the buyer's account.
+* **Authorization Hold Placed:** Calls PayPal Orders v2 with `intent: "AUTHORIZE"`. Funds are held on authorization hold without leaving the buyer's account.
 * **Physical Inspection Sign-Off:** When delivery arrives intact, buyer confirms release to capture payment (`POST /v2/payments/authorizations/:id/capture`).
 * **Atomic SLA Penalty Capture:** If delivery slips past agreed horizon, captures 90% and automatically voids 10% penalty credit in a single atomic transaction.
 
@@ -116,7 +116,7 @@ ProcureAI exercises official PayPal Sandbox APIs across the entire procurement l
 
 | PayPal API / Feature | Endpoint | Business Purpose |
 |---|---|---|
-| **Orders v2 (Authorize Intent)** | `POST /v2/checkout/orders` (`intent: "AUTHORIZE"`) | Holds buyer funds in a pay-on-delivery escrow authorization hold instead of capturing immediately. |
+| **Orders v2 (Authorize Intent)** | `POST /v2/checkout/orders` (`intent: "AUTHORIZE"`) | Holds buyer funds in a pay-on-delivery authorization hold instead of capturing immediately. |
 | **Orders v2 (Authorize Call)** | `POST /v2/checkout/orders/:id/authorize` | Authorizes the held amount after buyer approval, establishing an authorization window with unique PayPal `authorization_id`. |
 | **Payments v2 (Capture)** | `POST /v2/payments/authorizations/:id/capture` | Captures held funds atomically upon physical delivery inspection confirmation. |
 | **Atomic SLA Penalty Capture** | `POST /v2/payments/authorizations/:id/capture` (`final_capture: true`) | On delivery delay, captures 90% and automatically voids the 10% penalty credit in one call. |
@@ -134,7 +134,7 @@ ProcureAI exercises official PayPal Sandbox APIs across the entire procurement l
 
 * **Intent & Constraint Extraction:** Google Gemini Flash parses unstructured natural language and maps requirements to strict numeric attributes.
 * **Two-Agent Autonomous Negotiation:** Buyer LLM negotiates volume discounts against an autonomous vendor agent defending private mathematical reservation price floors (`calculateVendorFloor`).
-* **Prompt Injection Defense:** Multi-layered input sanitizer rejects adversarial prompts attempting to bypass spending limits or waive escrow protections.
+* **Prompt Injection Defense:** Multi-layered input sanitizer rejects adversarial prompts attempting to bypass spending limits or waive authorization protections.
 * **Offline Simulation Mode:** If network or API limits occur, negotiations gracefully transition to an offline simulation engine clearly labeled for audit integrity.
 
 ---
@@ -192,7 +192,7 @@ npm test
 
 * **Frontend:** React 18, Vite, Ant Design 5 (Cyberpunk Dark Glassmorphic Theme), AG Grid Community v36, Three.js (Dynamic Aurora Vault Canvas), Framer Motion.
 * **Backend:** Node.js (Express 5), SQLite WAL (`node:sqlite`), Server-Sent Events (SSE), Ed25519 Cryptography (`node:crypto`).
-* **Payments & Escrow:** PayPal Orders v2, Payments v2, Invoicing v2, Payouts v1 Sandbox APIs.
+* **Payments & Settlement:** PayPal Orders v2, Payments v2, Invoicing v2, Payouts v1 Sandbox APIs.
 * **AI & NLP:** Google Gemini Flash (`@google/genai`), Multi-Agent Negotiation Protocol.
 * **Testing & Quality:** Node Test Runner (`node --test`), Playwright Headless Browser Automation.
 

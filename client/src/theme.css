@@ -129,26 +129,26 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.escrow-pipeline-grid {
+.hold-pipeline-grid {
   display: grid;
   grid-template-columns: 1fr auto 1.3fr auto 1fr;
   align-items: center;
   gap: 8px;
 }
 
-.escrow-arrow-mobile {
+.hold-arrow-mobile {
   display: none;
 }
 
 @media (max-width: 640px) {
-  .escrow-pipeline-grid {
+  .hold-pipeline-grid {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  .escrow-arrow-desktop {
+  .hold-arrow-desktop {
     display: none;
   }
-  .escrow-arrow-mobile {
+  .hold-arrow-mobile {
     display: inline-block;
   }
 }

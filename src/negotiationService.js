@@ -191,7 +191,7 @@ async function negotiateVendorDiscount({
       round: 2,
       buyerOfferINR: total - round2Buyer,
       buyerDiscountINR: round2Buyer,
-      buyerMessage: `ProcureAI Buyer Agent: Our authorized Ed25519 spending mandate permits instant escrow lock if distributor meets at ₹${round2Buyer.toLocaleString("en-IN")} (-₹${round2Buyer.toLocaleString("en-IN")}). Delivery SLA must remain guaranteed.`,
+      buyerMessage: `ProcureAI Buyer Agent: Our authorized Ed25519 spending mandate permits instant authorization lock if distributor meets at ₹${round2Buyer.toLocaleString("en-IN")} (-₹${round2Buyer.toLocaleString("en-IN")}). Delivery SLA must remain guaranteed.`,
       vendorCounterINR: total - round2Vendor,
       vendorDiscountINR: round2Vendor,
       vendorMessage: `Merchant Quote Engine: Verified corporate tier credentials. We can advance to ${tierName} pricing: ₹${round2Vendor.toLocaleString("en-IN")} discount with guaranteed priority dispatch.`,

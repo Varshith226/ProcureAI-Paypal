@@ -1,4 +1,4 @@
-// client/src/components/EscrowFlowVisual.jsx
+// client/src/components/HoldPipelineVisual.jsx
 import React from "react";
 import { Typography, Tag, Space } from "antd";
 import {
@@ -14,7 +14,7 @@ import {
 
 const { Text } = Typography;
 
-export default function EscrowFlowVisual({
+export default function HoldPipelineVisual({
   status = "DRAFT", // "DRAFT" | "AUTHORIZED" | "DELIVERED" | "CAPTURED" | "PARTIALLY_CAPTURED" | "VOIDED"
   amountUSD = "714.00",
   amountINR = 60000,
@@ -66,7 +66,7 @@ export default function EscrowFlowVisual({
 
       {/* 3-Node Architecture Pipeline */}
       <div
-        className="escrow-pipeline-grid"
+        className="hold-pipeline-grid"
         style={{
           padding: "14px 12px",
           background: isDarkMode ? "rgba(2, 6, 23, 0.5)" : "#f8fafc",
@@ -89,9 +89,9 @@ export default function EscrowFlowVisual({
         </div>
 
         {/* Arrow 1 */}
-        <div className="escrow-arrow" style={{ textAlign: "center", color: isAuthorized ? "#0052FF" : "#94a3b8", fontWeight: 700 }}>
-          <span className="escrow-arrow-desktop">{isAuthorized ? "➜ [Hold]" : "⇢"}</span>
-          <span className="escrow-arrow-mobile">{isAuthorized ? "▼ [Hold]" : "▼"}</span>
+        <div className="hold-arrow" style={{ textAlign: "center", color: isAuthorized ? "#0052FF" : "#94a3b8", fontWeight: 700 }}>
+          <span className="hold-arrow-desktop">{isAuthorized ? "➜ [Hold]" : "⇢"}</span>
+          <span className="hold-arrow-mobile">{isAuthorized ? "▼ [Hold]" : "▼"}</span>
         </div>
 
         {/* Node 2: PayPal Authorization Hold */}
@@ -132,9 +132,9 @@ export default function EscrowFlowVisual({
         </div>
 
         {/* Arrow 2 */}
-        <div className="escrow-arrow" style={{ textAlign: "center", color: isCaptured ? "#10b981" : "#94a3b8", fontWeight: 700 }}>
-          <span className="escrow-arrow-desktop">{isCaptured ? "➜ [Paid]" : "⇢"}</span>
-          <span className="escrow-arrow-mobile">{isCaptured ? "▼ [Paid]" : "▼"}</span>
+        <div className="hold-arrow" style={{ textAlign: "center", color: isCaptured ? "#10b981" : "#94a3b8", fontWeight: 700 }}>
+          <span className="hold-arrow-desktop">{isCaptured ? "➜ [Paid]" : "⇢"}</span>
+          <span className="hold-arrow-mobile">{isCaptured ? "▼ [Paid]" : "▼"}</span>
         </div>
 
         {/* Node 3: Merchant / Vendor */}

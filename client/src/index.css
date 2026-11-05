@@ -34,6 +34,20 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums;
+}
+
+body, input, button, select, textarea, .ant-typography, .ant-tag, .ant-btn {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Presenter Mode (for high-clarity video recordings) */
+.presenter-mode {
+  transition: transform 0.2s ease;
+}
+
+.presenter-mode .dev-debug-badge {
+  display: none !important;
 }
 
 #root, .ant-layout {
@@ -82,9 +96,24 @@ h1, h2, h3, h4, h5, h6, .ant-typography-headline, .price-display {
 }
 
 .glass-card {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.content-stage-scrim {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 75% 65% at 50% 35%, rgba(8, 12, 24, 0.4) 0%, rgba(8, 12, 24, 0.78) 100%);
+  z-index: 0;
+}
+
+.theme-light-bg .content-stage-scrim {
+  background: radial-gradient(ellipse 75% 65% at 50% 35%, rgba(255, 255, 255, 0.5) 0%, rgba(248, 250, 252, 0.85) 100%);
 }
 
 /* Subtle Hover Lift for Strategy Cards */

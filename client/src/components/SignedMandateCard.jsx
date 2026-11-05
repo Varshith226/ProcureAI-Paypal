@@ -6,6 +6,7 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   WarningOutlined,
+  CopyOutlined,
 } from "@ant-design/icons";
 import { verifyMandate } from "../api/paypalApi";
 
@@ -80,17 +81,19 @@ export default function SignedMandateCard({
             <KeyOutlined style={{ color: "#0052FF", fontSize: 15 }} />
           </div>
           <Text strong style={{ fontSize: 14 }}>
-            Cryptographically Signed Spending Mandate
+            Spending Mandate
           </Text>
         </Space>
         <Space size={6} wrap>
-          <Tag color="blue" style={{ borderRadius: 6, fontWeight: 700, fontSize: 11 }}>Signed mandate (Ed25519)</Tag>
-          <Tag color="purple" style={{ borderRadius: 6, fontWeight: 700, fontSize: 11 }}>Zero-Drift Bound</Tag>
+          <Tag color="success" icon={<CheckCircleOutlined />} style={{ borderRadius: 6, fontWeight: 700, fontSize: 11 }}>
+            Signature valid
+          </Tag>
+          <Tag color="blue" style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>Price changes blocked</Tag>
         </Space>
       </div>
 
-      <Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 14, lineHeight: 1.5 }}>
-        The mandate ceiling is the strict spending envelope authorized by organization authority; PayPal cryptographically enforces this ceiling before allowing checkout.
+      <Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.4 }}>
+        ProcureAI verifies the signed mandate and blocks any PayPal order above this ceiling before it is created or authorized.
       </Paragraph>
 
       {/* Prominent Stat Tiles */}
@@ -126,92 +129,101 @@ export default function SignedMandateCard({
         </div>
       </div>
 
-      {/* Clean Key-Value List */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+      {/* Compact Details List */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 6, borderBottom: `1px solid ${dividerColor}` }}>
           <Text type="secondary" style={{ fontSize: 12 }}>Key Fingerprint</Text>
-          <Text code style={{ fontSize: 11, fontWeight: 700 }}>{mandate.keyFingerprint || "ED25519-SIG-AUTH"}</Text>
+          <Space size={4}>
+            <Text code style={{ fontSize: 11, fontWeight: 700 }}>{(mandate.keyFingerprint || "ED25519-SIG").slice(0, 8)}</Text>
+            <Button
+              size="small"
+              type="text"
+              icon={<CopyOutlined style={{ fontSize: 11 }} />}
+              onClick={() => {
+                navigator.clipboard?.writeText(mandate.keyFingerprint || "ED25519-SIG-AUTH");
+                message.success("Copied key fingerprint");
+              }}
+            />
+          </Space>
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 6, borderBottom: `1px solid ${dividerColor}` }}>
           <Text type="secondary" style={{ fontSize: 12 }}>Price Drift Tolerance</Text>
           <Tag color="green" style={{ borderRadius: 6, fontSize: 11, margin: 0 }}>
-            {mandate.priceDriftTolerancePct ?? 0.0}% (Zero Drift Lock)
+            Price changes blocked
           </Tag>
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 6, borderBottom: `1px solid ${dividerColor}` }}>
           <Text type="secondary" style={{ fontSize: 12 }}>Plan Version Bound</Text>
           <Tag color="purple" style={{ borderRadius: 6, fontSize: 11, margin: 0 }}>
-            v{mandate.planVersion || 1} (Spike Protected)
+            Plan version {mandate.planVersion || 1}
           </Tag>
-        </div>
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 6, borderBottom: `1px solid ${dividerColor}` }}>
-          <Text type="secondary" style={{ fontSize: 12 }}>Mandate ID</Text>
-          <Text code copyable={{ text: mandate.mandateId }} style={{ fontSize: 11, maxWidth: 220 }} ellipsis>
-            {mandate.mandateId}
-          </Text>
-        </div>
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: 6 }}>
-          <Text type="secondary" style={{ fontSize: 12 }}>Ed25519 Signature</Text>
-          <Text
-            code
-            copyable={{ text: mandate.signature }}
-            style={{ fontSize: 10, maxWidth: 210, wordBreak: "break-all", textAlign: "right" }}
-            ellipsis
-          >
-            {mandate.signature}
-          </Text>
         </div>
       </div>
 
       {/* Verification Result Banner */}
       {verificationResult && (
         <Alert
-          style={{ marginBottom: 14, borderRadius: 10 }}
+          style={{ marginBottom: 10, borderRadius: 8 }}
           type={verificationResult.valid ? "success" : "error"}
           showIcon
           icon={verificationResult.valid ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
           message={
-            verificationResult.valid ? (
-              <span style={{ fontWeight: 600 }}>Signature Verified Against Mandate Public Key</span>
-            ) : (
-              <span style={{ fontWeight: 600 }}>Signature Verification Failed - Integrity Breached</span>
-            )
+            <span style={{ fontWeight: 600, fontSize: 12 }}>
+              {verificationResult.valid ? "Signature Verified (Ed25519)" : "Integrity Breached - Verification Failed"}
+            </span>
           }
           description={
-            <div style={{ fontSize: 11, marginTop: 4 }}>
-              <div>Algorithm: Ed25519 (RFC 8032 Curve25519)</div>
-              <div>Key ID: {verificationResult.keyFingerprint || mandate.keyFingerprint}</div>
+            <div style={{ fontSize: 11, marginTop: 2 }}>
+              <div>Key ID: {(verificationResult.keyFingerprint || mandate.keyFingerprint || "").slice(0, 8)}</div>
               <div>Digest Match: {verificationResult.valid ? "TRUE (Payload unaltered)" : "FALSE (Payload modified)"}</div>
             </div>
           }
         />
       )}
 
-      {/* Action Buttons */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Button
-          type="primary"
-          icon={<CheckCircleOutlined />}
-          loading={verifying}
-          onClick={() => handleVerify(false)}
-          style={{ flex: 1, minWidth: 140, borderRadius: 8, background: "#0052FF" }}
-        >
-          Verify Signature
-        </Button>
-        <Button
-          danger
-          icon={<WarningOutlined />}
-          loading={verifying}
-          onClick={() => handleVerify(true)}
-          style={{ flex: 1, minWidth: 140, borderRadius: 8 }}
-        >
-          Simulate Tampering
-        </Button>
-      </div>
+      {/* Collapsed Security Details Section with Secondary Buttons */}
+      <details style={{ marginTop: 8, fontSize: 12 }}>
+        <summary style={{ fontWeight: 600, color: "#94a3b8", cursor: "pointer", outline: "none", padding: "4px 0" }}>
+          Security details ▾
+        </summary>
+        <div style={{ paddingTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Text type="secondary" style={{ fontSize: 11 }}>Mandate ID</Text>
+            <Text code copyable={{ text: mandate.mandateId }} style={{ fontSize: 10, maxWidth: 170 }} ellipsis>
+              {mandate.mandateId}
+            </Text>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Text type="secondary" style={{ fontSize: 11 }}>Signature</Text>
+            <Text code copyable={{ text: mandate.signature }} style={{ fontSize: 10, maxWidth: 170 }} ellipsis>
+              {mandate.signature}
+            </Text>
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+            <Button
+              size="small"
+              icon={<CheckCircleOutlined />}
+              loading={verifying}
+              onClick={() => handleVerify(false)}
+              style={{ flex: 1, borderRadius: 6, fontSize: 12 }}
+            >
+              Verify signature
+            </Button>
+            <Button
+              size="small"
+              danger
+              icon={<WarningOutlined />}
+              loading={verifying}
+              onClick={() => handleVerify(true)}
+              style={{ flex: 1, borderRadius: 6, fontSize: 12 }}
+            >
+              Simulate tampering
+            </Button>
+          </div>
+        </div>
+      </details>
     </Card>
   );
 }

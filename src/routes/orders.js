@@ -305,7 +305,7 @@ function createOrdersRouter() {
     <div class="header">
       <div>
         <h2 style="margin:0 0 4px 0;">ProcureAI Enterprise</h2>
-        <div style="color:#94a3b8; font-size:13px;">Autonomous Multi-Agent Procurement & Escrow Settlement</div>
+        <div style="color:#94a3b8; font-size:13px;">Autonomous Multi-Agent Procurement & Pay-on-Delivery Settlement</div>
       </div>
       <div style="text-align:right;">
         <span class="badge">PayPal Sandbox Verified</span>

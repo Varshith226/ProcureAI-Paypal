@@ -179,7 +179,7 @@ export default function PayPalInvoiceModal({
               </Title>
             </div>
             <Text type="secondary" style={{ fontSize: 12 }}>
-              Autonomous Multi-Agent Procurement & Escrow Settlement
+              Autonomous Multi-Agent Procurement & Pay-on-Delivery Settlement
             </Text>
           </div>
 
@@ -292,7 +292,7 @@ export default function PayPalInvoiceModal({
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13 }}>
-              <Text type="secondary">Platform Escrow Guarantee Fee (1.5%):</Text>
+              <Text type="secondary">Platform Guarantee Fee (1.5%):</Text>
               <span style={{ color: "#10b981", fontSize: 12 }}>Included in plan</span>
             </div>
 
@@ -334,7 +334,7 @@ export default function PayPalInvoiceModal({
         >
           <SafetyCertificateOutlined style={{ fontSize: 24, color: "#0052FF" }} />
           <div style={{ fontSize: 11, color: isDarkMode ? "#cbd5e1" : "#475569" }}>
-            <strong>Cryptographic Guarantee:</strong> This invoice corresponds to Ed25519 Mandate <code>{mandateId}</code>. Funds were captured from PayPal Sandbox Authorization and settled through ProcureAI escrow smart disbursements.
+            <strong>Cryptographic Guarantee:</strong> This invoice corresponds to Ed25519 Mandate <code>{mandateId}</code>. Funds were captured from PayPal Sandbox Authorization and settled through ProcureAI smart disbursements upon verified delivery.
           </div>
         </div>
       </div>
