@@ -2,10 +2,24 @@
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
+function getSessionId() {
+  try {
+    let sid = window.sessionStorage.getItem("procureai_session_id");
+    if (!sid) {
+      sid = "sess_" + Math.random().toString(36).substring(2, 12) + "_" + Date.now().toString(36);
+      window.sessionStorage.setItem("procureai_session_id", sid);
+    }
+    return sid;
+  } catch {
+    return "sess_default";
+  }
+}
+
 async function request(path, options = {}) {
   const url = `${API_BASE}${path}`;
   const headers = {
     "Content-Type": "application/json",
+    "x-session-id": getSessionId(),
     ...(options.headers || {}),
   };
   const res = await fetch(url, { ...options, headers });

@@ -50,6 +50,7 @@ const {
 const { getApprovedStrategy, revalidateForCheckout } = require("./src/checkoutGuard");
 const { verifyAuditLogIntegrity, resetDemoData, isDbPersistent, getDbPath } = require("./src/db");
 const { getApprovalRequired, isMandateApproved } = require("./src/approvalService");
+const { startInProcessReconciler } = require("./scripts/reconcile-expiries");
 
 const app = express();
 
@@ -608,12 +609,14 @@ app.post("/api/paypal/create-order", async (req, res) => {
     }
 
     const approval = data.links?.find((link) => link.rel === "approve");
+    const sessionId = req.headers["x-session-id"] || req.body?.sessionId || null;
 
     // Persist order in SQLite store for lifecycle tracking and AG Grid ledger
     createOrderRecord({
       orderId: data.id,
       planId: plan.planId,
       mandateId: mandateId || null,
+      sessionId,
       intent: effectiveIntent,
       totalINR: plan.lockedTotalINR,
       totalUSD: effectiveUSD,
@@ -639,10 +642,12 @@ app.post("/api/paypal/create-order", async (req, res) => {
   } catch (error) {
     if (error.code === "ENOTFOUND" || error.code === "EAI_AGAIN" || error.message.includes("fetch failed")) {
       const simulatedId = `ORD-SANDBOX-${Date.now().toString(36).toUpperCase()}`;
+      const sessionId = req.headers["x-session-id"] || req.body?.sessionId || null;
       createOrderRecord({
         orderId: simulatedId,
         planId: plan.planId,
         mandateId: mandateId || null,
+        sessionId,
         intent: effectiveIntent,
         totalINR: plan.lockedTotalINR,
         totalUSD: effectiveUSD,
@@ -967,6 +972,9 @@ if (require.main === module) {
       console.log(`  📦 Channel3:    [${channel3Live ? "LIVE RETAILER API" : "VERIFIED SAMPLE CATALOG"}]`);
       console.log(`  💱 FX Engine:   [LIVE (open.er-api.com) + SQLITE WAL CACHE]`);
       console.log(`=================================================\n`);
+
+      // Start in-process 10-minute expiry & SLA reconciliation timer (Phase 18.3)
+      startInProcessReconciler();
     });
 
     srv.on("error", (err) => {

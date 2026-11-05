@@ -18,9 +18,10 @@ const {
 function createOrdersRouter() {
   const router = express.Router();
 
-  // List all orders (for AG Grid Orders Ledger)
+  // List all orders (for AG Grid Orders Ledger, scoped to visitor session if provided)
   router.get("/", (req, res) => {
-    const orders = listOrders(Number(req.query.limit) || 100);
+    const sessionId = req.headers["x-session-id"] || req.query.sessionId || null;
+    const orders = listOrders(Number(req.query.limit) || 100, sessionId);
     res.json(orders);
   });
 

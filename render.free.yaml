@@ -9,7 +9,7 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
-        value: 24.22.1
+        value: "24"
       - key: NODE_ENV
         value: production
       - key: DB_PATH
@@ -30,3 +30,4 @@ services:
         sync: false
       - key: CHANNEL3_API_KEY
         sync: false
+

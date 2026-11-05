@@ -7,6 +7,7 @@ function createOrderRecord({
   orderId,
   planId,
   mandateId = null,
+  sessionId = null,
   intent = "AUTHORIZE",
   totalINR,
   totalUSD,
@@ -20,15 +21,16 @@ function createOrderRecord({
 
   const stmt = db.prepare(`
     INSERT INTO orders (
-      order_id, plan_id, mandate_id, status, intent, total_inr, total_usd,
+      order_id, plan_id, mandate_id, session_id, status, intent, total_inr, total_usd,
       is_split_pay, split_share_usd, split_count, metadata, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   stmt.run(
     orderId,
     planId || null,
     mandateId || null,
+    sessionId || null,
     "CREATED",
     intent,
     totalINR ? Number(totalINR) : null,
@@ -71,9 +73,14 @@ function getOrder(orderId) {
   };
 }
 
-function listOrders(limit = 100) {
+function listOrders(limit = 100, sessionId = null) {
   const db = getDb();
-  const rows = db.prepare("SELECT * FROM orders ORDER BY created_at DESC LIMIT ?").all(limit);
+  let rows;
+  if (sessionId) {
+    rows = db.prepare("SELECT * FROM orders WHERE session_id = ? OR session_id IS NULL ORDER BY created_at DESC LIMIT ?").all(sessionId, limit);
+  } else {
+    rows = db.prepare("SELECT * FROM orders ORDER BY created_at DESC LIMIT ?").all(limit);
+  }
   return rows.map((row) => ({
     ...row,
     is_split_pay: Boolean(row.is_split_pay),

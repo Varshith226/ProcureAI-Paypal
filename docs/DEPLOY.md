@@ -86,3 +86,4 @@ Once hackathon evaluation concludes (after Dec 15, 2026):
 | **CORS Error on API Calls** | `PUBLIC_BASE_URL` does not match the deployed domain | Set `PUBLIC_BASE_URL` in Render to match `https://<your-app>.onrender.com` without a trailing slash. |
 | **SSE Connection Drops after 60s** | Reverse proxy buffer timeout | ProcureAI emits an automatic `: heartbeat\n\n` comment every 15s and sets `X-Accel-Buffering: no`. |
 | **Data Resets on Deploy / Restart** | Running in ephemeral disk mode (Free Tier) | Upgrade to Render Starter ($7/mo using hackathon credits) with 1GB disk mounted at `/var/data`. |
+

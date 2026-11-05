@@ -68,6 +68,7 @@ function initDb(dbPath) {
       order_id TEXT PRIMARY KEY,
       plan_id TEXT,
       mandate_id TEXT,
+      session_id TEXT,
       status TEXT NOT NULL,
       intent TEXT NOT NULL DEFAULT 'AUTHORIZE',
       total_inr REAL,
@@ -165,6 +166,11 @@ function initDb(dbPath) {
       fetched_at TEXT NOT NULL
     );
   `);
+
+  // Safe migration: ensure session_id column exists on orders table
+  try {
+    db.exec("ALTER TABLE orders ADD COLUMN session_id TEXT;");
+  } catch (_) {}
 
   dbInstance = db;
 
