@@ -11,6 +11,7 @@ function registerClient(req, res) {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache, no-transform",
     Connection: "keep-alive",
+    "X-Accel-Buffering": "no",
     "Access-Control-Allow-Origin": "*",
   });
 
@@ -44,7 +45,7 @@ function getClientCount() {
   return clients.size;
 }
 
-// Keepalive heartbeat every 25 seconds
+// Keepalive heartbeat comment every 15 seconds (prevents proxy timeout on Render/Nginx)
 const heartbeat = setInterval(() => {
   for (const client of clients) {
     try {
@@ -53,7 +54,7 @@ const heartbeat = setInterval(() => {
       clients.delete(client);
     }
   }
-}, 25000);
+}, 15000);
 
 if (heartbeat.unref) {
   heartbeat.unref();

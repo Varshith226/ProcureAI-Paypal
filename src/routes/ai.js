@@ -5,6 +5,7 @@ const { createAIService } = require("../aiService");
 const { AIServiceError } = require("../aiErrors");
 const { DEFAULT_MODEL } = require("../geminiExtractor");
 const { EXTRACTION_SCHEMA } = require("../requestExtraction");
+const { aiRateLimiter } = require("../rateLimiter");
 
 function createAIRouter({ service = createAIService() } = {}) {
   const router = express.Router();
@@ -27,7 +28,7 @@ function createAIRouter({ service = createAIService() } = {}) {
   const { runProcurementAgent, parseAndCompareQuote } = require("../agentService");
 
   // Autonomous 2-Agent Negotiation: Buyer Agent vs Merchant Quote Engine
-  router.post("/negotiate", async (req, res) => {
+  router.post("/negotiate", aiRateLimiter, async (req, res) => {
     try {
       const { planId, items, currentTotalINR, targetDiscountINR, maxRounds } = req.body;
       if (!currentTotalINR) {
@@ -48,7 +49,7 @@ function createAIRouter({ service = createAIService() } = {}) {
   });
 
   // Tool-Calling Autonomous Procurement Agent Loop
-  router.post("/agent/run", async (req, res) => {
+  router.post("/agent/run", aiRateLimiter, async (req, res) => {
     try {
       const { prompt, budgetINR, maxDeliveryDays, minRefreshRateHz } = req.body;
       const trace = await runProcurementAgent({
@@ -65,9 +66,12 @@ function createAIRouter({ service = createAIService() } = {}) {
   });
 
   // Multimodal Quote Intake & Competitive Advantage Analysis
-  router.post("/compare-quote", async (req, res) => {
+  router.post("/compare-quote", aiRateLimiter, async (req, res) => {
     try {
       const { rawText, budgetINR } = req.body;
+      if (rawText && typeof rawText === "string" && rawText.length > 1000000) {
+        return res.status(413).json({ error: "PAYLOAD_TOO_LARGE", message: "Quote text exceeds 1MB limit." });
+      }
       const analysis = await parseAndCompareQuote({ rawText, budgetINR });
       res.json(analysis);
     } catch (err) {
@@ -77,7 +81,7 @@ function createAIRouter({ service = createAIService() } = {}) {
   });
 
   for (const action of ["parse", "plan"]) {
-    router.post(`/${action}`, async (req, res) => {
+    router.post(`/${action}`, aiRateLimiter, async (req, res) => {
       try {
         return res.json(await service[action](req.body));
       } catch (error) {

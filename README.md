@@ -2,15 +2,28 @@
 ### Powered by PayPal Pay-on-Delivery Authorization Holds & Ed25519 Spending Mandates
 
 [![Hackathon](https://img.shields.io/badge/Hackathon-Build_What's_Next_with_PayPal_%26_AI-0052FF.svg)](https://paypalaihackathon.devpost.com/)
-[![Tests](https://img.shields.io/badge/Tests-208_Passing-10b981.svg)](test/)
+[![Tests](https://img.shields.io/badge/Tests-216_Passing-10b981.svg)](test/)
 [![PayPal Sandbox](https://img.shields.io/badge/PayPal-Authorize--then--Capture-003087.svg)](https://developer.paypal.com/)
 [![AI Model](https://img.shields.io/badge/AI-Google_Gemini_Flash-8b5cf6.svg)](https://ai.google.dev/)
 [![AG Grid](https://img.shields.io/badge/AG_Grid-Community_v36-00e5ff.svg)](https://www.ag-grid.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Deployment](https://img.shields.io/badge/Deploy-Render-46E3B7.svg)](https://paypal-ai-hackathon.onrender.com)
+[![Deployment](https://img.shields.io/badge/Deploy-Render_Starter-46E3B7.svg)](docs/DEPLOY.md)
 
 > [!NOTE]
 > **ProcureAI** is an autonomous AI procurement agent that negotiates and purchases workstation hardware on your behalf under an **Ed25519 cryptographic spending mandate**. PayPal holds buyer funds in a **pay-on-delivery authorization hold** until goods are delivered and verified—eliminating upfront payment risk.
+
+---
+
+## 🌐 Live Demo & Deployment
+
+* **Live Public URL:** See [`docs/LIVE_URL.txt`](docs/LIVE_URL.txt) for the current live deployment link.
+* **One-Click Deploy:** Deploy your own live instance on Render using the Blueprint in [`render.yaml`](render.yaml). Full instructions in [`docs/DEPLOY.md`](docs/DEPLOY.md).
+
+### How Render is Used
+1. **Web Service (Starter, Region Singapore):** Hosts the unified Express server and React single-page application on Node.js 24 with zero cold-start delay.
+2. **Persistent Disk (1 GB at `/var/data`):** Mounts persistent storage for the native `node:sqlite` database, preserving orders, cryptographic mandates, and SHA-256 hash-chained audit logs across code deploys and server restarts.
+3. **Health Checks (`/api/health`):** Automated probes monitor database persistence, FX rate freshness, and integration readiness without exposing credentials.
+4. **Infrastructure-as-Code:** Defined via `render.yaml` (Starter + persistent disk) with a documented `render.free.yaml` fallback.
 
 ---
 
@@ -139,10 +152,12 @@ ProcureAI exercises official PayPal Sandbox APIs across the entire procurement l
 
 ---
 
-## 6. Quickstart: Run in 4 Steps
+## 6. Run Locally (Zero Keys Required)
+
+You can run ProcureAI locally without any external API keys. When live PayPal or Gemini credentials are omitted, ProcureAI operates in local deterministic heuristic mode with a labeled evaluation simulator.
 
 ### Prerequisites
-* **Node.js >= 22.5.0** (required for native `node:sqlite`)
+* **Node.js >= 22.13.0** or **24.x** (required for unflagged native `node:sqlite`)
 * Modern web browser
 
 ```bash
@@ -152,9 +167,8 @@ cd ProcureAI-Paypal
 npm install
 npm install --prefix client
 
-# 2. Configure environment
+# 2. Configure environment (Optional: add live PayPal or Gemini keys)
 cp .env.example .env
-# (Optional: Add PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, and GEMINI_API_KEY)
 
 # 3. Build frontend assets
 npm run build --prefix client
@@ -166,7 +180,7 @@ Open **`http://localhost:3000`** in your browser.
 
 ---
 
-## 7. Automated Test Suite (208 Passing Tests)
+## 7. Automated Test Suite (216 Passing Tests)
 
 Run the comprehensive test suite:
 ```bash
@@ -174,7 +188,7 @@ npm test
 ```
 
 ```
-✔ 208 passing tests across unit, integration, and security suites (0 failures)
+✔ 216 passing tests across unit, integration, and security suites (0 failures)
 ✔ Full Playwright E2E browser verification across mobile (390x844) and desktop (1440x900)
 ```
 

@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "build": "npm --prefix client install && npm --prefix client run build",
     "test": "node --test",
     "demo": "node scripts/demo-plan.js",
     "demo:revalidate": "node scripts/demo-revalidate.js",
@@ -16,12 +17,13 @@
   "license": "MIT",
   "type": "commonjs",
   "engines": {
-    "node": ">=22.5.0"
+    "node": ">=22.13.0"
   },
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^18.0.8",
-    "express": "^5.3.0"
+    "express": "^5.3.0",
+    "helmet": "^8.3.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",

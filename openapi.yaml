@@ -12,8 +12,8 @@ info:
 servers:
   - url: http://localhost:3000
     description: Local Development Server
-  - url: https://paypal-ai-hackathon.onrender.com
-    description: Production Render Deployment
+  - url: /
+    description: Current Deployment (Configured via PUBLIC_BASE_URL)
 
 paths:
   /api/health:

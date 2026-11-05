@@ -65,3 +65,4 @@ test("Executive Approval Gating: reject unapproved mandate when required, allow 
   setApprovalRequired(true, "test_cleanup");
   assert.equal(getApprovalRequired(), true);
 });
+

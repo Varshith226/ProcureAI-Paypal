@@ -107,10 +107,17 @@ export default function ActivityInspector({
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Space>
+                <Space wrap size={6}>
                   <Tag color={isPaypal ? "gold" : isTool ? "purple" : "blue"}>
                     {evt.tool || evt.eventType || evt.action || "EVENT"}
                   </Tag>
+                  {isPaypal && (
+                    evt.isSimulation || String(evt.summary || "").includes("SIMULATION") ? (
+                      <Tag color="orange" style={{ fontSize: 10, borderRadius: 4 }}>Simulation</Tag>
+                    ) : (
+                      <Tag color="green" style={{ fontSize: 10, borderRadius: 4 }}>PayPal-signed (verified)</Tag>
+                    )
+                  )}
                   <Text strong style={{ fontSize: 13 }}>
                     {evt.details || evt.summary || (evt.input ? JSON.stringify(evt.input).slice(0, 45) + "..." : "Executed")}
                   </Text>

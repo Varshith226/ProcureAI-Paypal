@@ -15,31 +15,48 @@ try {
 }
 
 let dbInstance = null;
+let currentDbPath = null;
+let dbIsPersistent = true;
 
 function initDb(dbPath) {
   if (dbInstance) return dbInstance;
 
-  let resolvedPath = dbPath || process.env.DATABASE_PATH || path.join(__dirname, "..", "procureai.db");
-  
+  let resolvedPath = dbPath || process.env.DB_PATH || process.env.DATABASE_PATH || path.join(__dirname, "..", "procureai.db");
+  let isPersistent = true;
+
   if (resolvedPath !== ":memory:") {
     try {
       const dir = path.dirname(resolvedPath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-    } catch (_) {
-      // Fallback to local app directory if specified mount directory (/data) is unavailable
+      // Test write access to directory
+      const testFile = path.join(dir, `.write_test_${Date.now()}`);
+      fs.writeFileSync(testFile, "ok");
+      fs.unlinkSync(testFile);
+    } catch (fsErr) {
+      console.warn(`⚠️ Warning: Specified DB directory '${path.dirname(resolvedPath)}' not accessible: ${fsErr.message}`);
+      console.warn("🔄 Falling back to local ephemeral database storage at ./procureai.db");
       resolvedPath = path.join(__dirname, "..", "procureai.db");
+      isPersistent = false;
     }
+  } else {
+    isPersistent = false;
   }
 
   let db;
   try {
     db = new DatabaseSync(resolvedPath);
-  } catch (_) {
+  } catch (dbErr) {
+    console.warn(`⚠️ Warning: Failed opening database at '${resolvedPath}': ${dbErr.message}`);
     resolvedPath = path.join(__dirname, "..", "procureai.db");
+    isPersistent = false;
     db = new DatabaseSync(resolvedPath);
   }
+
+  currentDbPath = resolvedPath;
+  dbIsPersistent = isPersistent;
+  console.log(`💾 Database initialized: ${resolvedPath} [${isPersistent ? "PERSISTENT DISK" : "EPHEMERAL"}]`);
 
   // Initialize schema with generous timeout
   db.exec(`
@@ -297,10 +314,22 @@ function getDbCachedFx() {
   };
 }
 
+function isDbPersistent() {
+  if (!dbInstance) initDb();
+  return dbIsPersistent;
+}
+
+function getDbPath() {
+  if (!dbInstance) initDb();
+  return currentDbPath;
+}
+
 module.exports = {
   initDb,
   getDb,
   closeDb,
+  isDbPersistent,
+  getDbPath,
   appendAuditLog,
   verifyAuditLogIntegrity,
   resetDemoData,

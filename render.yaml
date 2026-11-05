@@ -1,27 +1,27 @@
 services:
   - type: web
     name: procureai
-    env: node
-    region: oregon
+    runtime: node
+    region: singapore
     plan: starter
-    buildCommand: npm install && cd client && npm install && npm run build && cd ..
-    startCommand: node server.js
+    buildCommand: npm install && npm --prefix client install && npm --prefix client run build
+    startCommand: npm start
     healthCheckPath: /api/health
     disk:
       name: procureai-data
-      mountPath: /data
+      mountPath: /var/data
       sizeGB: 1
     envVars:
       - key: NODE_VERSION
-        value: 22.12.0
+        value: 24.22.1
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3000
-      - key: DATABASE_PATH
-        value: /data/procureai.db
+      - key: DB_PATH
+        value: /var/data/procureai.db
       - key: PAYPAL_BASE_URL
         value: https://api-m.sandbox.paypal.com
+      - key: PUBLIC_BASE_URL
+        sync: false
       - key: PAYPAL_CLIENT_ID
         sync: false
       - key: PAYPAL_CLIENT_SECRET
@@ -30,7 +30,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      - key: DEMO_RESET_KEY
+        sync: false
       - key: CHANNEL3_API_KEY
         sync: false
-
-

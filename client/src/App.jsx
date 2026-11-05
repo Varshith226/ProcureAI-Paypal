@@ -1716,6 +1716,10 @@ export default function App() {
   const [pendingRealOrderId, setPendingRealOrderId] = useState(null);
   const [pendingApprovalUrl, setPendingApprovalUrl] = useState(null);
 
+  // Cold-Start UX & Server Diagnostics (Phase 17.2)
+  const [isWakingUpServer, setIsWakingUpServer] = useState(false);
+  const [serverHealth, setServerHealth] = useState(null);
+
   // Telemetry log buffer
   const [telemetryLogs, setTelemetryLogs] = useState([
     {
@@ -1791,7 +1795,23 @@ export default function App() {
   // Reset entire demo state (cleans DB orders, tokens, storage, and resets to Step 0)
   const handleResetDemoState = async () => {
     try {
-      await fetch(`${API_BASE}/api/demo/reset`, { method: "POST" });
+      const res = await fetch(`${API_BASE}/api/demo/reset`, { method: "POST" });
+      if (res.status === 401 || res.status === 403) {
+        const key = window.prompt("Admin authorization required to reset database in production.\nEnter DEMO_RESET_KEY:");
+        if (!key) {
+          message.info("Demo reset cancelled.");
+          return;
+        }
+        const authRes = await fetch(`${API_BASE}/api/demo/reset`, {
+          method: "POST",
+          headers: { "x-demo-reset-key": key },
+        });
+        if (!authRes.ok) {
+          const errData = await authRes.json().catch(() => ({}));
+          message.error(`Reset rejected: ${errData.message || "Invalid DEMO_RESET_KEY"}`);
+          return;
+        }
+      }
     } catch (_) {}
     try {
       sessionStorage.clear();
@@ -1983,6 +2003,37 @@ export default function App() {
       .catch((err) => console.warn("Live FX fallback:", err));
   }, []);
 
+  // Cold-start health probe (Phase 17.2): if first /api/health takes > 3s, show "Waking up the server…"
+  useEffect(() => {
+    let wakeTimer = setTimeout(() => {
+      setIsWakingUpServer(true);
+    }, 3000);
+
+    const probe = async (attempts = 4, backoff = 1000) => {
+      try {
+        const res = await fetch(`${API_BASE}/api/health`);
+        if (res.ok) {
+          const data = await res.json();
+          clearTimeout(wakeTimer);
+          setIsWakingUpServer(false);
+          setServerHealth(data);
+          return;
+        }
+      } catch (err) {
+        console.warn("Health probe notice:", err);
+      }
+      if (attempts > 0) {
+        setTimeout(() => probe(attempts - 1, backoff * 1.5), backoff);
+      } else {
+        clearTimeout(wakeTimer);
+        setIsWakingUpServer(false);
+      }
+    };
+
+    probe();
+    return () => clearTimeout(wakeTimer);
+  }, []);
+
   // Single-use token and PayPal return check
   useEffect(() => {
     try {
@@ -2036,7 +2087,22 @@ export default function App() {
           })
           .catch((err) => {
             console.error("PayPal return authorization error:", err);
-            message.error({ content: `PayPal authorization failed: ${err.message}`, key: "paypal_auth", duration: 6 });
+            const isMidOrderRestart =
+              err.message?.includes("ORDER_NOT_FOUND") ||
+              err.message?.includes("not found") ||
+              err.message?.includes("reset") ||
+              err.status === 404;
+            if (isMidOrderRestart) {
+              message.warning({
+                content: "Server restarted mid-order. Please start a new order.",
+                key: "paypal_auth",
+                duration: 6,
+              });
+              handleResetBriefToDefault();
+              setCurrentStep(0);
+            } else {
+              message.error({ content: `PayPal authorization failed: ${err.message}`, key: "paypal_auth", duration: 6 });
+            }
           });
 
         return;
@@ -2891,6 +2957,43 @@ export default function App() {
           onResetDemoState={handleResetDemoState}
         />
         <div style={{ height: 56, flexShrink: 0 }} />
+
+        {/* Cold-Start Waking Up Banner (Phase 17.2) */}
+        {isWakingUpServer && (
+          <div
+            style={{
+              background: "linear-gradient(90deg, #0052FF 0%, #38bdf8 100%)",
+              color: "#ffffff",
+              textAlign: "center",
+              padding: "7px 16px",
+              fontSize: 13,
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              boxShadow: "0 2px 10px rgba(0, 82, 255, 0.3)",
+              zIndex: 999,
+            }}
+          >
+            <ClockCircleOutlined spin />
+            <span>Waking up the server… connecting to live engine</span>
+          </div>
+        )}
+
+        {/* Ephemeral Storage Notice for Free Render Plan (Phase 17.2) */}
+        {serverHealth && serverHealth.database?.persistent === false && (
+          <div style={{ maxWidth: 1100, margin: "8px auto 0", padding: "0 20px", width: "100%" }}>
+            <Alert
+              type="warning"
+              showIcon
+              closable
+              message={<span style={{ fontWeight: 600, fontSize: 12 }}>Ephemeral Storage Notice (Free Tier Mode)</span>}
+              description={<span style={{ fontSize: 11 }}>Demo data resets when the server restarts. Attach a persistent disk mount (/var/data) on Render Starter to preserve orders and cryptographic audit trails across deployments.</span>}
+              style={{ borderRadius: 8 }}
+            />
+          </div>
+        )}
 
         {/* PRICE SPIKE SAFETY ALERT */}
         {priceSpikeAlert && (

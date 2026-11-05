@@ -27,8 +27,16 @@ function createWebhooksRouter() {
       const transmissionSig = req.headers["paypal-transmission-sig"];
       const transmissionTime = req.headers["paypal-transmission-time"];
 
-      // If headers are present and PAYPAL_WEBHOOK_ID is configured, verify cryptographically
-      if (process.env.PAYPAL_WEBHOOK_ID && authAlgo && certUrl && transmissionSig) {
+      // If incoming from live PayPal webhook delivery, require PAYPAL_WEBHOOK_ID and cryptographic verification
+      if (transmissionSig || certUrl || authAlgo) {
+        if (!process.env.PAYPAL_WEBHOOK_ID) {
+          console.warn("⚠️ Live PayPal webhook received but PAYPAL_WEBHOOK_ID is not configured. Rejecting unverified webhook.");
+          return res.status(401).json({
+            error: "WEBHOOK_UNCONFIGURED",
+            message: "Live webhook signature verification requires PAYPAL_WEBHOOK_ID. Unverified public webhooks are rejected.",
+          });
+        }
+
         const verification = await verifyWebhookSignature({
           authAlgo,
           certUrl,
@@ -39,9 +47,14 @@ function createWebhooksRouter() {
         });
 
         if (!verification.verified) {
-          console.warn("PayPal Webhook signature verification rejected:", verification);
+          console.warn("❌ PayPal Webhook signature verification rejected:", verification);
           return res.status(400).json({ error: "Webhook signature verification failed" });
         }
+      } else if (process.env.NODE_ENV === "production" && !process.env.ALLOW_INSECURE_WEBHOOKS) {
+        return res.status(401).json({
+          error: "UNVERIFIED_WEBHOOK",
+          message: "Live webhooks in production require PayPal transmission signature headers.",
+        });
       }
 
       const eventId = webhookEvent.id || `wh_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;

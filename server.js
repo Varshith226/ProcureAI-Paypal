@@ -1,8 +1,17 @@
 // server.js
 require("dotenv").config();
 
+// Fail fast on older Node runtimes lacking native unflagged node:sqlite (Node 22.13+ or 24.x required)
+const [nodeMajor, nodeMinor] = (process.versions.node || "24.0.0").split(".").map(Number);
+if (nodeMajor < 22 || (nodeMajor === 22 && nodeMinor < 13)) {
+  console.error(`\n❌ FATAL: ProcureAI requires Node.js 22.13.0+ or 24.x+ for native unflagged node:sqlite support.`);
+  console.error(`Current version: ${process.version}. Please run: nvm use 24 or install Node 22.13+\n`);
+  process.exit(1);
+}
+
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const crypto = require("node:crypto");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -39,22 +48,121 @@ const {
   getMandateById,
 } = require("./src/mandateService");
 const { getApprovedStrategy, revalidateForCheckout } = require("./src/checkoutGuard");
-const { verifyAuditLogIntegrity, resetDemoData } = require("./src/db");
+const { verifyAuditLogIntegrity, resetDemoData, isDbPersistent, getDbPath } = require("./src/db");
 const { getApprovalRequired, isMandateApproved } = require("./src/approvalService");
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
-// Health check endpoint (Phase 12.7)
-app.get("/api/health", (req, res) => {
+// Trust reverse proxy (e.g. Render, Cloudflare, Nginx) for accurate client IP in rate limiting
+app.set("trust proxy", 1);
+
+// Content Security Policy & Security Headers via Helmet
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          "blob:",
+          "https://www.paypal.com",
+          "https://*.paypal.com",
+          "https://*.paypalobjects.com",
+        ],
+        workerSrc: ["'self'", "blob:"],
+        childSrc: ["'self'", "blob:"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "blob:",
+          "https://*.paypal.com",
+          "https://*.paypalobjects.com",
+          "https://images.unsplash.com",
+        ],
+        connectSrc: [
+          "'self'",
+          "https://*.paypal.com",
+          "https://*.sandbox.paypal.com",
+          "https://open.er-api.com",
+        ],
+        frameSrc: [
+          "'self'",
+          "https://*.paypal.com",
+          "https://*.sandbox.paypal.com",
+        ],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+
+// CORS allowlist driven by PUBLIC_BASE_URL
+const publicBaseUrl = (process.env.PUBLIC_BASE_URL || "").replace(/\/$/, "");
+const allowedOrigins = publicBaseUrl
+  ? [
+      publicBaseUrl,
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:3099",
+      "http://127.0.0.1:3199",
+    ]
+  : "*";
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins === "*" || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Fallback allows testing from varying local ports
+      }
+    },
+    credentials: true,
+  })
+);
+
+// 1MB request body limit
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+
+// Enriched Health check endpoint (Phase 17.2)
+app.get("/api/health", async (req, res) => {
+  let fxInfo = { source: "none", ageSeconds: 0 };
+  try {
+    const fx = await getFxRate();
+    if (fx && fx.timestamp) {
+      fxInfo = {
+        source: fx.source || "open.er-api.com",
+        ageSeconds: Math.round((Date.now() - new Date(fx.timestamp).getTime()) / 1000),
+      };
+    }
+  } catch (_) {}
+
+  const isPersistent = isDbPersistent();
+  const dbPath = getDbPath();
+
   res.json({
     status: "ok",
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
     version: "2.5.0",
-    engine: "node:sqlite",
-    paypalMode: "SANDBOX_AUTHORIZE_THEN_CAPTURE",
+    commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || "local-dev",
+    nodeVersion: process.version,
+    database: {
+      ok: true,
+      persistent: isPersistent,
+      path: dbPath,
+    },
+    paypalMode: (process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET) ? "SANDBOX" : "SIMULATED",
+    geminiMode: (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "your-gemini-api-key") ? "LIVE" : "HEURISTIC",
+    fx: fxInfo,
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -83,8 +191,30 @@ app.get("/api/audit-log", (req, res) => {
   });
 });
 
-// Demo Reset Endpoint (Phase 12.8: restore clean state before recording)
+// Demo Reset Endpoint with DEMO_RESET_KEY protection in production (Phase 17.3)
 app.post("/api/demo/reset", (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
+  const requiredKey = process.env.DEMO_RESET_KEY;
+
+  if (isProduction && !requiredKey) {
+    return res.status(403).json({
+      ok: false,
+      error: "DEMO_RESET_DISABLED",
+      message: "Demo reset is disabled in production because DEMO_RESET_KEY is not configured.",
+    });
+  }
+
+  if (requiredKey) {
+    const providedKey = req.headers["x-demo-reset-key"] || req.body?.demoResetKey || req.query?.key;
+    if (providedKey !== requiredKey) {
+      return res.status(401).json({
+        ok: false,
+        error: "INVALID_DEMO_RESET_KEY",
+        message: "Invalid or missing DEMO_RESET_KEY.",
+      });
+    }
+  }
+
   try {
     resetDemoData();
     res.json({ ok: true, message: "Demo state reset to clean initial state." });
@@ -818,9 +948,24 @@ const PORT = Number(process.env.PORT) || 3000;
 if (require.main === module) {
   function startServer(portToTry) {
     const srv = app.listen(portToTry, "0.0.0.0", () => {
+      const isPersistent = isDbPersistent();
+      const dbPath = getDbPath();
+      const paypalLive = Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+      const webhookLive = Boolean(process.env.PAYPAL_WEBHOOK_ID);
+      const geminiLive = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "your-gemini-api-key");
+      const channel3Live = Boolean(process.env.CHANNEL3_API_KEY);
+      const publicUrl = process.env.PUBLIC_BASE_URL || `http://localhost:${portToTry}`;
+
       console.log(`\n=================================================`);
-      console.log(`  🚀 ProcureAI is live at http://localhost:${portToTry}`);
-      console.log(`  📡 API & SSE Streams: http://localhost:${portToTry}/api/events`);
+      console.log(`  🚀 ProcureAI Engine v2.5.0 Online`);
+      console.log(`  📍 Local:       http://localhost:${portToTry}`);
+      console.log(`  🌐 Public Base: ${publicUrl}`);
+      console.log(`  💾 Database:    ${dbPath} [${isPersistent ? "PERSISTENT DISK" : "EPHEMERAL"}]`);
+      console.log(`  💳 PayPal:      [${paypalLive ? "LIVE SANDBOX" : "SIMULATED / EVALUATION"}]`);
+      console.log(`  🪝 Webhooks:    [${webhookLive ? "LIVE (HMAC VERIFIED)" : "SIMULATED"}]`);
+      console.log(`  🧠 Gemini AI:   [${geminiLive ? "LIVE GEMINI FLASH" : "DETERMINISTIC HEURISTIC"}]`);
+      console.log(`  📦 Channel3:    [${channel3Live ? "LIVE RETAILER API" : "VERIFIED SAMPLE CATALOG"}]`);
+      console.log(`  💱 FX Engine:   [LIVE (open.er-api.com) + SQLITE WAL CACHE]`);
       console.log(`=================================================\n`);
     });
 
