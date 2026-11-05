@@ -1,7 +1,7 @@
 // test/specComparison.test.js
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { computeWhatExtraBuys, formatProductSpecDetail } = require("../src/specComparisonService.js");
+const { computeWhatExtraBuys, computeHowPlanCDiffers, formatProductSpecDetail } = require("../src/specComparisonService.js");
 
 test("specComparison: formatProductSpecDetail extracts real specs without hallucination", () => {
   const monitor = {
@@ -86,4 +86,28 @@ test("specComparison: returns zero differences when plans are identical", () => 
   assert.equal(result.extraINR, 0);
   assert.equal(result.differences.length, 0);
   assert.equal(result.hasUpgrades, false);
+});
+
+test("specComparison: computeHowPlanCDiffers computes deterministic differences between Plan C and Plan B", () => {
+  const planB = {
+    totalINR: 26498,
+    items: [
+      { productId: "MON-002", category: "monitor", name: "Veltrix Pulse 27Q", unitPriceINR: 21999 },
+      { productId: "KB-001", category: "keyboard", name: "ForgeType Pro Mechanical", unitPriceINR: 4499 },
+    ],
+  };
+
+  const planC = {
+    totalINR: 22498,
+    items: [
+      { productId: "MON-001", category: "monitor", name: "Lumora View 24F", unitPriceINR: 11499 },
+      { productId: "KB-003", category: "keyboard", name: "Custom Hall Effect Keyboard", unitPriceINR: 10999 },
+    ],
+  };
+
+  const diffResult = computeHowPlanCDiffers(planC, planB);
+  assert.ok(diffResult.summaryLine.startsWith("How it differs from Plan B:"));
+  assert.match(diffResult.summaryLine, /cheaper monitor/);
+  assert.match(diffResult.summaryLine, /pricier keyboard/);
+  assert.equal(diffResult.differences.length, 2);
 });

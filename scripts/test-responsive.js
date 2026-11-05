@@ -193,13 +193,39 @@ async function runResponsiveTests() {
     console.log(`   Executive Approval Card Present: ${approvalPresent}`);
     console.log(`   Step 2 Primary CTA found: ${step2Cta.found}, inView: ${step2Cta.inView}`);
 
+    // Verify Sticky Header behavior at scroll offset
+    const stickyHeaderCheck = await page.evaluate(() => {
+      window.scrollTo(0, 250);
+      const header = document.querySelector("header");
+      const rect = header ? header.getBoundingClientRect() : null;
+      const htmlStyle = window.getComputedStyle(document.documentElement);
+      return {
+        hasHeader: Boolean(header),
+        stickyTop: rect ? rect.top : -1,
+        scrollPaddingTop: htmlStyle.scrollPaddingTop,
+      };
+    });
+    console.log(`   Sticky Header Top: ${stickyHeaderCheck.stickyTop}px, scroll-padding: ${stickyHeaderCheck.scrollPaddingTop}`);
+    await page.evaluate(() => window.scrollTo(0, 0));
+
+    // Verify Approval Gating: Simulation Hold is disabled while waiting for executive approval
+    const isGatedInitially = await page.locator("#btn-fast-simulation-auth").isDisabled();
+    console.log(`   Approval Gating: Simulation Hold disabled prior to approval: ${isGatedInitially}`);
+
+    // Consume single-use approval token via Simulate Sign-off Modal
+    console.log(`   Consuming approval: Clicking '#btn-simulate-signoff'...`);
+    await page.click("#btn-simulate-signoff");
+    await page.waitForSelector("#btn-cfo-approve-now", { timeout: 6000 });
+    await page.click("#btn-cfo-approve-now");
+    await page.waitForTimeout(600);
+
     const step2Shot = path.join(SCREENSHOTS_DIR, `${vp.name}-step2-checkout.png`);
     await page.screenshot({ path: step2Shot, fullPage: false });
     if (vp.name === "desktop-1440x900") {
       fs.copyFileSync(step2Shot, path.join(SCREENSHOTS_DIR, "step2-checkout.png"));
     }
 
-    // Advance to Step 3
+    // Advance to Step 3 (Simulation hold is now unlocked!)
     console.log(`   Advancing: Clicking '#btn-fast-simulation-auth'...`);
     await page.click("#btn-fast-simulation-auth");
     await page.waitForSelector("#btn-confirm-delivery", { timeout: 10000 });

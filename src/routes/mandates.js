@@ -12,10 +12,39 @@ const {
   createApprovalToken,
   validateApprovalToken,
   consumeApprovalToken,
+  getApprovalRequired,
+  setApprovalRequired,
+  isMandateApproved,
 } = require("../approvalService");
 
 function createMandatesRouter() {
   const router = express.Router();
+
+  // Governance config: check / toggle approval requirement
+  router.get("/config/approval-required", (req, res) => {
+    res.json({ approvalRequired: getApprovalRequired() });
+  });
+
+  router.post("/config/approval-required", (req, res) => {
+    const { enabled, actor = "demo_user" } = req.body || {};
+    const updated = setApprovalRequired(enabled, actor);
+    res.json({ approvalRequired: updated, success: true });
+  });
+
+  // Check whether a mandate has been approved
+  router.get("/:id/approval-status", (req, res) => {
+    const mandate = getMandateById(req.params.id);
+    if (!mandate) {
+      return res.status(404).json({ error: "MANDATE_NOT_FOUND" });
+    }
+    const approved = isMandateApproved(mandate.mandateId, mandate.planVersion);
+    res.json({
+      mandateId: mandate.mandateId,
+      approvalRequired: getApprovalRequired(),
+      approved,
+      status: approved ? "APPROVED" : "AWAITING_APPROVAL",
+    });
+  });
 
   // Create & sign a new spending mandate
   router.post("/", (req, res) => {

@@ -137,7 +137,65 @@ function computeWhatExtraBuys(planA, planB, catalogData = null) {
   };
 }
 
+/**
+ * Compute how Plan C (Alternative) differs from Plan B deterministically.
+ * @param {object} planC Alternative plan
+ * @param {object} planB Best Quality in Budget plan
+ * @param {object} [catalogData]
+ * @returns {object} { summaryLine, differences: Array<{ category, label, priceDiffINR }> }
+ */
+function computeHowPlanCDiffers(planC, planB, catalogData = null) {
+  if (!planC || !planB) {
+    return { summaryLine: "", differences: [] };
+  }
+
+  const itemsC = planC.items || [];
+  const itemsB = planB.items || [];
+  const catalogMap = getCatalogMap(catalogData);
+  const diffPhrases = [];
+  const differences = [];
+
+  for (const itemC of itemsC) {
+    const cat = (itemC.category || "").toLowerCase();
+    const itemB = itemsB.find((it) => (it.category || "").toLowerCase() === cat);
+    if (!itemB) continue;
+    if (itemB.productId === itemC.productId) continue;
+
+    const prodB = catalogMap.get(itemB.productId) || itemB;
+    const prodC = catalogMap.get(itemC.productId) || itemC;
+    const priceDiff = Number(itemC.unitPriceINR || 0) - Number(itemB.unitPriceINR || 0);
+
+    let phrase = "";
+    if (priceDiff < 0) {
+      phrase = `cheaper ${cat} (-₹${Math.abs(priceDiff).toLocaleString("en-IN")})`;
+    } else if (priceDiff > 0) {
+      phrase = `pricier ${cat} (+₹${priceDiff.toLocaleString("en-IN")})`;
+    } else {
+      phrase = `alternative ${cat} (${prodC.name})`;
+    }
+
+    diffPhrases.push(phrase);
+    differences.push({
+      category: itemC.category || cat,
+      fromName: prodB.name || itemB.name,
+      toName: prodC.name || itemC.name,
+      priceDiffINR: priceDiff,
+      label: phrase,
+    });
+  }
+
+  const summaryLine = diffPhrases.length > 0
+    ? `How it differs from Plan B: ${diffPhrases.join(", ")}.`
+    : "Identical category component selection to Plan B.";
+
+  return {
+    summaryLine,
+    differences,
+  };
+}
+
 module.exports = {
   computeWhatExtraBuys,
+  computeHowPlanCDiffers,
   formatProductSpecDetail,
 };

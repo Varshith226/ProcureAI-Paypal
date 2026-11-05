@@ -146,3 +146,15 @@ export async function consumeApprovalTokenApi(token, options = {}) {
   });
 }
 
+export async function fetchApprovalRequiredApi() {
+  return request("/api/mandates/config/approval-required");
+}
+
+export async function setApprovalRequiredApi(required, actor = "user_toggle") {
+  return request("/api/mandates/config/approval-required", {
+    method: "POST",
+    body: JSON.stringify({ required, actor }),
+  });
+}
+
+

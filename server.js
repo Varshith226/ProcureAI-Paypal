@@ -40,6 +40,7 @@ const {
 } = require("./src/mandateService");
 const { getApprovedStrategy, revalidateForCheckout } = require("./src/checkoutGuard");
 const { verifyAuditLogIntegrity, resetDemoData } = require("./src/db");
+const { getApprovalRequired, isMandateApproved } = require("./src/approvalService");
 
 const app = express();
 app.use(cors());
@@ -545,6 +546,22 @@ app.post("/api/paypal/authorize-order", async (req, res) => {
 
   if (!orderID) {
     return res.status(400).json({ error: "orderID is required" });
+  }
+
+  // 1. Executive Approval Gating
+  const approvalRequired = req.body.requireApproval !== undefined
+    ? Boolean(req.body.requireApproval)
+    : getApprovalRequired();
+
+  if (approvalRequired && mandateId) {
+    const isApproved = isMandateApproved(mandateId, version);
+    if (!isApproved) {
+      return res.status(403).json({
+        error: "EXECUTIVE_APPROVAL_REQUIRED",
+        code: "WAITING_FOR_EXECUTIVE_APPROVAL",
+        message: "Waiting for executive approval. Mandate must be approved by authorized signatory before funds can be authorized.",
+      });
+    }
   }
 
   // Cryptographic Spending Mandate Enforcement

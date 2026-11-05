@@ -110,6 +110,7 @@ export default function ApprovalPortalModal({
           Cancel
         </Button>
         <Button
+          id="btn-cfo-approve-now"
           type="primary"
           icon={<CheckCircleOutlined />}
           loading={approving}

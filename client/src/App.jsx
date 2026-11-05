@@ -21,6 +21,8 @@ import {
   message,
   Tooltip,
   Popover,
+  Switch,
+  QRCode,
   ConfigProvider,
   theme,
 } from "antd";
@@ -59,6 +61,7 @@ import {
   ArrowUpOutlined,
   InfoCircleOutlined,
   CopyOutlined,
+  QrcodeOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
@@ -76,7 +79,7 @@ import "./index.css";
 import localCatalog from "./catalog.json";
 import { rebalanceBasket } from "./utils/rebalancer";
 import { computeTradeoffRecommendations } from "./utils/tradeoffRecommender";
-import { computeWhatExtraBuys } from "./utils/specComparison";
+import { computeWhatExtraBuys, computeHowPlanCDiffers } from "./utils/specComparison";
 import {
   fetchFxRate,
   fetchAuditLog,
@@ -90,6 +93,8 @@ import {
   voidOrder,
   validateApprovalTokenApi,
   createApprovalTokenApi,
+  fetchApprovalRequiredApi,
+  setApprovalRequiredApi,
   createInvoice,
 } from "./api/paypalApi";
 
@@ -1703,6 +1708,7 @@ export default function App() {
   const [authorizingManual, setAuthorizingManual] = useState(false);
 
   // Executive Approval & Real Order States
+  const [requireApproval, setRequireApproval] = useState(true);
   const [isWaitingCfoApproval, setIsWaitingCfoApproval] = useState(false);
   const [cfoApproved, setCfoApproved] = useState(false);
   const [cfoApprovalLink, setCfoApprovalLink] = useState("");
@@ -2192,6 +2198,14 @@ export default function App() {
     );
   }, [planData?.strategies]);
 
+  const howPlanCDiffers = useMemo(() => {
+    return computeHowPlanCDiffers(
+      planData?.strategies?.ALTERNATIVE,
+      planData?.strategies?.BEST_VALUE,
+      localCatalog?.products || []
+    );
+  }, [planData?.strategies, localCatalog]);
+
   // Scene state for dynamic 3D Aurora background
   const sceneState = useMemo(() => {
     if (priceSpikeAlert) return "blocked";
@@ -2532,6 +2546,21 @@ export default function App() {
           sessionStorage.setItem("procureai_mandate", JSON.stringify(mandateRes));
         } catch (_) {}
         logTelemetry("POST /api/mandates", `Created Ed25519 Mandate ${mandateRes.mandateId}`, "MANDATE_BOUND", 45, mandateRes);
+
+        // Pre-generate single-use approval token for immediate link & QR readiness
+        try {
+          const tRes = await createApprovalTokenApi(mandateRes.mandateId, {
+            planVersion: mandateRes.planVersion || 1,
+            actor: "procurement_agent",
+          });
+          setActiveApprovalToken(tRes);
+          const link = `${window.location.origin}/?token=${tRes.token}`;
+          setCfoApprovalLink(link);
+          setIsWaitingCfoApproval(true);
+          setCfoApproved(false);
+        } catch (tErr) {
+          console.warn("Auto token issue notice:", tErr);
+        }
       } catch (mErr) {
         console.warn("Mandate creation fallback:", mErr);
       }
@@ -2591,6 +2620,7 @@ export default function App() {
         mandateId: activeMandate?.mandateId,
         version: lockedPlan?.version,
         isSimulation: true,
+        requireApproval,
       });
 
       const heldUSD = authRes.authorizedUSD || lockedPlan.lockedTotalUSD || (lockedPlan.lockedTotalINR / inrPerUsd).toFixed(2);
@@ -2825,7 +2855,7 @@ export default function App() {
       </React.Suspense>
 
       {/* UNIQUE AURORA VAULT CURSOR FOLLOWER */}
-      <CustomCursor isDarkMode={isDarkMode} />
+      <CustomCursor isDarkMode={isDarkMode} disabled={isPresenterMode} />
 
       {/* FOREGROUND APPLICATION CONTAINER */}
       <div
@@ -2860,6 +2890,7 @@ export default function App() {
           }}
           onResetDemoState={handleResetDemoState}
         />
+        <div style={{ height: 56, flexShrink: 0 }} />
 
         {/* PRICE SPIKE SAFETY ALERT */}
         {priceSpikeAlert && (
@@ -2906,9 +2937,15 @@ export default function App() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -14, scale: 0.995 }}
                 transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  minHeight: "calc(100vh - 180px)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
               >
                 {/* Hero Headline */}
-                <div style={{ textAlign: "center", marginBottom: 28, marginTop: 8 }}>
+                <div style={{ textAlign: "center", marginBottom: 28, marginTop: 4 }}>
                   <Space align="center" style={{ marginBottom: 12 }}>
                     <Tag
                       color="blue"
@@ -2930,8 +2967,9 @@ export default function App() {
                         padding: "3px 12px",
                         fontSize: 11,
                         fontWeight: 600,
-                        background: isDarkMode ? "rgba(255, 255, 255, 0.06)" : "#f1f5f9",
-                        border: "1px solid rgba(148, 163, 184, 0.3)",
+                        color: isDarkMode ? "#e2e8f0" : "#334155",
+                        background: isDarkMode ? "rgba(255, 255, 255, 0.08)" : "#f1f5f9",
+                        border: `1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.15)" : "#cbd5e1"}`,
                       }}
                     >
                       🛡️ Sandbox mode: no real money
@@ -2944,17 +2982,18 @@ export default function App() {
                       fontSize: "clamp(26px, 4vw, 40px)",
                       letterSpacing: "-0.03em",
                       fontWeight: 800,
+                      color: isDarkMode ? "#f8fafc" : "#0f172a",
                     }}
                   >
-                    Buy with an AI agent that can't overspend.
+                    Buy with an AI agent that <span style={{ background: "linear-gradient(135deg, #60a5fa 0%, #38bdf8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>can't overspend</span>.
                   </Title>
                   <Paragraph
-                    type="secondary"
                     style={{
                       fontSize: 16,
                       maxWidth: 720,
                       margin: "0 auto",
                       lineHeight: 1.5,
+                      color: isDarkMode ? "#C5CCDA" : "#334155",
                     }}
                   >
                     Describe what you need. ProcureAI finds verified options, you set the limit, and PayPal holds payment until delivery.
@@ -3758,7 +3797,7 @@ export default function App() {
                       </Card>
                     </Col>
 
-                    {/* PLAN C: MAX PERFORMANCE */}
+                    {/* PLAN C: ALTERNATIVE */}
                     <Col xs={24} lg={7}>
                       <Card
                         className="glass-card-interactive"
@@ -3773,8 +3812,8 @@ export default function App() {
                         bodyStyle={{ padding: 20, display: "flex", flexDirection: "column", height: "100%" }}
                       >
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                          <Tag color="purple" style={{ borderRadius: 6, fontWeight: 700 }}>Max Performance</Tag>
-                          <Text type="secondary" style={{ fontSize: 12 }}>Plan C</Text>
+                          <Tag color="purple" style={{ borderRadius: 6, fontWeight: 700 }}>Alternative</Tag>
+                          <Text type="secondary" style={{ fontSize: 12 }}>Plan C — Alternative</Text>
                         </div>
 
                         <div style={{ marginBottom: 12 }}>
@@ -3784,9 +3823,30 @@ export default function App() {
                           </div>
                         </div>
 
-                        <Paragraph type="secondary" style={{ fontSize: 12, minHeight: 36, marginBottom: 14 }}>
+                        <Paragraph type="secondary" style={{ fontSize: 12, minHeight: 36, marginBottom: 10 }}>
                           {planData.strategies?.ALTERNATIVE?.objectiveSummary}
                         </Paragraph>
+
+                        {/* Deterministic "How it differs from Plan B" Block */}
+                        {howPlanCDiffers?.summaryLine && (
+                          <div
+                            style={{
+                              marginBottom: 14,
+                              padding: "8px 10px",
+                              borderRadius: 8,
+                              background: isDarkMode ? "rgba(139, 92, 246, 0.08)" : "#f5f3ff",
+                              border: "1px solid rgba(139, 92, 246, 0.2)",
+                              fontSize: 12,
+                              color: isDarkMode ? "#c4b5fd" : "#6d28d9",
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            <Space size={6} align="start">
+                              <SwapOutlined style={{ marginTop: 2, color: "#a855f7" }} />
+                              <span>{howPlanCDiffers.summaryLine}</span>
+                            </Space>
+                          </div>
+                        )}
 
                         {/* Items list */}
                         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
@@ -3806,7 +3866,7 @@ export default function App() {
                           onClick={() => handleApproveAndLock("ALTERNATIVE")}
                           style={{ borderRadius: 10, fontWeight: 600 }}
                         >
-                          Approve Plan C and create mandate →
+                          Approve Alternative (Plan C) and create mandate →
                         </Button>
                       </Card>
                     </Col>
@@ -3990,13 +4050,8 @@ export default function App() {
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
-                          <Text type="secondary">Express Delivery & Handling</Text>
-                          <Tag color="green" style={{ margin: 0 }}>FREE</Tag>
-                        </div>
-
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                          <Text type="secondary">Applicable Duties & Taxes</Text>
-                          <Text type="secondary">Included</Text>
+                          <Text type="secondary">Shipping and taxes</Text>
+                          <Text type="secondary">included in the vendor price (sample data)</Text>
                         </div>
 
                         {appliedRebateINR > 0 && (
@@ -4056,17 +4111,10 @@ export default function App() {
                       inrPerUsd={inrPerUsd}
                       isDarkMode={isDarkMode}
                     />
-
-                    {/* Budget Ceiling Meter */}
-                    <BudgetCeilingMeter
-                      currentTotalINR={lockedPlan?.lockedTotalINR || 35492}
-                      maxCeilingINR={budgetINR}
-                      isDarkMode={isDarkMode}
-                    />
                   </Col>
 
-                  {/* RIGHT COLUMN: Guided Checklist & Payment Terminal */}
-                  <Col xs={24} lg={12}>
+                  {/* RIGHT COLUMN: Guided Checklist & Payment Terminal (Sticky for 1-Screen Access) */}
+                  <Col xs={24} lg={12} style={{ position: "sticky", top: 76, alignSelf: "flex-start" }}>
                     {/* Compact 3-Node Architecture Pipeline Visual */}
                     <div
                       style={{
@@ -4109,86 +4157,116 @@ export default function App() {
                       </Tag>
                     </div>
 
-                    {/* Step 2: Executive Approval Card */}
+                    {/* Step 2: Unified Executive Approval Control */}
                     <Card
+                      id="card-executive-approval"
                       style={{
                         borderRadius: 14,
                         marginBottom: 14,
-                        background: cfoApproved
+                        background: !requireApproval
+                          ? (isDarkMode ? "rgba(15, 23, 42, 0.6)" : "#f8fafc")
+                          : cfoApproved
                           ? (isDarkMode ? "rgba(16, 185, 129, 0.08)" : "#f0fdf4")
                           : (isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff"),
                         border: `1px solid ${
-                          cfoApproved
+                          !requireApproval
+                            ? (isDarkMode ? "rgba(255, 255, 255, 0.1)" : "#cbd5e1")
+                            : cfoApproved
                             ? "#10b981"
                             : isWaitingCfoApproval
                             ? "#f59e0b"
-                            : isDarkMode
-                            ? "rgba(255, 255, 255, 0.08)"
-                            : "#e2e8f0"
+                            : (isDarkMode ? "rgba(255, 255, 255, 0.08)" : "#e2e8f0")
                         }`,
                       }}
                       bodyStyle={{ padding: 14 }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: cfoApproved ? 0 : 8 }}>
-                        <Space align="center">
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+                        <Space align="center" size={8}>
                           {cfoApproved ? (
                             <CheckCircleOutlined style={{ color: "#10b981", fontSize: 16 }} />
                           ) : (
-                            <SafetyCertificateOutlined style={{ color: isWaitingCfoApproval ? "#f59e0b" : "#0052FF", fontSize: 16 }} />
+                            <SafetyCertificateOutlined style={{ color: !requireApproval ? "#94a3b8" : isWaitingCfoApproval ? "#f59e0b" : "#0052FF", fontSize: 16 }} />
                           )}
                           <Text strong style={{ fontSize: 13 }}>2. Executive Approval</Text>
                         </Space>
-                        {cfoApproved ? (
-                          <Tag color="green" style={{ margin: 0, fontWeight: 700, borderRadius: 6 }}>✓ APPROVED</Tag>
-                        ) : isWaitingCfoApproval ? (
-                          <Tag color="orange" icon={<ClockCircleOutlined />} style={{ margin: 0, fontWeight: 700, borderRadius: 6 }}>WAITING FOR APPROVAL</Tag>
-                        ) : (
-                          <Tag color="blue" style={{ margin: 0, fontWeight: 600, borderRadius: 6 }}>REQUEST LINK</Tag>
-                        )}
+
+                        <Space align="center" size={10} wrap>
+                          <Space size={6} align="center">
+                            <span style={{ fontSize: 11, color: isDarkMode ? "#94a3b8" : "#64748b" }}>Approval required:</span>
+                            <Switch
+                              id="switch-require-approval"
+                              size="small"
+                              checked={requireApproval}
+                              onChange={async (checked) => {
+                                setRequireApproval(checked);
+                                try {
+                                  await setApprovalRequiredApi(checked, "user_toggle");
+                                } catch (_) {}
+                                logTelemetry("POST /api/mandates/config/approval-required", `Toggled approval requirement to ${checked ? "ON" : "OFF"}`, "AUDIT", 15);
+                                message.info(`Approval requirement set to ${checked ? "ON" : "OFF"}`);
+                              }}
+                            />
+                          </Space>
+                          {!requireApproval ? (
+                            <Tag color="default" style={{ margin: 0, fontWeight: 700, borderRadius: 6, fontSize: 11 }}>OFF (DEMO)</Tag>
+                          ) : cfoApproved ? (
+                            <Tag color="green" icon={<CheckCircleOutlined />} style={{ margin: 0, fontWeight: 700, borderRadius: 6, fontSize: 11 }}>✓ APPROVED</Tag>
+                          ) : isWaitingCfoApproval ? (
+                            <Tag id="tag-approval-status" color="orange" icon={<ClockCircleOutlined />} style={{ margin: 0, fontWeight: 700, borderRadius: 6, fontSize: 11 }}>AWAITING APPROVAL</Tag>
+                          ) : (
+                            <Tag color="blue" style={{ margin: 0, fontWeight: 600, borderRadius: 6, fontSize: 11 }}>READY</Tag>
+                          )}
+                        </Space>
                       </div>
 
-                      {!cfoApproved && (
-                        <div>
-                          <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 10 }}>
-                            {isWaitingCfoApproval
-                              ? "Single-use approval token generated. Checkout held until signed by executive authority."
-                              : "Require executive finance authorization before placing PayPal authorization hold."}
-                          </div>
+                      <div style={{ fontSize: 12, color: isDarkMode ? "#94a3b8" : "#64748b", marginBottom: (!requireApproval || cfoApproved) ? 0 : 10 }}>
+                        {!requireApproval
+                          ? "Demo mode: Executive approval gating is bypassed. PayPal and simulation authorization unlocked directly."
+                          : cfoApproved
+                          ? "Executive authority approved this mandate. PayPal authorization is unlocked."
+                          : "Single-use approval token generated. PayPal & Simulation authorization holds remain blocked until signed by executive authority."}
+                      </div>
 
-                          {!isWaitingCfoApproval && (
-                            <Button
-                              size="small"
-                              type="primary"
-                              loading={generatingToken}
-                              onClick={handleRequestCfoApproval}
-                              style={{ borderRadius: 6, fontWeight: 600, fontSize: 12, background: "#0052FF" }}
-                            >
-                              Request approval link
+                      {requireApproval && !cfoApproved && (
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                          <Button
+                            id="btn-copy-approval-link"
+                            size="small"
+                            icon={<CopyOutlined />}
+                            onClick={() => {
+                              const link = cfoApprovalLink || `${window.location.origin}/?token=${activeApprovalToken?.token || "sample_token"}`;
+                              navigator.clipboard?.writeText(link);
+                              message.success("Copied single-use approval token link!");
+                            }}
+                            style={{ borderRadius: 6, fontSize: 12 }}
+                          >
+                            Copy Link
+                          </Button>
+
+                          <Popover
+                            content={
+                              <div style={{ textAlign: "center", padding: 8 }}>
+                                <QRCode value={cfoApprovalLink || `${window.location.origin}/?token=${activeApprovalToken?.token || "sample_token"}`} size={160} />
+                                <div style={{ fontSize: 11, color: "#64748b", marginTop: 6 }}>Scan to approve on mobile</div>
+                              </div>
+                            }
+                            title="Executive Approval QR"
+                            trigger="click"
+                          >
+                            <Button id="btn-approval-qr" size="small" icon={<QrcodeOutlined />} style={{ borderRadius: 6, fontSize: 12 }}>
+                              QR Code
                             </Button>
-                          )}
+                          </Popover>
 
-                          {isWaitingCfoApproval && (
-                            <Space wrap size={8}>
-                              <Button
-                                size="small"
-                                onClick={() => {
-                                  navigator.clipboard?.writeText(cfoApprovalLink);
-                                  message.success("Copied single-use approval token link!");
-                                }}
-                                style={{ borderRadius: 6, fontSize: 12 }}
-                              >
-                                Copy link
-                              </Button>
-                              <Button
-                                size="small"
-                                type="primary"
-                                onClick={() => setApprovalModalOpen(true)}
-                                style={{ borderRadius: 6, fontSize: 12, background: "#f59e0b", borderColor: "#f59e0b", color: "#000", fontWeight: 700 }}
-                              >
-                                Simulate sign-off ↗
-                              </Button>
-                            </Space>
-                          )}
+                          <Button
+                            id="btn-simulate-signoff"
+                            size="small"
+                            type="primary"
+                            onClick={() => setApprovalModalOpen(true)}
+                            style={{ borderRadius: 6, fontSize: 12, background: "#f59e0b", borderColor: "#f59e0b", color: "#000", fontWeight: 700 }}
+                          >
+                            Simulate sign-off ↗
+                          </Button>
                         </div>
                       )}
                     </Card>
@@ -4247,7 +4325,7 @@ export default function App() {
                         >
                           <PayPalButtons
                             fundingSource="paypal"
-                            disabled={Boolean(fxData?.unavailable || (isWaitingCfoApproval && !cfoApproved))}
+                            disabled={Boolean(fxData?.unavailable || (requireApproval && !cfoApproved))}
                             style={{ layout: "vertical", shape: "rect", borderRadius: 8, height: 44 }}
                             createOrder={async () => {
                               const res = await createOrder({
@@ -4302,7 +4380,7 @@ export default function App() {
 
                         <Button
                           block
-                          disabled={Boolean(fxData?.unavailable || (isWaitingCfoApproval && !cfoApproved))}
+                          disabled={Boolean(fxData?.unavailable || (requireApproval && !cfoApproved))}
                           onClick={async () => {
                             try {
                               const res = await createOrder({
@@ -4325,7 +4403,7 @@ export default function App() {
                           }}
                           style={{ marginTop: 8, borderRadius: 8, fontSize: 12, fontWeight: 600 }}
                         >
-                          Open PayPal Sandbox Login in New Tab ↗
+                          {requireApproval && !cfoApproved ? "Waiting for executive approval" : "Open PayPal Sandbox Login in New Tab ↗"}
                         </Button>
 
                         {pendingRealOrderId && (
@@ -4383,7 +4461,8 @@ export default function App() {
                           block
                           size="large"
                           loading={authorizingManual}
-                          disabled={Boolean(fxData?.unavailable || (isWaitingCfoApproval && !cfoApproved))}
+                          disabled={Boolean(fxData?.unavailable || (requireApproval && !cfoApproved))}
+                          title={requireApproval && !cfoApproved ? "Waiting for executive approval" : undefined}
                           onClick={handleDirectAuthorize}
                           style={{
                             borderRadius: 10,
@@ -4395,26 +4474,11 @@ export default function App() {
                             marginBottom: 6,
                           }}
                         >
-                          ⚡ 1-Click Fast Simulation Hold →
+                          {requireApproval && !cfoApproved ? "Waiting for executive approval" : "⚡ 1-Click Fast Simulation Hold →"}
                         </Button>
                         <div style={{ fontSize: 10, color: "#64748b", textAlign: "center", lineHeight: 1.4 }}>
                           [SIMULATION ONLY — Bypasses buyer login on sandbox.paypal.com for rapid automated evaluation]
                         </div>
-                      </div>
-
-                      {/* Discreet Fallback Links */}
-                      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 6, fontSize: 12, marginTop: 12 }}>
-                        <Button
-                          type="link"
-                          size="small"
-                          onClick={() => {
-                            navigator.clipboard?.writeText(cfoApprovalLink || `${window.location.origin}/?token=sample_demo_approval_token_12345`);
-                            message.success("Copied 1-use executive approval token link to clipboard!");
-                          }}
-                          style={{ fontSize: 11, color: "#94a3b8" }}
-                        >
-                          🔗 Share Single-Use Approval Token Link
-                        </Button>
                       </div>
                     </Card>
                   </Col>

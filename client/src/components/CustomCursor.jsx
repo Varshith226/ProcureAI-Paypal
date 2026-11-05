@@ -9,7 +9,8 @@ import React, { useEffect, useRef, useState } from "react";
  * - State reactive: Expands on clickable targets, compresses on click
  * - Safe & accessible: pointer-events: none, auto-disabled on touch or reduced-motion
  */
-export default function CustomCursor({ isDarkMode = true }) {
+export default function CustomCursor({ isDarkMode = true, disabled = false }) {
+  if (disabled) return null;
   const haloRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);

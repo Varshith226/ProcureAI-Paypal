@@ -154,10 +154,41 @@ function consumeApprovalToken(token, { mandateId, planVersion, approverId = "exe
   };
 }
 
+let approvalRequiredState = true;
+
+function getApprovalRequired() {
+  return approvalRequiredState;
+}
+
+function setApprovalRequired(enabled, actor = "system") {
+  approvalRequiredState = Boolean(enabled);
+  appendAuditLog("APPROVAL_REQUIREMENT_TOGGLED", "system", "governance_policy", actor, {
+    approvalRequired: approvalRequiredState,
+    updatedAt: new Date().toISOString(),
+  });
+  return approvalRequiredState;
+}
+
+function isMandateApproved(mandateId, planVersion) {
+  if (!mandateId) return false;
+  const db = getDb();
+  let query = "SELECT * FROM approval_tokens WHERE mandate_id = ? AND used_at IS NOT NULL";
+  const params = [mandateId];
+  if (planVersion !== undefined && planVersion !== null) {
+    query += " AND plan_version = ?";
+    params.push(Number(planVersion));
+  }
+  const record = db.prepare(query).get(...params);
+  return Boolean(record);
+}
+
 module.exports = {
   createApprovalToken,
   getApprovalToken,
   validateApprovalToken,
   consumeApprovalToken,
+  getApprovalRequired,
+  setApprovalRequired,
+  isMandateApproved,
 };
 

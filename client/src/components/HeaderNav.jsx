@@ -88,9 +88,11 @@ export default function HeaderNav({
   return (
     <header
       style={{
-        position: "sticky",
+        position: "fixed",
         top: 0,
-        zIndex: 100,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
         height: 56,
         width: "100%",
         display: "flex",

@@ -1,6 +1,6 @@
 // client/src/components/SignedMandateCard.jsx
 import React, { useState } from "react";
-import { Card, Space, Typography, Tag, Button, message, Alert } from "antd";
+import { Card, Space, Typography, Tag, Button, message, Alert, Progress } from "antd";
 import {
   KeyOutlined,
   CheckCircleOutlined,
@@ -127,6 +127,23 @@ export default function SignedMandateCard({
           </div>
           <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 2, fontWeight: 500 }}>PayPal Hold Max</div>
         </div>
+      </div>
+
+      {/* Embedded Spending Ceiling Utilization Meter */}
+      <div style={{ marginBottom: 14, padding: "8px 10px", borderRadius: 8, background: isDarkMode ? "rgba(255,255,255,0.02)" : "#f8fafc", border: `1px solid ${dividerColor}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, marginBottom: 4 }}>
+          <span style={{ color: "#94a3b8" }}>Spending Ceiling: ₹{effectiveINR.toLocaleString("en-IN")} / ₹{budgetCapINR.toLocaleString("en-IN")}</span>
+          <span style={{ fontWeight: 700, color: effectiveINR <= budgetCapINR ? "#10b981" : "#ef4444" }}>
+            {Math.round((effectiveINR / budgetCapINR) * 100)}%
+          </span>
+        </div>
+        <Progress
+          percent={Math.min(100, Math.round((effectiveINR / budgetCapINR) * 100))}
+          size="small"
+          showInfo={false}
+          strokeColor={effectiveINR <= budgetCapINR ? "#0052FF" : "#ef4444"}
+          trailColor={isDarkMode ? "rgba(255,255,255,0.08)" : "#e2e8f0"}
+        />
       </div>
 
       {/* Compact Details List */}

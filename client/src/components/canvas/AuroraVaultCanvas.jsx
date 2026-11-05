@@ -275,12 +275,14 @@ export default function AuroraVaultCanvas({
         coreOctaMat.opacity = THREE.MathUtils.lerp(coreOctaMat.opacity, 0.04, 0.05);
         particleMaterial.opacity = THREE.MathUtils.lerp(particleMaterial.opacity, 0.35, 0.05);
       } else {
-        ringGroup.position.z = THREE.MathUtils.lerp(ringGroup.position.z, -4, 0.05);
-        ringGroup.scale.lerp(new THREE.Vector3(1.0, 1.0, 1.0), 0.05);
-        ringMat1.opacity = THREE.MathUtils.lerp(ringMat1.opacity, 0.22, 0.05);
-        ringMat2.opacity = THREE.MathUtils.lerp(ringMat2.opacity, 0.16, 0.05);
-        coreOctaMat.opacity = THREE.MathUtils.lerp(coreOctaMat.opacity, 0.18, 0.05);
-        particleMaterial.opacity = THREE.MathUtils.lerp(particleMaterial.opacity, 0.75, 0.05);
+        // Step 0: Brief mode - pushed back and scaled to outer perimeter so it never crosses hero text or prompt box
+        ringGroup.position.z = THREE.MathUtils.lerp(ringGroup.position.z, -9, 0.05);
+        ringGroup.position.y = THREE.MathUtils.lerp(ringGroup.position.y, 1.8, 0.05);
+        ringGroup.scale.lerp(new THREE.Vector3(1.55, 1.55, 1.55), 0.05);
+        ringMat1.opacity = THREE.MathUtils.lerp(ringMat1.opacity, 0.18, 0.05);
+        ringMat2.opacity = THREE.MathUtils.lerp(ringMat2.opacity, 0.12, 0.05);
+        coreOctaMat.opacity = THREE.MathUtils.lerp(coreOctaMat.opacity, 0.12, 0.05);
+        particleMaterial.opacity = THREE.MathUtils.lerp(particleMaterial.opacity, 0.65, 0.05);
       }
 
       // Smooth Mouse Parallax Lerp

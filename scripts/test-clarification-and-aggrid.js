@@ -351,8 +351,23 @@ async function run() {
     await page.waitForSelector("text=Executive Approval", { timeout: 6000 });
     console.log("✓ Reached Step 2 with locked cryptographic spending mandate!");
 
-    // Trigger simulation/sandbox auth
+    // Verify Approval Gating: sim auth button is initially disabled
     const simAuthBtn = page.locator("#btn-fast-simulation-auth");
+    const isInitiallyGated = await simAuthBtn.isDisabled();
+    if (!isInitiallyGated) {
+      throw new Error("Simulation auth button must be disabled until executive approval is granted!");
+    }
+    console.log("✓ Verified Approval Gating: button is strictly disabled with 'Waiting for executive approval'!");
+
+    // Simulate executive sign-off
+    console.log("Simulating executive sign-off...");
+    await page.click("#btn-simulate-signoff");
+    await page.waitForSelector("#btn-cfo-approve-now", { timeout: 6000 });
+    await page.click("#btn-cfo-approve-now");
+    await page.waitForTimeout(800);
+    console.log("✓ Executive approval granted via single-use token!");
+
+    // Trigger simulation/sandbox auth
     await simAuthBtn.click();
     await page.waitForTimeout(1000);
 

@@ -28,7 +28,7 @@ const STRATEGY_META = {
     itemReason: "Part of the highest-scoring complete basket within budget.",
   },
   ALTERNATIVE: {
-    strategyName: "Plan C — Max Performance",
+    strategyName: "Plan C — Alternative",
     objectiveSummary:
       "Highest-scoring complete basket that changes at least two category picks versus Best Quality in Budget and is cheaper or better evidenced.",
     itemReason: "Chosen for the alternative trade-off basket.",
